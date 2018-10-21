@@ -41,7 +41,7 @@ $ make clean
 
 ## License
 
-This module is released under the [MIT License][36] license.
+This module is released under the [MIT License][36].
 
 [3]: https://github.com/rbuck/node-nuodb/issues
 [34]: https://github.com/rbuck/node-nuodb/blob/master/test/README.md
