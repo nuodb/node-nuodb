@@ -15,6 +15,9 @@ NuoDB C++ client.
 
 ## Examples
 
+See the [examples][30] directory.  Start with
+[examples/example.js][31].
+
 ## Help
 
 Issues and questions about node-nuodb can be posted on [GitHub][3].
@@ -44,5 +47,6 @@ $ make clean
 This module is released under the [MIT License][36].
 
 [3]: https://github.com/rbuck/node-nuodb/issues
+[30]: https://github.com/rbuck/node-nuodb/blob/master/examples
 [34]: https://github.com/rbuck/node-nuodb/blob/master/test/README.md
 [36]: https://opensource.org/licenses/MIT
