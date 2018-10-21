@@ -5,13 +5,21 @@
   "main": "addon.js",
   "keywords": [
     "nuodb",
-    "libnuoclient"
+    "binding",
+    "addon",
+    "driver"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/rbuck/node-libnuoclient.git"
+    "url": "git://github.com/rbuck/node-nuodb.git"
+  },
+  "bugs": {
+    "url": "git://github.com/rbuck/node-nuodb/issues"
   },
   "author": "Robert J. Buck",
+  "maintainers": [
+    "NuoDB, Inc."
+  ],
   "license": "MIT",
   "gypfile": true,
   "private": true,
@@ -28,6 +36,6 @@
   },
   "scripts": {
     "build": "node-gyp rebuild --release",
-    "test": "./node_modules/.bin/mocha --reporter spec"
+    "test": "./node_modules/.bin/mocha"
   }
 }
