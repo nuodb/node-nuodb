@@ -50,3 +50,23 @@ inclusive of unit tests. The steps and current status are:
 | RO Properties | --- | 2d |
 | Memory Leaks / Tuning  | --- | 5d |
 | Sync | --- | 5d |
+
+## Build and Test
+
+You can directly use the npm commands if you disable the NuoDB code, or run on Linux:
+
+```bash
+$ npm install
+$ npm run test
+```
+
+You can use the make commands:
+
+```bash
+$ make
+$ make clean
+```
+
+## License
+
+This module is released under the [MIT License] license.
