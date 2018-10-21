@@ -17,8 +17,7 @@ NuoDB C++ client.
 
 ## Help
 
-Issues and questions about node-nuodb can be posted on [GitHub][3] or
-[Slack][5] ([link to join Slack][6]).
+Issues and questions about node-nuodb can be posted on [GitHub][3].
 
 ## Tests
 
