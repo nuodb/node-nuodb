@@ -17,6 +17,9 @@ NuoDB C++ client.
 
 ## Help
 
+Issues and questions about node-nuodb can be posted on [GitHub][3] or
+[Slack][5] ([link to join Slack][6]).
+
 ## Tests
 
 To run the test suite see [test/README][34].
@@ -41,4 +44,5 @@ $ make clean
 
 This module is released under the [MIT License] license.
 
+[3]: https://github.com/rbuck/node-nuodb/issues
 [34]: https://github.com/rbuck/node-nuodb/blob/master/test/README.md
