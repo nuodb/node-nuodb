@@ -39,7 +39,7 @@ The steps and current statuses of the first phase are:
 | Await   | --- | 1d |
 
 The goal of the second phase is to complete the integration of each work area,
-inclusive of unit tests. The steps and current status
+inclusive of unit tests. The steps and current status are:
 
 |   STEP  |   STATUS  |  DURATION |
 |---------|:-------------:|------:|
