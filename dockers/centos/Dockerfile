@@ -22,9 +22,9 @@ COPY package.json /src
 RUN npm install -g node-gyp && npm install --only=production
 
 COPY . /src
-RUN npm build
+RUN npm run build
 
-RUN npm install
+RUN npm install && find .
 RUN npm run test
 
 RUN node --napi-modules addon.js
