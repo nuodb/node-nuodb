@@ -6,9 +6,9 @@ var should = require('should');
 var config = require('./config.js');
 
 describe('3. promises.js', function () {
-  it('16.1 returns a promise from Database.connect', function (done) {
-    var database = new nuodb.Database();
-    database.connect(config)
+  it('16.1 returns a promise from Connection.connect', function (done) {
+    var connection = new nuodb.Connection();
+    connection.connect(config)
       .then(function (connection) {
         connection.should.be.ok();
         connection.release(function (err) {

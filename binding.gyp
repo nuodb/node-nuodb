@@ -14,7 +14,7 @@
       },
       "sources": [
         "src/addon.cc",
-        "src/njsDatabase.cc"
+        "src/njsConnection.cc"
       ],
       "include_dirs": [
         "/opt/nuodb/include/",

@@ -17,7 +17,7 @@ The steps and current statuses of the first phase are:
 | Docker  | DONE | 1d |
 | Async   | DONE | 2d |
 | Promise | DONE | 1d |
-| Await   | --- | 1d |
+| Await   | DONE | 1d |
 
 The goal of the second phase is to complete the integration of each work area,
 inclusive of unit tests. The steps and current status are:

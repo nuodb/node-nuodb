@@ -1,9 +1,9 @@
 #include <napi.h>
-#include "njsDatabase.h"
+#include "njsConnection.h"
 
 Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
-  exports.Set("database", njsDatabase::Init(env, exports));
-  // return njsDatabase::Init(env, exports);
+  exports.Set("connection", njsConnection::Init(env, exports));
+  // return njsConnection::Init(env, exports);
   return exports;
 }
 
