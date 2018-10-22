@@ -6,7 +6,7 @@ var async = require('async');
 var should = require('should');
 var config = require('./config.js');
 
-describe('2. close connections', function () {
+describe('2. testing connections', function () {
   it('2.1 properly open and release connections', function (done) {
     connection.connect(config, function (err, connection) {
       should.not.exist(err);

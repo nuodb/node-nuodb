@@ -94,7 +94,7 @@ private:
 // Connect to the database asynchronously.
 Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
 {
-  printf("Connect\n");
+  TRACE("Connect");
 
   Napi::Env env = info.Env();
 
@@ -140,7 +140,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
 
 void njsConnection::doConnect(njsConfig *config)
 {
-  printf("doConnect\n");
+  TRACE("doConnect");
 
   /*
   // todo automatically free properties
@@ -190,7 +190,7 @@ private:
 // Connect to the database asynchronously.
 Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
 {
-  printf("Commit\n");
+  TRACE("Commit");
 
   Napi::Env env = info.Env();
   if (info.Length() == 1)
@@ -217,7 +217,7 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
 
 void njsConnection::doCommit()
 {
-  printf("doConnect\n");
+  TRACE("doConnect");
 
   /*
   // todo automatically free properties
@@ -266,7 +266,7 @@ private:
 
 Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
 {
-  printf("Release\n");
+  TRACE("Release");
 
   Napi::Env env = info.Env();
   if (info.Length() == 1)
@@ -293,7 +293,7 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
 
 void njsConnection::doRelease()
 {
-  printf("ReleaseDirect\n");
+  TRACE("doRelease");
   // try {
   //   // todo: change from hard-coded database name to connection string
   //   connection->close();

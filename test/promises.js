@@ -5,8 +5,8 @@ var async = require('async');
 var should = require('should');
 var config = require('./config.js');
 
-describe('3. promises.js', function () {
-  it('16.1 returns a promise from Connection.connect', function (done) {
+describe('3. testing promises', function () {
+  it('3.1 returns a promise from Connection.connect', function (done) {
     var connection = new nuodb.Connection();
     connection.connect(config)
       .then(function (connection) {

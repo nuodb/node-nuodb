@@ -19,11 +19,14 @@ RUN rm -f /opt/nuodb/lib64/libnuoclient.so
 WORKDIR /src
 
 COPY package.json /src
-RUN npm install --only=production
+RUN npm install -g node-gyp && npm install --only=production
 
 COPY . /src
-RUN npm run build
+RUN npm build
+
+RUN npm install
 RUN npm run test
+
 RUN node --napi-modules addon.js
 
 # -------------------------------------

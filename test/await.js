@@ -4,7 +4,7 @@ var async = require('async');
 var should = require('should');
 var config = require('./config.js');
 
-describe('1. await.js', () => {
+describe('1. testing await', () => {
   it('1.1 open and close connections using async/await', async () => {
     var connection = new nuodb.Connection();
     connection.should.be.ok();

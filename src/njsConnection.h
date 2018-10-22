@@ -2,6 +2,7 @@
 #define NJS_CONNECTION_H
 
 #include <napi.h>
+#include "addon.h"
 #include "njsConfig.h"
 
 // nuodb spews crap loads of warnings about this; disable it
