@@ -5,7 +5,7 @@
 #include "addon.h"
 #include "njsConfig.h"
 
-// nuodb spews crap loads of warnings about this; disable it
+// nuodb emits lots of warnings about this; so disable it
 #ifdef __APPLE__
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
 #endif
