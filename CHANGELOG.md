@@ -2,7 +2,7 @@
 
 ## Project Plan
 
-The plan has two phases.
+The plan has three phases.
 
 The goal in the first phase is to learn about the challenges and problem space.
 Doing this we surface the breadth of challenges early, we can more accurately
@@ -29,5 +29,11 @@ inclusive of unit tests. The steps and current status are:
 | Results       | --- | 5d |
 | Prepare       | --- | 5d |
 | RO Properties | --- | 2d |
-| Memory Leaks / Tuning  | --- | 5d |
 | Sync | --- | 5d |
+
+The goal of the third phase is to stabilize and tune the integration.
+
+|   STEP  |   STATUS  |  DURATION |
+|---------|:-------------:|------:|
+| Memory Leaks / Tuning  | --- | 5d |
+| Documentation | --- | 1d |
