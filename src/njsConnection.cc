@@ -1,7 +1,6 @@
 #include <napi.h>
 #include <uv.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "njsConnection.h"
 
