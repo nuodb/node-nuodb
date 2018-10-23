@@ -46,7 +46,7 @@ $ make clean
 
 This module is released under the [MIT License][36].
 
-[3]: https://github.com/rbuck/node-nuodb/issues
-[30]: https://github.com/rbuck/node-nuodb/blob/master/examples
-[34]: https://github.com/rbuck/node-nuodb/blob/master/test/README.md
+[3]: https://github.com/nuodb/node-nuodb/issues
+[30]: https://github.com/nuodb/node-nuodb/blob/master/examples
+[34]: https://github.com/nuodb/node-nuodb/blob/master/test/README.md
 [36]: https://opensource.org/licenses/MIT
