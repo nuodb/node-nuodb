@@ -1,7 +1,7 @@
 {
   "name": "addon",
   "version": "3.3.0",
-  "description": "Low-level native bindings to NuoDB libnuoclient",
+  "description": "NuoDB Node.js Driver (C++ Add-on)",
   "main": "addon.js",
   "keywords": [
     "nuodb",
