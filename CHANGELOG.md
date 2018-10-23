@@ -28,7 +28,6 @@ inclusive of unit tests. The steps and current status are:
 | Execute       | --- | 2d |
 | Results       | --- | 5d |
 | Prepare       | --- | 5d |
-| RO Properties | --- | 2d |
 
 The goal of the third phase is to stabilize and tune the integration.
 
