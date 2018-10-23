@@ -24,12 +24,12 @@ inclusive of unit tests. The steps and current status are:
 
 |   STEP  |   STATUS  |  DURATION |
 |---------|:-------------:|------:|
-| Commit        | --- | 2d |
+| Commit        | PENDING | 2d |
 | Execute       | --- | 2d |
 | Results       | --- | 5d |
 | Prepare       | --- | 5d |
 | RO Properties | --- | 2d |
-| Sync | --- | 5d |
+| Sync | WON'T DO | 5d |
 
 The goal of the third phase is to stabilize and tune the integration.
 
