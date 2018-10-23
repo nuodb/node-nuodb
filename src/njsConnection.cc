@@ -1,6 +1,7 @@
 #include <napi.h>
 #include <uv.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "njsConnection.h"
 
@@ -56,13 +57,37 @@ Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object ob
 
 void njsConnection::getConfig(Napi::Env env, Napi::Object object, njsConfig &config)
 {
+  // get the user name (required)
   config.options["user"] = this->getNamedPropertyString(env, object, "user").ToString();
-  config.options["password"] = this->getNamedPropertyString(env, object, "user").ToString();
+  // get the password (required)
+  config.options["password"] = this->getNamedPropertyString(env, object, "password").ToString();
+
+  // get the host name (optional, default to localhost)
+  config.options["host"] = "localhost";
+  if (object.Has("host"))
+  {
+    config.options["host"] = this->getNamedPropertyString(env, object, "host").ToString();
+  }
+
+  // get the port (optional, default to 48004)
+  config.options["port"] = "48004";
+  if (object.Has("port"))
+  {
+    config.options["port"] = this->getNamedPropertyString(env, object, "port").ToString();
+  }
+
+  // get the schema (optional, default is USER)
+  config.options["schema"] = "USER";
+  if (object.Has("schema"))
+  {
+    config.options["schema"] = this->getNamedPropertyString(env, object, "schema").ToString();
+  }
 }
 
 class njsConnectAsyncWorker : public Napi::AsyncWorker
 {
 public:
+  // this transfers responsibility to cleanup config object to worker
   njsConnectAsyncWorker(const Napi::Function &callback, njsConnection &target, njsConfig *config)
       : Napi::AsyncWorker(callback), target(target), config(config)
   {
@@ -81,7 +106,7 @@ public:
   void Execute()
   {
     // try-catch
-    target.doConnect(config);
+    target.doConnect(*config);
     // this->SetError("An error occured!");
   }
 
@@ -107,6 +132,8 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
 
   Napi::Env env = info.Env();
 
+  // If we're called async, we have a config object and a callback. If we're
+  // dealing with promises, we only have a config object...
   if (info.Length() < 1 || info.Length() > 2)
   {
     Napi::TypeError::New(env, "Invalid argument count").ThrowAsJavaScriptException();
@@ -120,6 +147,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
   }
   Napi::Object options = info[0].As<Napi::Object>();
 
+  // Retrievig the config must be done within the JS engine event loop.
   njsConfig *config = new njsConfig;
   getConfig(info.Env(), options, *config);
 
@@ -141,13 +169,18 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
   else if (info.Length() == 1)
   {
     auto deferred = Napi::Promise::Deferred::New(env);
-    this->doConnect(config);
+    this->doConnect(*config);
     deferred.Resolve(this->Value());
     return deferred.Promise();
   }
+  else
+  {
+    // silence bad warnings from gcc
+    return info.Env().Undefined();
+  }
 }
 
-void njsConnection::doConnect(njsConfig *config)
+void njsConnection::doConnect(const njsConfig &config)
 {
   TRACE("doConnect");
 
@@ -212,6 +245,14 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
 
   Napi::Env env = info.Env();
 
+  // If we're called async, we have a callback. If we're
+  // dealing with promises, we have no arguments...
+  if (info.Length() > 1)
+  {
+    Napi::TypeError::New(env, "Invalid argument count").ThrowAsJavaScriptException();
+    return info.Env().Undefined();
+  }
+
   // Length is 1 only if this is called asynchronously.
   if (info.Length() == 1)
   {
@@ -233,6 +274,11 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
     this->doCommit();
     deferred.Resolve(this->Value());
     return deferred.Promise();
+  }
+  else
+  {
+    // silence bad warnings from gcc
+    return info.Env().Undefined();
   }
 }
 
@@ -321,6 +367,11 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
     this->doRelease();
     deferred.Resolve(this->Value());
     return deferred.Promise();
+  }
+  else
+  {
+    // silence bad warnings from gcc
+    return info.Env().Undefined();
   }
 }
 

@@ -37,7 +37,7 @@ private:
   Napi::Value getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key);
 
   // Internal connect method that works against a NuoDB connection object.
-  void doConnect(njsConfig *config);
+  void doConnect(const njsConfig &config);
 
   // Internal commit method that works against a NuoDB connection object.
   void doCommit();
