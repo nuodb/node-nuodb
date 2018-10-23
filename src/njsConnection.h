@@ -14,7 +14,10 @@
 class njsConnection : public Napi::ObjectWrap<njsConnection>
 {
 public:
+  // Initialize the class system with connection type info.
   static Napi::Object Init(Napi::Env env, Napi::Object exports);
+
+  // Constructor
   njsConnection(const Napi::CallbackInfo &info);
 
 private:
@@ -42,8 +45,11 @@ private:
   // Internal release method that works against a NuoDB connection object.
   void doRelease();
 
+  // Async worker for creating connections.
   friend class njsConnectAsyncWorker;
+  // Async worker for committing transactions.
   friend class njsCommitAsyncWorker;
+  // Async worker for releasing connections.
   friend class njsReleaseAsyncWorker;
 
   NuoDB::Connection *connection;

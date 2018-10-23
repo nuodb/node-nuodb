@@ -73,6 +73,11 @@ public:
     delete config;
   }
 
+  /**
+   * Executes on the worker thread.
+   * It is unsafe to access JS engine data structures on worker threads.
+   * All input and output MUST occur on this->.
+   */
   void Execute()
   {
     // try-catch
@@ -80,6 +85,10 @@ public:
     // this->SetError("An error occured!");
   }
 
+  /**
+   * Executes on the main event loop, so it's safe to access JS engine data
+   * structures. Called when async work is complete.
+   */
   void OnOK()
   {
     Napi::HandleScope scope(Env());
@@ -114,16 +123,8 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
   njsConfig *config = new njsConfig;
   getConfig(info.Env(), options, *config);
 
-  // promise
-  if (info.Length() == 1)
-  {
-    auto deferred = Napi::Promise::Deferred::New(env);
-    this->doConnect(config);
-    deferred.Resolve(this->Value());
-    return deferred.Promise();
-  }
-  // async
-  else
+  // Length is 1 only if this is called asynchronously.
+  if (info.Length() == 2)
   {
     if (!info[1].IsFunction())
     {
@@ -135,6 +136,14 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
     njsConnectAsyncWorker *asyncWorker = new njsConnectAsyncWorker(callback, *this, config);
     asyncWorker->Queue();
     return info.Env().Undefined();
+  }
+  // Length is 1 only if this is called as a Promise.
+  else if (info.Length() == 1)
+  {
+    auto deferred = Napi::Promise::Deferred::New(env);
+    this->doConnect(config);
+    deferred.Resolve(this->Value());
+    return deferred.Promise();
   }
 }
 
@@ -171,12 +180,21 @@ public:
   {
   }
 
+  /**
+   * Executes on the worker thread.
+   * It is unsafe to access JS engine data structures on worker threads.
+   * All input and output MUST occur on this->.
+   */
   void Execute()
   {
     // try-catch
     target.doCommit();
   }
 
+  /**
+   * Executes on the main event loop, so it's safe to access JS engine data
+   * structures. Called when async work is complete.
+   */
   void OnOK()
   {
     Napi::HandleScope scope(Env());
@@ -193,6 +211,8 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
   TRACE("Commit");
 
   Napi::Env env = info.Env();
+
+  // Length is 1 only if this is called asynchronously.
   if (info.Length() == 1)
   {
     if (!info[1].IsFunction())
@@ -206,7 +226,8 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
     asyncWorker->Queue();
     return info.Env().Undefined();
   }
-  else
+  // Length is 0 only if this is called as a Promise.
+  else if (info.Length() == 0)
   {
     auto deferred = Napi::Promise::Deferred::New(env);
     this->doCommit();
@@ -248,12 +269,21 @@ public:
   {
   }
 
+  /**
+   * Executes on the worker thread.
+   * It is unsafe to access JS engine data structures on worker threads.
+   * All input and output MUST occur on this->.
+   */
   void Execute()
   {
     // try-catch
     target.doRelease();
   }
 
+  /**
+   * Executes on the main event loop, so it's safe to access JS engine data
+   * structures. Called when async work is complete.
+   */
   void OnOK()
   {
     Napi::HandleScope scope(Env());
@@ -269,6 +299,8 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
   TRACE("Release");
 
   Napi::Env env = info.Env();
+
+  // Length is 1 only if this is called asynchronously.
   if (info.Length() == 1)
   {
     if (!info[0].IsFunction())
@@ -282,7 +314,8 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
     asyncWorker->Queue();
     return info.Env().Undefined();
   }
-  else
+  // Length is 0 only if this is called as a Promise.
+  else if (info.Length() == 0)
   {
     auto deferred = Napi::Promise::Deferred::New(env);
     this->doRelease();
