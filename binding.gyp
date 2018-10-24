@@ -7,7 +7,8 @@
       ],
       "cflags_cc!": [
         "-fno-exceptions",
-        "-Wno-overloaded-virtual "
+        "-Wno-overloaded-virtual",
+        "-DNDEBUG"
       ],
       "variables": {
         "nuodb_home": "<!(echo ${NUODB_HOME-\"/opt/nuodb\"})"
@@ -29,9 +30,6 @@
       ],
       "dependencies": [
         "<!(node -p \"require('node-addon-api').gyp\")"
-      ],
-      "defines": [
-        "NAPI_DISABLE_CPP_EXCEPTIONS"
       ]
     }
   ]

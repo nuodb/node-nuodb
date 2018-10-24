@@ -1,6 +1,10 @@
+#include <stdio.h>
+#include <sstream>
+#include <iostream>
+#include <exception>
+
 #include <napi.h>
 #include <uv.h>
-#include <stdio.h>
 
 #include "njsConnection.h"
 
@@ -28,14 +32,15 @@ njsConnection::njsConnection(const Napi::CallbackInfo &info) : Napi::ObjectWrap<
 {
   Napi::Env env = info.Env();
   Napi::HandleScope scope(env);
-  /*
-  try {
+  try
+  {
     connection = NuoDB::Connection::create();
-  } catch (NuoDB::SQLException & exception) {
+  }
+  catch (NuoDB::SQLException &exception)
+  {
     // todo: exception.getText()
     Napi::Error::New(env, "Failed to open database").ThrowAsJavaScriptException();
   }
-  */
 }
 
 Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key)
@@ -54,33 +59,40 @@ Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object ob
   return value.ToString();
 }
 
+void njsConnection::setOption(Napi::Env env, Napi::Object object, njsConfig &config, std::string key, bool required)
+{
+  if (required && !object.Has(key))
+  {
+    std::string err_message = std::string("config missing key: ") + key;
+    throw std::runtime_error(err_message);
+  }
+  config.options[key] = this->getNamedPropertyString(env, object, key).ToString();
+}
+
+void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig &config, std::string key, std::string value)
+{
+  if (object.Has(key))
+  {
+    value = this->getNamedPropertyString(env, object, key).ToString();
+  }
+  config.options[key] = value;
+}
+
 void njsConnection::getConfig(Napi::Env env, Napi::Object object, njsConfig &config)
 {
+  // get the database name (required)
+  this->setOption(env, object, config, "database", true);
   // get the user name (required)
-  config.options["user"] = this->getNamedPropertyString(env, object, "user").ToString();
+  this->setOption(env, object, config, "user", true);
   // get the password (required)
-  config.options["password"] = this->getNamedPropertyString(env, object, "password").ToString();
+  this->setOption(env, object, config, "password", true);
 
   // get the host name (optional, default to localhost)
-  config.options["host"] = "localhost";
-  if (object.Has("host"))
-  {
-    config.options["host"] = this->getNamedPropertyString(env, object, "host").ToString();
-  }
-
+  this->setOptionOrDefault(env, object, config, "hostname", "localhost");
   // get the port (optional, default to 48004)
-  config.options["port"] = "48004";
-  if (object.Has("port"))
-  {
-    config.options["port"] = this->getNamedPropertyString(env, object, "port").ToString();
-  }
-
+  this->setOptionOrDefault(env, object, config, "port", "48004");
   // get the schema (optional, default is USER)
-  config.options["schema"] = "USER";
-  if (object.Has("schema"))
-  {
-    config.options["schema"] = this->getNamedPropertyString(env, object, "schema").ToString();
-  }
+  this->setOptionOrDefault(env, object, config, "schema", "USER");
 }
 
 class njsConnectAsyncWorker : public Napi::AsyncWorker
@@ -104,9 +116,15 @@ public:
    */
   void Execute()
   {
-    // try-catch
-    target.doConnect(*config);
-    // this->SetError("An error occured!");
+    try
+    {
+      target.doConnect(*config);
+    }
+    catch (std::exception &e)
+    {
+      std::string message = std::string("Failed to open database: ") + e.what();
+      this->SetError(message);
+    }
   }
 
   /**
@@ -148,7 +166,16 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
 
   // Retrievig the config must be done within the JS engine event loop.
   njsConfig *config = new njsConfig;
-  getConfig(info.Env(), options, *config);
+  try
+  {
+    getConfig(info.Env(), options, *config);
+  }
+  catch (std::exception &e)
+  {
+    std::string err = std::string("Bad configuration: ") + e.what();
+    Napi::TypeError::New(env, err).ThrowAsJavaScriptException();
+    return info.Env().Undefined();
+  }
 
   // Length is 1 only if this is called asynchronously.
   if (info.Length() == 2)
@@ -168,8 +195,16 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
   else if (info.Length() == 1)
   {
     auto deferred = Napi::Promise::Deferred::New(env);
-    this->doConnect(*config);
-    deferred.Resolve(this->Value());
+    try
+    {
+      this->doConnect(*config);
+      deferred.Resolve(this->Value());
+    }
+    catch (std::exception &e)
+    {
+      std::string message = std::string("Failed to open database: ") + e.what();
+      deferred.Reject(Napi::TypeError::New(env, message).Value());
+    }
     return deferred.Promise();
   }
   else
@@ -179,25 +214,26 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo &info)
   }
 }
 
-void njsConnection::doConnect(const njsConfig &config)
+void njsConnection::doConnect(njsConfig &config)
 {
   TRACE("doConnect");
 
-  /*
-  // todo automatically free properties
-  NuoDB::Properties *properties = connection->allocProperties();
-  properties->putValue("user", ((std::string)user).c_str());
-  properties->putValue("password", ((std::string)password).c_str());
+  std::ostringstream connection_string;
+  connection_string << config.options["database"] << "@" << config.options["hostname"] << ":" << config.options["port"];
 
-  try {
-    // todo: change from hard-coded database name to connection string
-    connection->openDatabase("fake-db-name", properties);
-  } catch (NuoDB::SQLException & exception) {
-    // todo: exception.getText()
-    Napi::Error::New(env, "Failed to open database").ThrowAsJavaScriptException();
-    return info.Env().Undefined();
+  // free properties!
+  NuoDB::Properties *props = connection->allocProperties();
+  props->putValue("user", config.options["user"].c_str());
+  props->putValue("password", config.options["password"].c_str());
+
+  try
+  {
+    connection->openDatabase(connection_string.str().c_str(), props);
   }
-  */
+  catch (NuoDB::SQLException &e)
+  {
+    throw std::runtime_error(e.getText());
+  }
 }
 
 class njsCommitAsyncWorker : public Napi::AsyncWorker
@@ -255,12 +291,12 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
   // Length is 1 only if this is called asynchronously.
   if (info.Length() == 1)
   {
-    if (!info[1].IsFunction())
+    if (!info[0].IsFunction())
     {
       Napi::TypeError::New(env, "Invalid argument types: not function").ThrowAsJavaScriptException();
       return info.Env().Undefined();
     }
-    Napi::Function callback = info[1].As<Napi::Function>();
+    Napi::Function callback = info[0].As<Napi::Function>();
 
     njsCommitAsyncWorker *asyncWorker = new njsCommitAsyncWorker(callback, *this);
     asyncWorker->Queue();

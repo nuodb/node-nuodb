@@ -1,8 +1,9 @@
 var config = {};
 
-config.host          = 'localhost';
-config.port          = '48004';
-config.user          = 'test';
-config.password      = 'test';
+config.database = 'test';
+config.host = '10.8.250.191';
+config.port = '48004';
+config.user = 'dba';
+config.password = 'dba';
 
 module.exports = config;

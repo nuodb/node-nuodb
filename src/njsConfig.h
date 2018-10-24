@@ -8,7 +8,8 @@
  * Represents a NuoDB database configuration.
  * 
  * Supported options include:
- * - host
+ * - database
+ * - hostname
  * - port
  * - user
  * - password
