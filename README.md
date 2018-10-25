@@ -28,18 +28,19 @@ To run the test suite see [test/README][34].
 
 ## Build and Test
 
-You can directly use the npm commands if you disable the NuoDB code, or run on Linux:
+To build and test a "build" Docker image:
 
 ```bash
-$ npm install
-$ npm run test
+$ make up
+$ make status # repeat until the SMs and TEs are up!
+$ make test
+$ make dn
 ```
 
-You can use the make commands:
+To build a release image for distribution:
 
 ```bash
-$ make
-$ make clean
+$ make release
 ```
 
 ## License
@@ -50,3 +51,4 @@ This module is released under the [MIT License][36].
 [30]: https://github.com/nuodb/node-nuodb/blob/master/examples
 [34]: https://github.com/nuodb/node-nuodb/blob/master/test/README.md
 [36]: https://opensource.org/licenses/MIT
+[31]: https://github.com/nuodb/node-nuodb/blob/master/examples/example.js#L1

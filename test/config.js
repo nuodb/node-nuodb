@@ -1,7 +1,7 @@
 var config = {};
 
 config.database = 'test';
-config.host = '10.8.250.191';
+config.hostname = 'ad1';
 config.port = '48004';
 config.user = 'dba';
 config.password = 'dba';

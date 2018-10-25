@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+docker stop te1 sm1 ad1
+docker network rm nuodb-net
+rm -fr vol1 vol2

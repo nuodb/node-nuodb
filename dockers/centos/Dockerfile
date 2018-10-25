@@ -25,7 +25,6 @@ COPY . /src
 RUN npm run build
 
 RUN npm install
-RUN npm run test
 
 RUN node --napi-modules addon.js
 
@@ -37,3 +36,12 @@ FROM node:8.12.0-centos AS release
 
 COPY --from=build /opt/nuodb/lib64 /opt/nuodb/lib64
 COPY --from=build /src /src
+
+# -------------------------------------
+# test image
+
+FROM build AS test
+
+COPY . .
+
+RUN npm run test

@@ -65,3 +65,8 @@ typings/
 
 # vscode
 .vscode/
+
+# tests
+vol1/
+vol2/
+
