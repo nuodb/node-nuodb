@@ -32,12 +32,20 @@ private:
   // Release a database connection asynchronously.
   Napi::Value Release(const Napi::CallbackInfo &info);
 
+  // Gets a config from the given NAPI object.
   void getConfig(Napi::Env env, Napi::Object object, njsConfig &config);
   // Gets a string option from an object.
   Napi::Value getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key);
+  // Sets an option from the named property in the object into the configuration.
+  void setOption(Napi::Env env, Napi::Object object, njsConfig &config, std::string key, bool required);
+  // Sets an option from the named property in the object into the configuration; if the value does not exist use the provided default value.
+  void setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig &config, std::string key, std::string value);
+
+  // Get connection string.
+  std::string getConnectionString(const njsConfig &config);
 
   // Internal connect method that works against a NuoDB connection object.
-  void doConnect(const njsConfig &config);
+  void doConnect(njsConfig &config);
 
   // Internal commit method that works against a NuoDB connection object.
   void doCommit();

@@ -17,25 +17,24 @@ describe('2. testing connections', function () {
       });
     });
   });
-  /*
-    it('2.2 can not call method, commit()', function (done) {
-      connection.connect(config, function (err, connection) {
-        should.not.exist(err);
-  
-        connection.release(function (err) {
-          should.not.exist(err);
-  
-          connection.commit(function (err) {
-            should.exist(err);
-            should.strictEqual(
-              err.message,
-              "NJS-003: invalid connection"
-            );
-            done();
-          });
-        });
-      }
-      );
-    }); // 2.2
-  */
+
+  // it('2.2 raises an exception if calling method, commit(), after release', function (done) {
+  //   connection.connect(config, function (err, connection) {
+  //     should.not.exist(err);
+
+  //     connection.release(function (err) {
+  //       should.not.exist(err);
+
+  //       connection.commit(function (err) {
+  //         should.exist(err);
+  //         should.strictEqual(
+  //           err.message,
+  //           "NJS-003: invalid connection"
+  //         );
+  //         done();
+  //       });
+  //     });
+  //   }
+  //   );
+  // });
 });

@@ -63,3 +63,10 @@ typings/
 # intellij
 .idea/
 
+# vscode
+.vscode/
+
+# tests
+vol1/
+vol2/
+
