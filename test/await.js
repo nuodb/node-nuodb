@@ -11,7 +11,7 @@ describe('1. testing await', () => {
     try {
       await connection.connect(config);
       connection.should.be.ok();
-      await connection.release();
+      await connection.close();
       connection.should.be.ok();
     } catch (err) {
       should.not.exist(err);

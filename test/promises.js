@@ -11,7 +11,7 @@ describe('3. testing promises', function () {
     connection.connect(config)
       .then(function (connection) {
         connection.should.be.ok();
-        connection.release(function (err) {
+        connection.close(function (err) {
           should.not.exist(err);
           // verify here that setting a property raises an exception...
           return done();

@@ -30,7 +30,7 @@ private:
   Napi::Value Commit(const Napi::CallbackInfo &info);
 
   // Release a database connection asynchronously.
-  Napi::Value Release(const Napi::CallbackInfo &info);
+  Napi::Value Close(const Napi::CallbackInfo &info);
 
   // Gets a config from the given NAPI object.
   void getConfig(Napi::Env env, Napi::Object object, njsConfig &config);
@@ -50,15 +50,15 @@ private:
   // Internal commit method that works against a NuoDB connection object.
   void doCommit();
 
-  // Internal release method that works against a NuoDB connection object.
-  void doRelease();
+  // Internal close method that works against a NuoDB connection object.
+  void doClose();
 
   // Async worker for creating connections.
   friend class njsConnectAsyncWorker;
   // Async worker for committing transactions.
   friend class njsCommitAsyncWorker;
   // Async worker for releasing connections.
-  friend class njsReleaseAsyncWorker;
+  friend class njsCloseAsyncWorker;
 
   NuoDB::Connection *connection;
 };

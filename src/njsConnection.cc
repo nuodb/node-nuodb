@@ -18,7 +18,7 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
 
   Napi::Function func = DefineClass(env, "Connection",
                                     {InstanceMethod("connect", &njsConnection::Connect),
-                                     InstanceMethod("release", &njsConnection::Release),
+                                     InstanceMethod("close", &njsConnection::Close),
                                      InstanceMethod("commit", &njsConnection::Commit)});
 
   constructor = Napi::Persistent(func);
@@ -255,8 +255,15 @@ public:
    */
   void Execute()
   {
-    // try-catch
-    target.doCommit();
+    try
+    {
+      target.doCommit();
+    }
+    catch (std::exception &e)
+    {
+      std::string message = std::string("Failed to commit transaction: ") + e.what();
+      this->SetError(message);
+    }
   }
 
   /**
@@ -306,8 +313,16 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
   else if (info.Length() == 0)
   {
     auto deferred = Napi::Promise::Deferred::New(env);
-    this->doCommit();
-    deferred.Resolve(this->Value());
+    try
+    {
+      this->doCommit();
+      deferred.Resolve(this->Value());
+    }
+    catch (std::exception &e)
+    {
+      std::string message = std::string("Failed to commit transaction: ") + e.what();
+      deferred.Reject(Napi::TypeError::New(env, message).Value());
+    }
     return deferred.Promise();
   }
   else
@@ -319,34 +334,26 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
 
 void njsConnection::doCommit()
 {
-  TRACE("doConnect");
-
-  /*
-  // todo automatically free properties
-  NuoDB::Properties *properties = connection->allocProperties();
-  properties->putValue("user", ((std::string)user).c_str());
-  properties->putValue("password", ((std::string)password).c_str());
-
-  try {
-    // todo: change from hard-coded database name to connection string
-    connection->openDatabase("fake-db-name", properties);
-  } catch (NuoDB::SQLException & exception) {
-    // todo: exception.getText()
-    Napi::Error::New(env, "Failed to open database").ThrowAsJavaScriptException();
-    return info.Env().Undefined();
+  TRACE("doCommit");
+  try
+  {
+    connection->commit();
   }
-  */
+  catch (NuoDB::SQLException &e)
+  {
+    throw std::runtime_error(e.getText());
+  }
 }
 
-class njsReleaseAsyncWorker : public Napi::AsyncWorker
+class njsCloseAsyncWorker : public Napi::AsyncWorker
 {
 public:
-  njsReleaseAsyncWorker(const Napi::Function &callback, njsConnection &target)
+  njsCloseAsyncWorker(const Napi::Function &callback, njsConnection &target)
       : Napi::AsyncWorker(callback), target(target)
   {
   }
 
-  ~njsReleaseAsyncWorker()
+  ~njsCloseAsyncWorker()
   {
   }
 
@@ -357,8 +364,15 @@ public:
    */
   void Execute()
   {
-    // try-catch
-    target.doRelease();
+    try
+    {
+      target.doClose();
+    }
+    catch (std::exception &e)
+    {
+      std::string message = std::string("Failed to close connection: ") + e.what();
+      this->SetError(message);
+    }
   }
 
   /**
@@ -375,9 +389,9 @@ private:
   njsConnection &target;
 };
 
-Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
+Napi::Value njsConnection::Close(const Napi::CallbackInfo &info)
 {
-  TRACE("Release");
+  TRACE("Close");
 
   Napi::Env env = info.Env();
 
@@ -391,7 +405,7 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
     }
     Napi::Function callback = info[0].As<Napi::Function>();
 
-    njsReleaseAsyncWorker *asyncWorker = new njsReleaseAsyncWorker(callback, *this);
+    njsCloseAsyncWorker *asyncWorker = new njsCloseAsyncWorker(callback, *this);
     asyncWorker->Queue();
     return info.Env().Undefined();
   }
@@ -399,8 +413,16 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
   else if (info.Length() == 0)
   {
     auto deferred = Napi::Promise::Deferred::New(env);
-    this->doRelease();
-    deferred.Resolve(this->Value());
+    try
+    {
+      this->doClose();
+      deferred.Resolve(this->Value());
+    }
+    catch (std::exception &e)
+    {
+      std::string message = std::string("Failed to close connection: ") + e.what();
+      deferred.Reject(Napi::TypeError::New(env, message).Value());
+    }
     return deferred.Promise();
   }
   else
@@ -410,14 +432,15 @@ Napi::Value njsConnection::Release(const Napi::CallbackInfo &info)
   }
 }
 
-void njsConnection::doRelease()
+void njsConnection::doClose()
 {
-  TRACE("doRelease");
-  // try {
-  //   // todo: change from hard-coded database name to connection string
-  //   connection->close();
-  // } catch (NuoDB::SQLException & exception) {
-  //   // todo: exception.getText()
-  //   Napi::Error::New(env, "Failed to close connection").ThrowAsJavaScriptException();
-  // }
+  TRACE("doClose");
+  try
+  {
+    connection->close();
+  }
+  catch (NuoDB::SQLException &e)
+  {
+    throw std::runtime_error(e.getText());
+  }
 }

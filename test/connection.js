@@ -10,7 +10,7 @@ describe('2. testing connections', function () {
   it('2.1 properly open and release connections', function (done) {
     connection.connect(config, function (err, connection) {
       should.not.exist(err);
-      connection.release(function (err) {
+      connection.close(function (err) {
         should.not.exist(err);
         // verify here that setting a property raises an exception...
         done();
