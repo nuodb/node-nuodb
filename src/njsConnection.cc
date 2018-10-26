@@ -36,7 +36,7 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
     // N-API makes it exceedingly hard to implement RAII. The only way to implement RAII
     // is to wrap the Napi::CallbackInfo instance with a new Napi::Object, and pass that
     // as the only argument (so that later on in the constructor we can unwrap and get at
-    // the original argument list); this is effect to permit varargs C++ constructors.
+    // the original argument list); this is to effectively permit varargs C++ constructors.
     //
     // That seemed like a real headache, so we opted for the latter, to have the constructor
     // called, have it do nothing, and then delegate all the real work to the Connect method
@@ -56,10 +56,6 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
     Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
     return env.Undefined();
   }
-  // Napi::Env env = info.Env();
-  // Napi::Object obj = Napi::Object::New(env);
-  // obj.Set(Napi::String::New(env, "msg"), info[0].ToString());
-  // return obj;
 }
 
 void njsConnection::hello(std::string msg)
