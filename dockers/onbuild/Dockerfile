@@ -1,4 +1,6 @@
-FROM nuodb/node-nuodb:3.3.0-centos
+ARG VERSION
+
+FROM nuodb/node-nuodb:${VERSION}-centos
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

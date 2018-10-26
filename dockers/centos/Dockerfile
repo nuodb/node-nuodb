@@ -7,7 +7,6 @@ FROM nuodb/nuodb-ce:latest AS nuodb
 # build image
 
 FROM node:8.12.0-centos AS build
-#FROM centos/nodejs-8-centos7:latest AS build
 
 RUN yum -y update && yum -y install git gcc gcc-c++ make python
 
