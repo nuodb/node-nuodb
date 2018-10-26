@@ -13,6 +13,18 @@ test: build
 run-build:
 	docker run -it --network nuodb-net --rm nuodb/node-nuodb:3.3.0-build bash
 
+.PHONY: onbuild
+onbuild:
+	docker build -f dockers/onbuild/Dockerfile -t nuodb/node-nuodb:3.3.0-onbuild .
+
+.PHONY: example
+example:
+	cd examples/docker/ && docker build -t nuodb/node-nuodb:3.3.0-example .
+
+.PHONY: run-example
+run-example:
+	docker run -it --name example --rm --network nuodb-net nuodb/node-nuodb:3.3.0-example bash
+
 .PHONY: release
 release:
 	docker build --target release -f dockers/centos/Dockerfile -t nuodb/node-nuodb:3.3.0-centos .

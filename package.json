@@ -9,6 +9,9 @@
     "addon",
     "driver"
   ],
+  "engines": {
+    "node": ">=8"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/rbuck/node-nuodb.git"
