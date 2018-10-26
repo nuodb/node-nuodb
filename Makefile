@@ -34,7 +34,7 @@ example:
 
 .PHONY: run-example
 run-example:
-	docker run -it --name example --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-example bash
+	docker run -it --name example --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-example
 
 .PHONY: release
 release:

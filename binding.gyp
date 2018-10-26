@@ -14,8 +14,8 @@
         "nuodb_home": "<!(echo ${NUODB_HOME-\"/opt/nuodb\"})"
       },
       "sources": [
-        "src/addon.cc",
-        "src/njsConnection.cc"
+        "src/addon.cpp",
+        "src/njsConnection.cpp"
       ],
       "include_dirs": [
         "/opt/nuodb/include/",
