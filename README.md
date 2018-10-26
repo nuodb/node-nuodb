@@ -39,7 +39,7 @@ GNU make is used to simplify the build process. The following table details
 the makefile targets available:
 
 | Target  	|  Description 	|  Applicability 	|
-|---	|---	|---	|---	|---	|
+|---	|---	|---	|
 |  clean  |  Cleans up any build artifacts 	|  Build and test   |
 |  all	|  Runs the `clean` and `release` targets 	|  Build and release 	|
 |  version 	|  Displays the current release version (see package.json) 	|  Used as the version for Dockers and NPM packages   |
