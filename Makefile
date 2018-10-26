@@ -7,6 +7,11 @@ version:
 .PHONY: all
 all: clean release
 
+.PHONY: uncrustify
+uncrustify:
+	uncrustify -c build-support/uncrustify.cfg --replace --no-backup src/*.h
+	uncrustify -c build-support/uncrustify.cfg --replace --no-backup src/*.cpp
+
 .PHONY: build
 build:
 	docker build --target build --network nuodb-net -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
