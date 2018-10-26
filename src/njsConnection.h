@@ -17,11 +17,19 @@ public:
   // Initialize the class system with connection type info.
   static Napi::Object Init(Napi::Env env, Napi::Object exports);
 
-  // Constructor
+  // Constructs an object that wraps the value provided by the user.
+  // The object returned from NewInstance is callback.info[0] passed
+  // to the class constructor further below.
+  static Napi::Value NewInstance(const Napi::CallbackInfo &info);
+
+  // Constructs a connection object from the value created in
+  // NewInstance, above, which is in info[0].
   njsConnection(const Napi::CallbackInfo &info);
 
 private:
   static Napi::FunctionReference constructor;
+
+  void hello(std::string msg);
 
   // Connect to a database asynchronously.
   Napi::Value Connect(const Napi::CallbackInfo &info);
@@ -61,6 +69,8 @@ private:
   friend class njsCloseAsyncWorker;
 
   NuoDB::Connection *connection;
+  bool open;
+
 };
 
 #endif

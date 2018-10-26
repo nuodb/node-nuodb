@@ -20,6 +20,8 @@
 
 3. Add tests
 
+- Add negative test to check closing multiple times, produces specific error message.
+
 4. Troubleshooting
 
 5. Debugging tests

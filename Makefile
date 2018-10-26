@@ -9,6 +9,10 @@ build:
 test: build
 	docker run -it --name ntest --rm --network nuodb-net nuodb/node-nuodb:3.3.0-build npm run test
 
+.PHONY: run-build
+run-build:
+	docker run -it --network nuodb-net --rm nuodb/node-nuodb:3.3.0-build bash
+
 .PHONY: release
 release:
 	docker build --target release -f dockers/centos/Dockerfile -t nuodb/node-nuodb:3.3.0-centos .

@@ -1,1 +1,1 @@
-var addon = module.exports = require('bindings')('addon.node');
+var nuodb = module.exports = require('bindings')('addon.node');

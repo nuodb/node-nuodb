@@ -1,6 +1,8 @@
 #ifndef NJS_ADDON_H
 #define NJS_ADDON_H
 
+#include <napi.h>
+
 #define NDEBUG
 
 #ifdef NDEBUG

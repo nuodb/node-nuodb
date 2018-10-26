@@ -17,15 +17,54 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
   Napi::HandleScope scope(env);
 
   Napi::Function func = DefineClass(env, "Connection",
-                                    {InstanceMethod("connect", &njsConnection::Connect),
-                                     InstanceMethod("close", &njsConnection::Close),
+                                    {InstanceMethod("close", &njsConnection::Close),
                                      InstanceMethod("commit", &njsConnection::Commit)});
 
   constructor = Napi::Persistent(func);
   constructor.SuppressDestruct();
 
   exports.Set("Connection", func);
+
   return exports;
+}
+
+/* static */ Napi::Value njsConnection::NewInstance(const Napi::CallbackInfo &info)
+{
+  Napi::Env env = info.Env();
+  try
+  {
+    // N-API makes it exceedingly hard to implement RAII. The only way to implement RAII
+    // is to wrap the Napi::CallbackInfo instance with a new Napi::Object, and pass that
+    // as the only argument (so that later on in the constructor we can unwrap and get at
+    // the original argument list); this is effect to permit varargs C++ constructors.
+    //
+    // That seemed like a real headache, so we opted for the latter, to have the constructor
+    // called, have it do nothing, and then delegate all the real work to the Connect method
+    // of the unwrapped object.
+    Napi::EscapableHandleScope scope(env);
+    // Construct and permit the object to survive the lifespan of this scope...
+    Napi::Object that = constructor.New({info[0]});
+    scope.Escape(napi_value(that)).ToObject();
+
+    // Connect to the database...
+    njsConnection *c = ObjectWrap::Unwrap(that);
+    return c->Connect(info);
+  }
+  catch (std::exception &e)
+  {
+    std::string message = std::string("Failed to create new connection: ") + e.what();
+    Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+  // Napi::Env env = info.Env();
+  // Napi::Object obj = Napi::Object::New(env);
+  // obj.Set(Napi::String::New(env, "msg"), info[0].ToString());
+  // return obj;
+}
+
+void njsConnection::hello(std::string msg)
+{
+  printf(msg.c_str());
 }
 
 njsConnection::njsConnection(const Napi::CallbackInfo &info) : Napi::ObjectWrap<njsConnection>(info)
@@ -34,6 +73,7 @@ njsConnection::njsConnection(const Napi::CallbackInfo &info) : Napi::ObjectWrap<
   Napi::HandleScope scope(env);
   try
   {
+    open = false;
     connection = NuoDB::Connection::create();
   }
   catch (NuoDB::SQLException &exception)
@@ -218,6 +258,11 @@ void njsConnection::doConnect(njsConfig &config)
 {
   TRACE("doConnect");
 
+  if (open)
+  {
+    throw std::runtime_error("connection already open");
+  }
+
   std::ostringstream connection_string;
   connection_string << config.options["database"] << "@" << config.options["hostname"] << ":" << config.options["port"];
 
@@ -229,6 +274,7 @@ void njsConnection::doConnect(njsConfig &config)
   try
   {
     connection->openDatabase(connection_string.str().c_str(), props);
+    open = true;
   }
   catch (NuoDB::SQLException &e)
   {
@@ -261,8 +307,7 @@ public:
     }
     catch (std::exception &e)
     {
-      std::string message = std::string("Failed to commit transaction: ") + e.what();
-      this->SetError(message);
+      this->SetError(e.what());
     }
   }
 
@@ -320,8 +365,7 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
     }
     catch (std::exception &e)
     {
-      std::string message = std::string("Failed to commit transaction: ") + e.what();
-      deferred.Reject(Napi::TypeError::New(env, message).Value());
+      deferred.Reject(Napi::TypeError::New(env, e.what()).Value());
     }
     return deferred.Promise();
   }
@@ -335,6 +379,12 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo &info)
 void njsConnection::doCommit()
 {
   TRACE("doCommit");
+
+  if (!open)
+  {
+    throw std::runtime_error("connection closed or invalid");
+  }
+
   try
   {
     connection->commit();
@@ -435,8 +485,15 @@ Napi::Value njsConnection::Close(const Napi::CallbackInfo &info)
 void njsConnection::doClose()
 {
   TRACE("doClose");
+
+  if (!open)
+  {
+    throw std::runtime_error("connection already closed");
+  }
+
   try
   {
+    open = false;
     connection->close();
   }
   catch (NuoDB::SQLException &e)
