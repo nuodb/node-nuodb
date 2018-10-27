@@ -30,7 +30,7 @@ onbuild:
 
 .PHONY: example
 example:
-	cd examples/docker/ && docker build -t nuodb/node-nuodb:$(VERSION)-example .
+	cd examples/docker/ && docker build --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-example .
 
 .PHONY: run-example
 run-example:
@@ -45,6 +45,7 @@ clean:
 	docker rmi -f nuodb/node-nuodb:$(VERSION)-build
 	docker rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
 	docker rmi -f nuodb/node-nuodb:$(VERSION)-centos
+	docker rmi -f nuodb/node-nuodb:$(VERSION)-example
 	rm -fr build node_modules
 	docker rm $(docker ps --all -q -f status=exited)
 	docker image prune -y

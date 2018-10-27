@@ -32,7 +32,6 @@ RUN node --napi-modules addon.js
 # -------------------------------------
 # release image
 
-#FROM centos/nodejs-8-centos7:latest AS build
 FROM node:8.12.0-centos AS release
 
 COPY --from=build /opt/nuodb/lib64 /opt/nuodb/lib64

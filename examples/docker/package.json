@@ -15,6 +15,6 @@
   "license": "MIT",
   "dependencies": {
     "package.json": "^2.0.1",
-    "nuodb": "^3.3.0"
+    "nuodb": "^3.0.0"
   }
 }

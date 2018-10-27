@@ -1,1 +1,2 @@
-FROM nuodb/node-nuodb:3.3.0-onbuild
+ARG VERSION
+FROM nuodb/node-nuodb:${VERSION}-onbuild
