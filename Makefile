@@ -42,6 +42,8 @@ release:
 
 .PHONY: clean
 clean:
+	docker rmi -f nuodb/node-nuodb:$(VERSION)-build
+	docker rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
 	docker rmi -f nuodb/node-nuodb:$(VERSION)-centos
 	rm -fr build node_modules
 	docker rm $(docker ps --all -q -f status=exited)
