@@ -24,7 +24,6 @@
     "NuoDB, Inc."
   ],
   "license": "MIT",
-  "gypfile": true,
   "private": true,
   "dependencies": {
     "bindings": "~1.2.1",
@@ -38,7 +37,6 @@
     "should": "^13.2.3"
   },
   "scripts": {
-    "build": "node-gyp rebuild --release",
     "test": "node_modules/.bin/mocha"
   }
 }

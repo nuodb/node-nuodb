@@ -40,6 +40,18 @@ private:
     // Release a database connection asynchronously.
     Napi::Value Close(const Napi::CallbackInfo& info);
 
+    // Get the auto commit mode synchronously (accessor).
+    Napi::Value GetAutoCommit(const Napi::CallbackInfo& info);
+
+    // Set the auto commit mode synchronously (accessor).
+    void SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value);
+
+    // Get the read only mode synchronously (accessor).
+    Napi::Value GetReadOnly(const Napi::CallbackInfo& info);
+
+    // Set the read only mode synchronously (accessor).
+    void SetReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value);
+
     // Gets a config from the given NAPI object.
     void getConfig(Napi::Env env, Napi::Object object, njsConfig& config);
     // Gets a string option from an object.
