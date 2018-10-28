@@ -24,7 +24,8 @@ inclusive of unit tests. The steps and current status are:
 
 |   STEP  |   STATUS  |  DURATION |
 |---------|:-------------:|------:|
-| Commit        | NEEDS TESTS | 2d |
+| Commit        | DONE | 2d |
+| Read-Only + Auto-Commit        | DONE | 1d |
 | Execute       | --- | 2d |
 | Results       | --- | 5d |
 | Prepare       | --- | 5d |
