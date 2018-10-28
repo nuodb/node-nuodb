@@ -26,8 +26,8 @@ inclusive of unit tests. The steps and current status are:
 |---------|:-------------:|------:|
 | Commit        | DONE | 2d |
 | Read-Only + Auto-Commit        | DONE | 1d |
-| Execute       | --- | 2d |
-| Results       | --- | 5d |
+| Execute       | WIP | 2d |
+| Results       | WIP | 5d |
 | Prepare       | --- | 5d |
 
 The goal of the third phase is to stabilize and tune the integration.
