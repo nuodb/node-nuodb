@@ -93,13 +93,13 @@ void njsConnection::setOption(Napi::Env env, Napi::Object object, njsConfig& con
         std::string err_message = std::string("config missing key: ") + key;
         throw std::runtime_error(err_message);
     }
-    config.options[key] = this->getNamedPropertyString(env, object, key).ToString();
+    config.options[key] = getNamedPropertyString(env, object, key).ToString();
 }
 
 void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, std::string value)
 {
     if (object.Has(key)) {
-        value = this->getNamedPropertyString(env, object, key).ToString();
+        value = getNamedPropertyString(env, object, key).ToString();
     }
     config.options[key] = value;
 }
@@ -107,18 +107,18 @@ void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsCo
 void njsConnection::getConfig(Napi::Env env, Napi::Object object, njsConfig& config)
 {
     // get the database name (required)
-    this->setOption(env, object, config, "database", true);
+    setOption(env, object, config, "database", true);
     // get the user name (required)
-    this->setOption(env, object, config, "user", true);
+    setOption(env, object, config, "user", true);
     // get the password (required)
-    this->setOption(env, object, config, "password", true);
+    setOption(env, object, config, "password", true);
 
     // get the host name (optional, default to localhost)
-    this->setOptionOrDefault(env, object, config, "hostname", "localhost");
+    setOptionOrDefault(env, object, config, "hostname", "localhost");
     // get the port (optional, default to 48004)
-    this->setOptionOrDefault(env, object, config, "port", "48004");
+    setOptionOrDefault(env, object, config, "port", "48004");
     // get the schema (optional, default is USER)
-    this->setOptionOrDefault(env, object, config, "schema", "USER");
+    setOptionOrDefault(env, object, config, "schema", "USER");
 }
 
 class njsConnectAsyncWorker : public Napi::AsyncWorker
@@ -145,7 +145,7 @@ public:
             target.doConnect(*config);
         } catch (std::exception& e) {
             std::string message = std::string("Failed to open database: ") + e.what();
-            this->SetError(message);
+            SetError(message);
         }
     }
 
@@ -210,8 +210,8 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
     else if (info.Length() == 1) {
         auto deferred = Napi::Promise::Deferred::New(env);
         try {
-            this->doConnect(*config);
-            deferred.Resolve(this->Value());
+            doConnect(*config);
+            deferred.Resolve(Value());
         } catch (std::exception& e) {
             std::string message = std::string("Failed to open database: ") + e.what();
             deferred.Reject(Napi::TypeError::New(env, message).Value());
@@ -267,7 +267,7 @@ public:
         try {
             target.doCommit();
         } catch (std::exception& e) {
-            this->SetError(e.what());
+            SetError(e.what());
         }
     }
 
@@ -315,8 +315,8 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo& info)
     else if (info.Length() == 0) {
         auto deferred = Napi::Promise::Deferred::New(env);
         try {
-            this->doCommit();
-            deferred.Resolve(this->Value());
+            doCommit();
+            deferred.Resolve(Value());
         } catch (std::exception& e) {
             deferred.Reject(Napi::TypeError::New(env, e.what()).Value());
         }
@@ -363,7 +363,7 @@ public:
             target.doClose();
         } catch (std::exception& e) {
             std::string message = std::string("Failed to close connection: ") + e.what();
-            this->SetError(message);
+            SetError(message);
         }
     }
 
@@ -403,8 +403,8 @@ Napi::Value njsConnection::Close(const Napi::CallbackInfo& info)
     else if (info.Length() == 0) {
         auto deferred = Napi::Promise::Deferred::New(env);
         try {
-            this->doClose();
-            deferred.Resolve(this->Value());
+            doClose();
+            deferred.Resolve(Value());
         } catch (std::exception& e) {
             std::string message = std::string("Failed to close connection: ") + e.what();
             deferred.Reject(Napi::TypeError::New(env, message).Value());
