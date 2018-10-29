@@ -3,9 +3,9 @@
 
 #include <napi.h>
 
-#define NDEBUG
+// #define DEBUG
 
-#ifdef NDEBUG
+#ifdef DEBUG
 # define LOG(msg) fprintf(stderr, "%s\n", msg);
 # define TRACEF(format, arg) fprintf(stderr, format, arg);
 #else

@@ -1,7 +1,6 @@
 VERSION:=$(shell jq -r .version package.json)
 UNCRUSTIFY:=uncrustify
 DOCKER:=docker
-HELP:=$(shell sed -n s'/^#:help://p' Makefile)
 
 #:help: help        | Displays the GNU makefile help
 .PHONY: help
