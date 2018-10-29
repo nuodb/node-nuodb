@@ -1,4 +1,4 @@
-VERSION=$(shell jq -r .version package.json)
+VERSION:=$(shell jq -r .version package.json)
 
 .PHONY: version
 version:
