@@ -98,8 +98,9 @@ void njsConnection::setOption(Napi::Env env, Napi::Object object, njsConfig& con
     }
 }
 
-void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, std::string value)
+void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, std::string defaultValue)
 {
+    std::string value = defaultValue;
     if (object.Has(key)) {
         value = getNamedPropertyString(env, object, key).ToString();
     }
