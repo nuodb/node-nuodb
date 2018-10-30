@@ -1,4 +1,4 @@
-var nuodb = require('../addon');
+var nuodb = require('../');
 var async = require('async');
 var should = require('should');
 var config = require('./config.js');

@@ -63,13 +63,13 @@ release:
 #:help: clean       | Cleans up any build artifacts
 .PHONY: clean
 clean:
-	$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-build
-	$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
-	$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-centos
-	$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-example
-	rm -fr build node_modules
-	$(DOCKER) rm $(docker ps --all -q -f status=exited)
-	$(DOCKER) image prune -y
+	@$(DOCKER) rm $(docker ps --all -q -f status=exited) || true
+	@$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-build
+	@$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
+	@$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-centos
+	@$(DOCKER) rmi -f nuodb/node-nuodb:$(VERSION)-example
+	@$(DOCKER) image prune -f
+	@rm -fr build node_modules
 
 #:help: up          | Starts up a NuoDB cluster
 .PHONY: up
@@ -80,6 +80,19 @@ up:
 .PHONY: status
 status:
 	build-support/scripts/status
+
+#:help: term        | Opens up a terminal to a running NuoDB cluster
+.PHONY: term
+term:
+	@echo "Welcome to NuoDB"
+	@echo ""
+	@echo "   To open a SQL prompt run the following command:"
+	@echo "      nuosql test@ad1 --user dba --password dba"
+	@echo ""
+	@echo "   To show what's running in the domain run the following command:"
+	@echo "      nuocmd --api-server ad1:8888 show domain"
+	@echo ""
+	@build-support/scripts/term
 
 #:help: dn          | Stops the NuoDB cluster
 .PHONY: dn
