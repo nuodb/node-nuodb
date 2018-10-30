@@ -55,8 +55,8 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
         // So you're seeing a whole lot of C++ here as we're using classes
         // in the Napi namespace. For the moment, set aside any assumptions
         // you have with regards to C++, and in reality don your C hat
-        // instead... 
-        // 
+        // instead...
+        //
         // What these lines of code say is, in the executing environment
         // (the main event loop thread and related data structures), set
         // up the runtime so that when you exit the addon and return to
