@@ -1,4 +1,4 @@
-var nuodb = require('../');
+var nuodb = require('nuodb');
 
 var config = {};
 

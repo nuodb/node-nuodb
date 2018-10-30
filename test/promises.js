@@ -7,13 +7,11 @@ var config = require('./config.js');
 
 describe('3. testing promises', function () {
   it('3.1 returns a promise from Connection.connect', function (done) {
-    var connection = new nuodb.Connection();
-    connection.connect(config)
+    nuodb.connect(config)
       .then(function (connection) {
         connection.should.be.ok();
-        connection.release(function (err) {
+        connection.close(function (err) {
           should.not.exist(err);
-          // verify here that setting a property raises an exception...
           return done();
         });
       })

@@ -6,7 +6,7 @@
 
 /**
  * Represents a NuoDB database configuration.
- * 
+ *
  * Supported options include:
  * - database
  * - hostname
@@ -17,7 +17,7 @@
  */
 struct njsConfig
 {
-  std::unordered_map<std::string, std::string> options;
+    std::unordered_map<std::string, std::string> options;
 };
 
 #endif

@@ -7,60 +7,69 @@
 
 // nuodb emits lots of warnings about this; so disable it
 #ifdef __APPLE__
-#pragma clang diagnostic ignored "-Woverloaded-virtual"
+# pragma clang diagnostic ignored "-Woverloaded-virtual"
 #endif
 #include "NuoDB.h"
 
 class njsConnection : public Napi::ObjectWrap<njsConnection>
 {
 public:
-  // Initialize the class system with connection type info.
-  static Napi::Object Init(Napi::Env env, Napi::Object exports);
+    // Initialize the class system with connection type info.
+    static Napi::Object Init(Napi::Env env, Napi::Object exports);
 
-  // Constructor
-  njsConnection(const Napi::CallbackInfo &info);
+    // Constructs an object that wraps the value provided by the user.
+    // The object returned from NewInstance is callback.info[0] passed
+    // to the class constructor further below.
+    static Napi::Value NewInstance(const Napi::CallbackInfo& info);
+
+    // Constructs a connection object from the value created in
+    // NewInstance, above, which is in info[0].
+    njsConnection(const Napi::CallbackInfo& info);
 
 private:
-  static Napi::FunctionReference constructor;
+    static Napi::FunctionReference constructor;
 
-  // Connect to a database asynchronously.
-  Napi::Value Connect(const Napi::CallbackInfo &info);
+    void hello(std::string msg);
 
-  // Commit a database transaction asynchronously.
-  Napi::Value Commit(const Napi::CallbackInfo &info);
+    // Connect to a database asynchronously.
+    Napi::Value Connect(const Napi::CallbackInfo& info);
 
-  // Release a database connection asynchronously.
-  Napi::Value Release(const Napi::CallbackInfo &info);
+    // Commit a database transaction asynchronously.
+    Napi::Value Commit(const Napi::CallbackInfo& info);
 
-  // Gets a config from the given NAPI object.
-  void getConfig(Napi::Env env, Napi::Object object, njsConfig &config);
-  // Gets a string option from an object.
-  Napi::Value getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key);
-  // Sets an option from the named property in the object into the configuration.
-  void setOption(Napi::Env env, Napi::Object object, njsConfig &config, std::string key, bool required);
-  // Sets an option from the named property in the object into the configuration; if the value does not exist use the provided default value.
-  void setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig &config, std::string key, std::string value);
+    // Release a database connection asynchronously.
+    Napi::Value Close(const Napi::CallbackInfo& info);
 
-  // Get connection string.
-  std::string getConnectionString(const njsConfig &config);
+    // Gets a config from the given NAPI object.
+    void getConfig(Napi::Env env, Napi::Object object, njsConfig& config);
+    // Gets a string option from an object.
+    Napi::Value getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key);
+    // Sets an option from the named property in the object into the configuration.
+    void setOption(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, bool required);
+    // Sets an option from the named property in the object into the configuration; if the value does not exist use the provided default value.
+    void setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, std::string value);
 
-  // Internal connect method that works against a NuoDB connection object.
-  void doConnect(njsConfig &config);
+    // Get connection string.
+    std::string getConnectionString(const njsConfig& config);
 
-  // Internal commit method that works against a NuoDB connection object.
-  void doCommit();
+    // Internal connect method that works against a NuoDB connection object.
+    void doConnect(njsConfig& config);
 
-  // Internal release method that works against a NuoDB connection object.
-  void doRelease();
+    // Internal commit method that works against a NuoDB connection object.
+    void doCommit();
 
-  // Async worker for creating connections.
-  friend class njsConnectAsyncWorker;
-  // Async worker for committing transactions.
-  friend class njsCommitAsyncWorker;
-  // Async worker for releasing connections.
-  friend class njsReleaseAsyncWorker;
+    // Internal close method that works against a NuoDB connection object.
+    void doClose();
 
-  NuoDB::Connection *connection;
+    // Async worker for creating connections.
+    friend class njsConnectAsyncWorker;
+    // Async worker for committing transactions.
+    friend class njsCommitAsyncWorker;
+    // Async worker for releasing connections.
+    friend class njsCloseAsyncWorker;
+
+    NuoDB::Connection* connection;
+    bool open;
 };
 
 #endif

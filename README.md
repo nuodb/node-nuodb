@@ -22,13 +22,38 @@ See the [examples][30] directory.  Start with
 
 Issues and questions about node-nuodb can be posted on [GitHub][3].
 
-## Tests
-
-To run the test suite see [test/README][34].
-
 ## Build and Test
 
-To build and test a "build" Docker image:
+### Dependencies
+
+In order to build the driver you need the following:
+
+- Docker CE (latest)
+- GNU Make (to simplify builds)
+- JQ (to make sure all version numbers are consistent)
+- Git (to download the source)
+
+### Building
+
+GNU make is used to simplify the build process. The following table details
+the makefile targets available:
+
+| Target  	|  Description 	|  Applicability 	|
+|---	|---	|---	|
+|  clean  |  Cleans up any build artifacts 	|  Build and test   |
+|  all	|  Runs the `clean` and `release` targets 	|  Build and release 	|
+|  version 	|  Displays the current release version (see package.json) 	|  Used as the version for Dockers and NPM packages   |
+|  build 	|  Creates a `build` Docker image variant 	|  Debugging / Testing  	|
+|  release	|  Creates a `release` Docker image 	|  Distribution to customers   |
+|  onbuild 	|  Creates an `ONBUILD` Docker image variant 	|  Distribution to customers for application integration and development 	|
+|  example 	|  Creates an `example` Docker image based upon `ONBUILD` 	|  Example integration for customers 	|
+|  run-build 	|  Runs the `build` Docker variant 	|  Debugging 	|
+|  run-example 	|  Runs the `example` Docker variant 	|  Show a demo 	|
+|  up 	|  Starts up a NuoDB cluster 	|  Debug and test 	| 
+|  status 	|  Shows the NuoDB cluster status 	|  Debug and test 	|
+|  dn 	|  Stops the NuoDB cluster 	|  Debug and test 	|
+
+To build and test a `build` Docker image:
 
 ```bash
 $ make up
@@ -42,6 +67,10 @@ To build a release image for distribution:
 ```bash
 $ make release
 ```
+
+## Tests
+
+To run the test suite see [test/README][34].
 
 ## License
 

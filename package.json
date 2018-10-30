@@ -1,6 +1,6 @@
 {
-  "name": "addon",
-  "version": "3.3.0",
+  "name": "nuodb",
+  "version": "3.0.0",
   "description": "NuoDB Node.js Driver (C++ Add-on)",
   "main": "addon.js",
   "keywords": [
@@ -9,6 +9,9 @@
     "addon",
     "driver"
   ],
+  "engines": {
+    "node": ">=8"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/rbuck/node-nuodb.git"
