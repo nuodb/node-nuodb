@@ -89,12 +89,11 @@ Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object ob
 
 void njsConnection::setOption(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, bool required)
 {
-    if (required && !object.Has(key)) {
-        std::string err_message = std::string("config missing key: ") + key;
-        throw std::runtime_error(err_message);
-    }
     if (object.Has(key)) {
         config.options[key] = getNamedPropertyString(env, object, key).ToString();
+    } else if (required) {
+        std::string err_message = std::string("config missing key: ") + key;
+        throw std::runtime_error(err_message);
     }
 }
 
