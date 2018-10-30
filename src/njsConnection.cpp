@@ -16,9 +16,12 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::HandleScope scope(env);
 
-    Napi::Function func = DefineClass(env, "Connection",
-                                      { InstanceMethod("close", &njsConnection::Close),
-                                        InstanceMethod("commit", &njsConnection::Commit) });
+    Napi::Function func = DefineClass(env, "Connection", {
+        InstanceAccessor("autoCommit", &njsConnection::GetAutoCommit, &njsConnection::SetAutoCommit),
+        InstanceAccessor("readOnly", &njsConnection::GetReadOnly, &njsConnection::SetReadOnly),
+        InstanceMethod("close", &njsConnection::Close),
+        InstanceMethod("commit", &njsConnection::Commit)
+    });
 
     constructor = Napi::Persistent(func);
     constructor.SuppressDestruct();
@@ -67,7 +70,7 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
         //
         // N.B.   NO C++ EXCEPTION IS BEING THROWN HERE  !!!
         std::string message = std::string("Failed to create new connection: ") + e.what();
-        Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
+        Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return env.Undefined();
     }
 }
@@ -93,7 +96,7 @@ njsConnection::njsConnection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<
 Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key)
 {
     if (!object.Has(key)) {
-        Napi::TypeError::New(env, "Missing " + key).ThrowAsJavaScriptException();
+        Napi::Error::New(env, "Missing " + key).ThrowAsJavaScriptException();
         return env.Undefined();
     }
     Napi::Value value = object[key];
@@ -193,7 +196,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
     // If we're called async, we have a config object and a callback. If we're
     // dealing with promises, we only have a config object...
     if (info.Length() < 1 || info.Length() > 2) {
-        Napi::TypeError::New(env, "Invalid argument count").ThrowAsJavaScriptException();
+        Napi::Error::New(env, "Invalid argument count").ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
 
@@ -209,7 +212,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
         getConfig(info.Env(), options, *config);
     } catch (std::exception& e) {
         std::string err = std::string("Bad configuration: ") + e.what();
-        Napi::TypeError::New(env, err).ThrowAsJavaScriptException();
+        Napi::Error::New(env, err).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
 
@@ -233,7 +236,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
             deferred.Resolve(Value());
         } catch (std::exception& e) {
             std::string message = std::string("Failed to open database: ") + e.what();
-            deferred.Reject(Napi::TypeError::New(env, message).Value());
+            deferred.Reject(Napi::Error::New(env, message).Value());
         }
         return deferred.Promise();
     } else {
@@ -314,7 +317,7 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo& info)
     // If we're called async, we have a callback. If we're
     // dealing with promises, we have no arguments...
     if (info.Length() > 1) {
-        Napi::TypeError::New(env, "Invalid argument count").ThrowAsJavaScriptException();
+        Napi::Error::New(env, "Invalid argument count").ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
 
@@ -337,7 +340,7 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo& info)
             doCommit();
             deferred.Resolve(Value());
         } catch (std::exception& e) {
-            deferred.Reject(Napi::TypeError::New(env, e.what()).Value());
+            deferred.Reject(Napi::Error::New(env, e.what()).Value());
         }
         return deferred.Promise();
     } else {
@@ -426,7 +429,7 @@ Napi::Value njsConnection::Close(const Napi::CallbackInfo& info)
             deferred.Resolve(Value());
         } catch (std::exception& e) {
             std::string message = std::string("Failed to close connection: ") + e.what();
-            deferred.Reject(Napi::TypeError::New(env, message).Value());
+            deferred.Reject(Napi::Error::New(env, message).Value());
         }
         return deferred.Promise();
     } else {
@@ -448,5 +451,97 @@ void njsConnection::doClose()
         connection->close();
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
+    }
+}
+
+// Get auto-commit mode synchronously.
+Napi::Value njsConnection::GetAutoCommit(const Napi::CallbackInfo& info)
+{
+    TRACE("GetAutoCommit");
+
+    Napi::Env env = info.Env();
+
+    if (!open) {
+        Napi::Error::New(env, "connection closed").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    try {
+        return Napi::Boolean::New(info.Env(), connection->getAutoCommit());
+    } catch (NuoDB::SQLException& e) {
+        Napi::Error::New(env, e.getText()).ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+}
+
+// Set auto-commit mode synchronously.
+void njsConnection::SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value)
+{
+    TRACE("SetAutoCommit");
+
+    Napi::Env env = info.Env();
+
+    if (!open) {
+        Napi::Error::New(env, "connection closed").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (!value.IsBoolean()) {
+        Napi::TypeError::New(env, "Invalid argument types: not boolean").ThrowAsJavaScriptException();
+        return;
+    }
+
+    try {
+        bool mode = value.As<Napi::Boolean>().Value();
+        connection->setAutoCommit(mode);
+    } catch (NuoDB::SQLException& e) {
+        Napi::Error::New(env, e.getText()).ThrowAsJavaScriptException();
+        return;
+    }
+}
+
+// Get read-only mode synchronously.
+Napi::Value njsConnection::GetReadOnly(const Napi::CallbackInfo& info)
+{
+    TRACE("GetReadOnly");
+
+    Napi::Env env = info.Env();
+
+    if (!open) {
+        Napi::Error::New(env, "connection closed").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    try {
+        return Napi::Boolean::New(info.Env(), connection->isReadOnly());
+    } catch (NuoDB::SQLException& e) {
+        Napi::Error::New(env, e.getText()).ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+}
+
+// Set read-only mode synchronously.
+void njsConnection::SetReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value)
+{
+    TRACE("SetReadOnly");
+
+    Napi::Env env = info.Env();
+
+    if (!open) {
+        Napi::Error::New(env, "connection closed").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (!value.IsBoolean()) {
+        Napi::TypeError::New(env, "Invalid argument types: not boolean").ThrowAsJavaScriptException();
+        return;
+    }
+
+    try {
+        bool mode = value.As<Napi::Boolean>().Value();
+        connection->setReadOnly(mode);
+    } catch (NuoDB::SQLException& e) {
+        Napi::Error::New(env, e.getText()).ThrowAsJavaScriptException();
+        return;
     }
 }

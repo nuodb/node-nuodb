@@ -15,11 +15,10 @@ version:
 .PHONY: all
 all: clean release
 
-#:help: uncrustify  | format the C++ source code
-.PHONY: uncrustify
-uncrustify:
-	$(UNCRUSTIFY) -c build-support/uncrustify.cfg --replace --no-backup src/*.h
-	$(UNCRUSTIFY) -c build-support/uncrustify.cfg --replace --no-backup src/*.cpp
+#:help: format      | format the C++ source code
+.PHONY: format
+format:
+	$(UNCRUSTIFY) -c build-support/uncrustify.cfg --replace --no-backup src/*.h src/*.cpp
 
 #:help: build       | Creates a `build` Docker image variant
 .PHONY: build
@@ -29,7 +28,7 @@ build:
 #:help: test        | Runs the `test` target, building and testing the driver.
 .PHONY: test
 test: build
-	$(DOCKER) run -it --name ntest --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	$(DOCKER) run -it --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: run-build   | Runs the `build` Docker variant
 .PHONY: run-build
@@ -50,6 +49,11 @@ example:
 .PHONY: run-example
 run-example:
 	$(DOCKER) run -it --name example --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-example
+
+#:help: package     | Creates a `package` Docker image
+.PHONY: package
+package:
+	$(DOCKER) build --target package -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-package .
 
 #:help: release     | Creates a `release` Docker image
 .PHONY: release

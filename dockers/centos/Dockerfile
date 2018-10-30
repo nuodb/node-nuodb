@@ -22,27 +22,23 @@ COPY package.json /usr/src/nuodb
 RUN npm install --only=production
 
 COPY . /usr/src/nuodb
-RUN npm run build
-
 RUN npm install
+
+# -------------------------------------
+# package image: removes any unnecessary artifacts
+
+FROM build AS package
+
 RUN npm install -g --unsafe-perm
 
-RUN node --napi-modules addon.js
+RUN npm prune --production
+RUN npm dedupe
 
 # -------------------------------------
 # release image
 
 FROM node:8.12.0-centos AS release
 
-COPY --from=build /opt/nuodb/lib64 /opt/nuodb/lib64
-COPY --from=build /usr/src/nuodb /usr/src/nuodb
-COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
-
-# -------------------------------------
-# test image
-
-FROM build AS test
-
-COPY . .
-
-RUN npm run test
+COPY --from=package /opt/nuodb/lib64 /opt/nuodb/lib64
+COPY --from=package /usr/src/nuodb /usr/src/nuodb
+COPY --from=package /usr/local/lib/node_modules /usr/local/lib/node_modules
