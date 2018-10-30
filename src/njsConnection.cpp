@@ -49,6 +49,23 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
         njsConnection* c = ObjectWrap::Unwrap(that);
         return c->Connect(info);
     } catch (std::exception& e) {
+        // The following ThrowAsJavaScriptException and return need to be
+        //  explained to the untrained eye.
+        //
+        // So you're seeing a whole lot of C++ here as we're using classes
+        // in the Napi namespace. For the moment, set aside any assumptions
+        // you have with regards to C++, and in reality don your C hat
+        // instead... 
+        // 
+        // What these lines of code say is, in the executing environment
+        // (the main event loop thread and related data structures), set
+        // up the runtime so that when you exit the addon and return to
+        // the event loop thread, THEN raise an exception on the Javascript
+        // side. And in such cases, incidentally, any return values would
+        // be ignored, so instead of returning an ordinary value or object,
+        // instead return UNDEFINED.
+        //
+        // N.B.   NO C++ EXCEPTION IS BEING THROWN HERE  !!!
         std::string message = std::string("Failed to create new connection: ") + e.what();
         Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
         return env.Undefined();
