@@ -14,15 +14,15 @@ using namespace Napi;
 
 Napi::FunctionReference Connection::constructor;
 
-Napi::Object Connection::Init(Napi::Env env, Napi::Object exports)
+Napi::Object Connection::init(Napi::Env env, Napi::Object exports)
 {
     Napi::HandleScope scope(env);
 
     Napi::Function func = DefineClass(env, "Connection", {
-            InstanceAccessor("autoCommit", &Connection::GetAutoCommit, &Connection::SetAutoCommit),
-            InstanceAccessor("readOnly", &Connection::GetReadOnly, &Connection::SetReadOnly),
-            InstanceMethod("close", &Connection::Close),
-            InstanceMethod("commit", &Connection::Commit)
+            InstanceAccessor("autoCommit", &Connection::getAutoCommit, &Connection::setAutoCommit),
+            InstanceAccessor("readOnly", &Connection::getReadOnly, &Connection::setReadOnly),
+            InstanceMethod("close", &Connection::close),
+            InstanceMethod("commit", &Connection::commit)
         });
 
     constructor = Napi::Persistent(func);
@@ -33,7 +33,7 @@ Napi::Object Connection::Init(Napi::Env env, Napi::Object exports)
     return exports;
 }
 
-/* static */ Napi::Value Connection::NewInstance(const Napi::CallbackInfo& info)
+Napi::Value Connection::newInstance(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     try {
@@ -52,7 +52,7 @@ Napi::Object Connection::Init(Napi::Env env, Napi::Object exports)
 
         // Connect to the database...
         Connection* c = ObjectWrap::Unwrap(that);
-        return c->Connect(info);
+        return c->connect(info);
     } catch (std::exception& e) {
         // The following ThrowAsJavaScriptException and return need to be
         //  explained to the untrained eye.
@@ -189,7 +189,7 @@ private:
 };
 
 // Connect to the database asynchronously.
-Napi::Value Connection::Connect(const Napi::CallbackInfo& info)
+Napi::Value Connection::connect(const Napi::CallbackInfo& info)
 {
     TRACE("Connect");
 
@@ -311,7 +311,7 @@ private:
 };
 
 // Connect to the database asynchronously.
-Napi::Value Connection::Commit(const Napi::CallbackInfo& info)
+Napi::Value Connection::commit(const Napi::CallbackInfo& info)
 {
     TRACE("Commit");
 
@@ -406,7 +406,7 @@ private:
     Connection& target;
 };
 
-Napi::Value Connection::Close(const Napi::CallbackInfo& info)
+Napi::Value Connection::close(const Napi::CallbackInfo& info)
 {
     TRACE("Close");
 
@@ -458,7 +458,7 @@ void Connection::doClose()
 }
 
 // Get auto-commit mode synchronously.
-Napi::Value Connection::GetAutoCommit(const Napi::CallbackInfo& info)
+Napi::Value Connection::getAutoCommit(const Napi::CallbackInfo& info)
 {
     TRACE("GetAutoCommit");
 
@@ -478,7 +478,7 @@ Napi::Value Connection::GetAutoCommit(const Napi::CallbackInfo& info)
 }
 
 // Set auto-commit mode synchronously.
-void Connection::SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value)
+void Connection::setAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
     TRACE("SetAutoCommit");
 
@@ -504,7 +504,7 @@ void Connection::SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Value
 }
 
 // Get read-only mode synchronously.
-Napi::Value Connection::GetReadOnly(const Napi::CallbackInfo& info)
+Napi::Value Connection::getReadOnly(const Napi::CallbackInfo& info)
 {
     TRACE("GetReadOnly");
 
@@ -524,7 +524,7 @@ Napi::Value Connection::GetReadOnly(const Napi::CallbackInfo& info)
 }
 
 // Set read-only mode synchronously.
-void Connection::SetReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value)
+void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
     TRACE("SetReadOnly");
 

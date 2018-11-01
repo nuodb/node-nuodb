@@ -17,12 +17,12 @@ class Connection : public Napi::ObjectWrap<Connection>
 {
 public:
     // Initialize the class system with connection type info.
-    static Napi::Object Init(Napi::Env env, Napi::Object exports);
+    static Napi::Object init(Napi::Env env, Napi::Object exports);
 
     // Constructs an object that wraps the value provided by the user.
     // The object returned from NewInstance is callback.info[0] passed
     // to the class constructor further below.
-    static Napi::Value NewInstance(const Napi::CallbackInfo& info);
+    static Napi::Value newInstance(const Napi::CallbackInfo& info);
 
     // Constructs a connection object from the value created in
     // NewInstance, above, which is in info[0].
@@ -34,25 +34,25 @@ private:
     void hello(std::string msg);
 
     // Connect to a database asynchronously.
-    Napi::Value Connect(const Napi::CallbackInfo& info);
+    Napi::Value connect(const Napi::CallbackInfo& info);
 
     // Commit a database transaction asynchronously.
-    Napi::Value Commit(const Napi::CallbackInfo& info);
+    Napi::Value commit(const Napi::CallbackInfo& info);
 
     // Release a database connection asynchronously.
-    Napi::Value Close(const Napi::CallbackInfo& info);
+    Napi::Value close(const Napi::CallbackInfo& info);
 
     // Get the auto commit mode synchronously (accessor).
-    Napi::Value GetAutoCommit(const Napi::CallbackInfo& info);
+    Napi::Value getAutoCommit(const Napi::CallbackInfo& info);
 
     // Set the auto commit mode synchronously (accessor).
-    void SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void setAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value);
 
     // Get the read only mode synchronously (accessor).
-    Napi::Value GetReadOnly(const Napi::CallbackInfo& info);
+    Napi::Value getReadOnly(const Napi::CallbackInfo& info);
 
     // Set the read only mode synchronously (accessor).
-    void SetReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value);
 
     // Gets a config from the given NAPI object.
     void getConfig(Napi::Env env, Napi::Object object, Config& config);
