@@ -1,9 +1,9 @@
-#ifndef NJS_CONNECTION_H
-#define NJS_CONNECTION_H
+#ifndef NUOJS_CONNECTION_H
+#define NUOJS_CONNECTION_H
 
 #include <napi.h>
-#include "addon.h"
-#include "njsConfig.h"
+#include "NuoJsAddon.h"
+#include "NuoJsConfig.h"
 
 // nuodb emits lots of warnings about this; so disable it
 #ifdef __APPLE__
@@ -11,7 +11,9 @@
 #endif
 #include "NuoDB.h"
 
-class njsConnection : public Napi::ObjectWrap<njsConnection>
+namespace NuoJs
+{
+class Connection : public Napi::ObjectWrap<Connection>
 {
 public:
     // Initialize the class system with connection type info.
@@ -24,7 +26,7 @@ public:
 
     // Constructs a connection object from the value created in
     // NewInstance, above, which is in info[0].
-    njsConnection(const Napi::CallbackInfo& info);
+    Connection(const Napi::CallbackInfo& info);
 
 private:
     static Napi::FunctionReference constructor;
@@ -53,19 +55,19 @@ private:
     void SetReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value);
 
     // Gets a config from the given NAPI object.
-    void getConfig(Napi::Env env, Napi::Object object, njsConfig& config);
+    void getConfig(Napi::Env env, Napi::Object object, Config& config);
     // Gets a string option from an object.
     Napi::Value getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key);
     // Sets an option from the named property in the object into the configuration.
-    void setOption(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, bool required);
+    void setOption(Napi::Env env, Napi::Object object, Config& config, std::string key, bool required);
     // Sets an option from the named property in the object into the configuration; if the value does not exist use the provided default value.
-    void setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, std::string value);
+    void setOptionOrDefault(Napi::Env env, Napi::Object object, Config& config, std::string key, std::string value);
 
     // Get connection string.
-    std::string getConnectionString(const njsConfig& config);
+    std::string getConnectionString(const Config& config);
 
     // Internal connect method that works against a NuoDB connection object.
-    void doConnect(njsConfig& config);
+    void doConnect(Config& config);
 
     // Internal commit method that works against a NuoDB connection object.
     void doCommit();
@@ -74,14 +76,15 @@ private:
     void doClose();
 
     // Async worker for creating connections.
-    friend class njsConnectAsyncWorker;
+    friend class ConnectAsyncWorker;
     // Async worker for committing transactions.
-    friend class njsCommitAsyncWorker;
+    friend class CommitAsyncWorker;
     // Async worker for releasing connections.
-    friend class njsCloseAsyncWorker;
+    friend class CloseAsyncWorker;
 
     NuoDB::Connection* connection;
     bool open;
 };
+}
 
 #endif

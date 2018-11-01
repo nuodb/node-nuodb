@@ -1,5 +1,5 @@
-#ifndef NJS_ADDON_H
-#define NJS_ADDON_H
+#ifndef NUOJS_ADDON_H
+#define NUOJS_ADDON_H
 
 #include <napi.h>
 
