@@ -6,22 +6,24 @@
 #include <napi.h>
 #include <uv.h>
 
-#include "njsConnection.h"
+#include "NuoJsConnection.h"
 
+namespace NuoJs
+{
 using namespace Napi;
 
-Napi::FunctionReference njsConnection::constructor;
+Napi::FunctionReference Connection::constructor;
 
-Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
+Napi::Object Connection::init(Napi::Env env, Napi::Object exports)
 {
     Napi::HandleScope scope(env);
 
     Napi::Function func = DefineClass(env, "Connection", {
-        InstanceAccessor("autoCommit", &njsConnection::GetAutoCommit, &njsConnection::SetAutoCommit),
-        InstanceAccessor("readOnly", &njsConnection::GetReadOnly, &njsConnection::SetReadOnly),
-        InstanceMethod("close", &njsConnection::Close),
-        InstanceMethod("commit", &njsConnection::Commit)
-    });
+            InstanceAccessor("autoCommit", &Connection::getAutoCommit, &Connection::setAutoCommit),
+            InstanceAccessor("readOnly", &Connection::getReadOnly, &Connection::setReadOnly),
+            InstanceMethod("close", &Connection::close),
+            InstanceMethod("commit", &Connection::commit)
+        });
 
     constructor = Napi::Persistent(func);
     constructor.SuppressDestruct();
@@ -31,7 +33,7 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
     return exports;
 }
 
-/* static */ Napi::Value njsConnection::NewInstance(const Napi::CallbackInfo& info)
+Napi::Value Connection::newInstance(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     try {
@@ -49,8 +51,8 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
         scope.Escape(napi_value(that)).ToObject();
 
         // Connect to the database...
-        njsConnection* c = ObjectWrap::Unwrap(that);
-        return c->Connect(info);
+        Connection* c = ObjectWrap::Unwrap(that);
+        return c->connect(info);
     } catch (std::exception& e) {
         // The following ThrowAsJavaScriptException and return need to be
         //  explained to the untrained eye.
@@ -75,12 +77,12 @@ Napi::Object njsConnection::Init(Napi::Env env, Napi::Object exports)
     }
 }
 
-void njsConnection::hello(std::string msg)
+void Connection::hello(std::string msg)
 {
     printf(msg.c_str());
 }
 
-njsConnection::njsConnection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<njsConnection>(info)
+Connection::Connection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Connection>(info)
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -93,7 +95,7 @@ njsConnection::njsConnection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<
     }
 }
 
-Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key)
+Napi::Value Connection::getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key)
 {
     if (!object.Has(key)) {
         Napi::Error::New(env, "Missing " + key).ThrowAsJavaScriptException();
@@ -107,7 +109,7 @@ Napi::Value njsConnection::getNamedPropertyString(Napi::Env env, Napi::Object ob
     return value.ToString();
 }
 
-void njsConnection::setOption(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, bool required)
+void Connection::setOption(Napi::Env env, Napi::Object object, Config& config, std::string key, bool required)
 {
     if (object.Has(key)) {
         config.options[key] = getNamedPropertyString(env, object, key).ToString();
@@ -117,7 +119,7 @@ void njsConnection::setOption(Napi::Env env, Napi::Object object, njsConfig& con
     }
 }
 
-void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsConfig& config, std::string key, std::string defaultValue)
+void Connection::setOptionOrDefault(Napi::Env env, Napi::Object object, Config& config, std::string key, std::string defaultValue)
 {
     std::string value = defaultValue;
     if (object.Has(key)) {
@@ -126,7 +128,7 @@ void njsConnection::setOptionOrDefault(Napi::Env env, Napi::Object object, njsCo
     config.options[key] = value;
 }
 
-void njsConnection::getConfig(Napi::Env env, Napi::Object object, njsConfig& config)
+void Connection::getConfig(Napi::Env env, Napi::Object object, Config& config)
 {
     // get the database name (required)
     setOption(env, object, config, "database", true);
@@ -143,15 +145,15 @@ void njsConnection::getConfig(Napi::Env env, Napi::Object object, njsConfig& con
     setOptionOrDefault(env, object, config, "schema", "USER");
 }
 
-class njsConnectAsyncWorker : public Napi::AsyncWorker
+class ConnectAsyncWorker : public Napi::AsyncWorker
 {
 public:
     // this transfers responsibility to cleanup config object to worker
-    njsConnectAsyncWorker(const Napi::Function& callback, njsConnection& target, njsConfig* config)
+    ConnectAsyncWorker(const Napi::Function& callback, Connection& target, Config* config)
         : Napi::AsyncWorker(callback), target(target), config(config)
     {}
 
-    ~njsConnectAsyncWorker()
+    ~ConnectAsyncWorker()
     {
         delete config;
     }
@@ -182,12 +184,12 @@ public:
     }
 
 private:
-    njsConnection& target;
-    njsConfig* config;
+    Connection& target;
+    Config* config;
 };
 
 // Connect to the database asynchronously.
-Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
+Napi::Value Connection::connect(const Napi::CallbackInfo& info)
 {
     TRACE("Connect");
 
@@ -207,7 +209,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
     Napi::Object options = info[0].As<Napi::Object>();
 
     // Retrievig the config must be done within the JS engine event loop.
-    njsConfig* config = new njsConfig;
+    Config* config = new Config;
     try {
         getConfig(info.Env(), options, *config);
     } catch (std::exception& e) {
@@ -224,7 +226,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
         }
         Napi::Function callback = info[1].As<Napi::Function>();
 
-        njsConnectAsyncWorker* asyncWorker = new njsConnectAsyncWorker(callback, *this, config);
+        ConnectAsyncWorker* asyncWorker = new ConnectAsyncWorker(callback, *this, config);
         asyncWorker->Queue();
         return info.Env().Undefined();
     }
@@ -245,7 +247,7 @@ Napi::Value njsConnection::Connect(const Napi::CallbackInfo& info)
     }
 }
 
-void njsConnection::doConnect(njsConfig& config)
+void Connection::doConnect(Config& config)
 {
     TRACE("doConnect");
 
@@ -260,6 +262,7 @@ void njsConnection::doConnect(njsConfig& config)
     NuoDB::Properties* props = connection->allocProperties();
     props->putValue("user", config.options["user"].c_str());
     props->putValue("password", config.options["password"].c_str());
+    props->putValue("schema", config.options["schema"].c_str());
 
     try {
         connection->openDatabase(connection_string.str().c_str(), props);
@@ -269,14 +272,14 @@ void njsConnection::doConnect(njsConfig& config)
     }
 }
 
-class njsCommitAsyncWorker : public Napi::AsyncWorker
+class CommitAsyncWorker : public Napi::AsyncWorker
 {
 public:
-    njsCommitAsyncWorker(const Napi::Function& callback, njsConnection& target)
+    CommitAsyncWorker(const Napi::Function& callback, Connection& target)
         : Napi::AsyncWorker(callback), target(target)
     {}
 
-    ~njsCommitAsyncWorker()
+    ~CommitAsyncWorker()
     {}
 
     /**
@@ -304,11 +307,11 @@ public:
     }
 
 private:
-    njsConnection& target;
+    Connection& target;
 };
 
 // Connect to the database asynchronously.
-Napi::Value njsConnection::Commit(const Napi::CallbackInfo& info)
+Napi::Value Connection::commit(const Napi::CallbackInfo& info)
 {
     TRACE("Commit");
 
@@ -329,7 +332,7 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo& info)
         }
         Napi::Function callback = info[0].As<Napi::Function>();
 
-        njsCommitAsyncWorker* asyncWorker = new njsCommitAsyncWorker(callback, *this);
+        CommitAsyncWorker* asyncWorker = new CommitAsyncWorker(callback, *this);
         asyncWorker->Queue();
         return info.Env().Undefined();
     }
@@ -349,7 +352,7 @@ Napi::Value njsConnection::Commit(const Napi::CallbackInfo& info)
     }
 }
 
-void njsConnection::doCommit()
+void Connection::doCommit()
 {
     TRACE("doCommit");
 
@@ -364,14 +367,14 @@ void njsConnection::doCommit()
     }
 }
 
-class njsCloseAsyncWorker : public Napi::AsyncWorker
+class CloseAsyncWorker : public Napi::AsyncWorker
 {
 public:
-    njsCloseAsyncWorker(const Napi::Function& callback, njsConnection& target)
+    CloseAsyncWorker(const Napi::Function& callback, Connection& target)
         : Napi::AsyncWorker(callback), target(target)
     {}
 
-    ~njsCloseAsyncWorker()
+    ~CloseAsyncWorker()
     {}
 
     /**
@@ -400,10 +403,10 @@ public:
     }
 
 private:
-    njsConnection& target;
+    Connection& target;
 };
 
-Napi::Value njsConnection::Close(const Napi::CallbackInfo& info)
+Napi::Value Connection::close(const Napi::CallbackInfo& info)
 {
     TRACE("Close");
 
@@ -417,7 +420,7 @@ Napi::Value njsConnection::Close(const Napi::CallbackInfo& info)
         }
         Napi::Function callback = info[0].As<Napi::Function>();
 
-        njsCloseAsyncWorker* asyncWorker = new njsCloseAsyncWorker(callback, *this);
+        CloseAsyncWorker* asyncWorker = new CloseAsyncWorker(callback, *this);
         asyncWorker->Queue();
         return info.Env().Undefined();
     }
@@ -438,7 +441,7 @@ Napi::Value njsConnection::Close(const Napi::CallbackInfo& info)
     }
 }
 
-void njsConnection::doClose()
+void Connection::doClose()
 {
     TRACE("doClose");
 
@@ -455,7 +458,7 @@ void njsConnection::doClose()
 }
 
 // Get auto-commit mode synchronously.
-Napi::Value njsConnection::GetAutoCommit(const Napi::CallbackInfo& info)
+Napi::Value Connection::getAutoCommit(const Napi::CallbackInfo& info)
 {
     TRACE("GetAutoCommit");
 
@@ -475,7 +478,7 @@ Napi::Value njsConnection::GetAutoCommit(const Napi::CallbackInfo& info)
 }
 
 // Set auto-commit mode synchronously.
-void njsConnection::SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value)
+void Connection::setAutoCommit(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
     TRACE("SetAutoCommit");
 
@@ -501,7 +504,7 @@ void njsConnection::SetAutoCommit(const Napi::CallbackInfo& info, const Napi::Va
 }
 
 // Get read-only mode synchronously.
-Napi::Value njsConnection::GetReadOnly(const Napi::CallbackInfo& info)
+Napi::Value Connection::getReadOnly(const Napi::CallbackInfo& info)
 {
     TRACE("GetReadOnly");
 
@@ -521,7 +524,7 @@ Napi::Value njsConnection::GetReadOnly(const Napi::CallbackInfo& info)
 }
 
 // Set read-only mode synchronously.
-void njsConnection::SetReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value)
+void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
     TRACE("SetReadOnly");
 
@@ -544,4 +547,5 @@ void njsConnection::SetReadOnly(const Napi::CallbackInfo& info, const Napi::Valu
         Napi::Error::New(env, e.getText()).ThrowAsJavaScriptException();
         return;
     }
+}
 }

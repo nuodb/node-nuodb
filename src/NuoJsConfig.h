@@ -1,9 +1,11 @@
-#ifndef NJS_CONFIG_H
-#define NJS_CONFIG_H
+#ifndef NUOJS_CONFIG_H
+#define NUOJS_CONFIG_H
 
 #include <string>
 #include <unordered_map>
 
+namespace NuoJs
+{
 /**
  * Represents a NuoDB database configuration.
  *
@@ -15,9 +17,10 @@
  * - password
  * - schema
  */
-struct njsConfig
+struct Config
 {
     std::unordered_map<std::string, std::string> options;
 };
+}
 
 #endif
