@@ -92,6 +92,8 @@ term:
 	@echo "   To show what's running in the domain run the following command:"
 	@echo "      nuocmd --api-server ad1:8888 show domain"
 	@echo ""
+	@echo "   To get out the terminal simply type exit."
+	@echo ""
 	@build-support/scripts/term
 
 #:help: dn          | Stops the NuoDB cluster
