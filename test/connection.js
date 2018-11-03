@@ -23,7 +23,7 @@ describe('2. testing connections', function () {
         should.not.exist(err);
         connection.commit(function (err) {
           should.exist(err);
-          should.strictEqual(err.message, "connection closed or invalid");
+          should.strictEqual(err.message, "connection closed");
           done();
         });
       });
@@ -52,7 +52,7 @@ describe('2. testing connections', function () {
             function () {
               connection.autoCommit = setValue;
             },
-            /Invalid argument types: not boolean/
+            /invalid type in assignment/
           );
           callback();
         };
@@ -108,7 +108,7 @@ describe('2. testing connections', function () {
             function () {
               connection.readOnly = setValue;
             },
-            /Invalid argument types: not boolean/
+            /invalid type in assignment/
           );
           callback();
         };
