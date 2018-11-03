@@ -72,7 +72,7 @@ Napi::Value Connection::newInstance(const Napi::CallbackInfo& info)
         // instead return UNDEFINED.
         //
         // N.B.   NO C++ EXCEPTION IS BEING THROWN HERE  !!!
-        std::string message = ErrMsg::Get(errMsgType::errConnect, e.what());
+        std::string message = ErrMsg::get(ErrMsgType::errConnect, e.what());
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -91,7 +91,7 @@ Connection::Connection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Connec
         open = false;
         connection = NuoDB::Connection::create();
     } catch (NuoDB::SQLException& exception) {
-        std::string message = ErrMsg::Get(errMsgType::errOpen, exception.getText());
+        std::string message = ErrMsg::get(ErrMsgType::errOpen, exception.getText());
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
     }
 }
@@ -99,13 +99,13 @@ Connection::Connection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Connec
 Napi::Value Connection::getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key)
 {
     if (!object.Has(key)) {
-        std::string message = ErrMsg::Get(errMsgType::errMissingProperty, key.c_str());
+        std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key.c_str());
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return env.Undefined();
     }
     Napi::Value value = object[key];
     if (!value.IsString()) {
-        std::string message = ErrMsg::Get(errMsgType::errInvalidPropertyType, key.c_str());
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
         Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -117,7 +117,7 @@ void Connection::setOption(Napi::Env env, Napi::Object object, Config& config, s
     if (object.Has(key)) {
         config.options[key] = getNamedPropertyString(env, object, key).ToString();
     } else if (required) {
-        std::string message = ErrMsg::Get(errMsgType::errMissingProperty, key.c_str());
+        std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key.c_str());
         throw std::runtime_error(message);
     }
 }
@@ -171,7 +171,7 @@ public:
         try {
             target.doConnect(*config);
         } catch (std::exception& e) {
-            std::string message = ErrMsg::Get(errMsgType::errOpen, e.what());
+            std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             SetError(message);
         }
     }
@@ -201,13 +201,13 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
     // If we're called async, we have a config object and a callback. If we're
     // dealing with promises, we only have a config object...
     if (info.Length() < 1 || info.Length() > 2) {
-        std::string message = ErrMsg::Get(errMsgType::errInvalidParamCount, "connect");
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamCount, "connect");
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
 
     if (!info[0].IsObject()) {
-        std::string message = ErrMsg::Get(errMsgType::errInvalidParamType, 0);
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 0);
         Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
@@ -218,7 +218,7 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
     try {
         getConfig(info.Env(), options, *config);
     } catch (std::exception& e) {
-        std::string message = ErrMsg::Get(errMsgType::errBadConfiguration, e.what());
+        std::string message = ErrMsg::get(ErrMsgType::errBadConfiguration, e.what());
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
@@ -226,7 +226,7 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
     // Length is 1 only if this is called asynchronously.
     if (info.Length() == 2) {
         if (!info[1].IsFunction()) {
-            std::string message = ErrMsg::Get(errMsgType::errInvalidParamType, 1);
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 1);
             Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
             return info.Env().Undefined();
         }
@@ -243,7 +243,7 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
             doConnect(*config);
             deferred.Resolve(Value());
         } catch (std::exception& e) {
-            std::string message = ErrMsg::Get(errMsgType::errOpen, e.what());
+            std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             deferred.Reject(Napi::Error::New(env, message).Value());
         }
         return deferred.Promise();
@@ -258,7 +258,7 @@ void Connection::doConnect(Config& config)
     TRACE("doConnect");
 
     if (open) {
-        std::string message = ErrMsg::Get(errMsgType::errAlreadyOpen);
+        std::string message = ErrMsg::get(ErrMsgType::errAlreadyOpen);
         throw std::runtime_error(message);
     }
 
@@ -327,7 +327,7 @@ Napi::Value Connection::commit(const Napi::CallbackInfo& info)
     // If we're called async, we have a callback. If we're
     // dealing with promises, we have no arguments...
     if (info.Length() > 1) {
-        std::string message = ErrMsg::Get(errMsgType::errInvalidParamCount, "commit");
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamCount, "commit");
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
@@ -335,7 +335,7 @@ Napi::Value Connection::commit(const Napi::CallbackInfo& info)
     // Length is 1 only if this is called asynchronously.
     if (info.Length() == 1) {
         if (!info[0].IsFunction()) {
-            std::string message = ErrMsg::Get(errMsgType::errInvalidParamType, 0);
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 0);
             Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
             return info.Env().Undefined();
         }
@@ -366,7 +366,7 @@ void Connection::doCommit()
     TRACE("doCommit");
 
     if (!open) {
-        std::string message = ErrMsg::Get(errMsgType::errConnectionClosed);
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
 
@@ -397,7 +397,7 @@ public:
         try {
             target.doClose();
         } catch (std::exception& e) {
-            std::string message = ErrMsg::Get(errMsgType::errFailedCloseConnection, e.what());
+            std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             SetError(message);
         }
     }
@@ -425,7 +425,7 @@ Napi::Value Connection::close(const Napi::CallbackInfo& info)
     // Length is 1 only if this is called asynchronously.
     if (info.Length() == 1) {
         if (!info[0].IsFunction()) {
-            std::string message = ErrMsg::Get(errMsgType::errInvalidParamType, 0);
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 0);
             Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
             return info.Env().Undefined();
         }
@@ -442,7 +442,7 @@ Napi::Value Connection::close(const Napi::CallbackInfo& info)
             doClose();
             deferred.Resolve(Value());
         } catch (std::exception& e) {
-            std::string message = ErrMsg::Get(errMsgType::errFailedCloseConnection, e.what());
+            std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             deferred.Reject(Napi::Error::New(env, message).Value());
         }
         return deferred.Promise();
@@ -457,7 +457,7 @@ void Connection::doClose()
     TRACE("doClose");
 
     if (!open) {
-        std::string message = ErrMsg::Get(errMsgType::errConnectionClosed);
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
 
@@ -477,7 +477,7 @@ Napi::Value Connection::getAutoCommit(const Napi::CallbackInfo& info)
     Napi::Env env = info.Env();
 
     if (!open) {
-        std::string message = ErrMsg::Get(errMsgType::errConnectionClosed);
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
@@ -498,13 +498,13 @@ void Connection::setAutoCommit(const Napi::CallbackInfo& info, const Napi::Value
     Napi::Env env = info.Env();
 
     if (!open) {
-        std::string message = ErrMsg::Get(errMsgType::errConnectionClosed);
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return;
     }
 
     if (!value.IsBoolean()) {
-        std::string message = ErrMsg::Get(errMsgType::errInvalidTypeAssignment);
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidTypeAssignment);
         Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
         return;
     }
@@ -526,7 +526,7 @@ Napi::Value Connection::getReadOnly(const Napi::CallbackInfo& info)
     Napi::Env env = info.Env();
 
     if (!open) {
-        std::string message = ErrMsg::Get(errMsgType::errConnectionClosed);
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
@@ -547,13 +547,13 @@ void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& 
     Napi::Env env = info.Env();
 
     if (!open) {
-        std::string message = ErrMsg::Get(errMsgType::errConnectionClosed);
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return;
     }
 
     if (!value.IsBoolean()) {
-        std::string message = ErrMsg::Get(errMsgType::errInvalidTypeAssignment);
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidTypeAssignment);
         Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
         return;
     }

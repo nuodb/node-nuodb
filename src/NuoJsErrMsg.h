@@ -5,7 +5,7 @@
 
 namespace NuoJs
 {
-typedef enum {
+enum ErrMsgType {
     errSuccess = 0,
     errConnect = 1,
     errOpen = 2,
@@ -24,12 +24,12 @@ typedef enum {
     // New ones should be added here
 
     errMaxErrors                // Max # of errors plus one
-} errMsgType;
+};
 
 class ErrMsg
 {
 public:
-    static std::string Get(int err, ...);
+    static std::string get(int err, ...);
 };
 }
 

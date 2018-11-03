@@ -25,7 +25,7 @@ static const char* errMsg[] = {
 };
 
 /* static */
-std::string ErrMsg::Get(int err, ...)
+std::string ErrMsg::get(int err, ...)
 {
     char msg[NUOJS_MAX_ERROR_MSG_LEN + 1];
     va_list vlist;
