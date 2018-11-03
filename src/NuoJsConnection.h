@@ -36,6 +36,9 @@ private:
     // Connect to a database asynchronously.
     Napi::Value connect(const Napi::CallbackInfo& info);
 
+    // Execute a SQL statement asynchronously.
+    Napi::Value execute(const Napi::CallbackInfo& info);
+
     // Commit a database transaction asynchronously.
     Napi::Value commit(const Napi::CallbackInfo& info);
 
@@ -69,11 +72,17 @@ private:
     // Internal connect method that works against a NuoDB connection object.
     void doConnect(Config& config);
 
+    // Internal execute method that works against a NuoDB connection object.
+    void doExecute(std::string sql);
+
     // Internal commit method that works against a NuoDB connection object.
     void doCommit();
 
     // Internal close method that works against a NuoDB connection object.
     void doClose();
+
+    // Internal method to prepare a statement and set its binds.
+    NuoDB::PreparedStatement* prepareStatement(std::string sql, Napi::Array binds);
 
     // Async worker for creating connections.
     friend class ConnectAsyncWorker;
@@ -81,8 +90,11 @@ private:
     friend class CommitAsyncWorker;
     // Async worker for releasing connections.
     friend class CloseAsyncWorker;
+    // Async worker for executing a statement.
+    friend class ExecuteAsyncWorker;
 
     NuoDB::Connection* connection;
+    NuoDB::PreparedStatement* statement;
     bool open;
 };
 }
