@@ -722,7 +722,6 @@ NuoDB::PreparedStatement* Connection::prepareStatement(std::string sql, Napi::Ar
 
     try {
         NuoDB::PreparedStatement* statement = connection->prepareStatement(sql.c_str());
-        using namespace NuoJs;
         for (size_t index = 0; index < binds.Length(); index++) {
             Napi::Value value = binds[index];
 
