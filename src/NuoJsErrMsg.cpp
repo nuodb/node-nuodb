@@ -22,6 +22,7 @@ static const char* errMsg[] = {
     "failed to close connection [%s]",       // errFailedCloseConnection
     "failed to execute SQL statement [%s]",  // errSqlExecute
     "invalid type in assignment",            // errInvalidTypeAssignment
+    "unsafe type conversion to %s will lose precision"   // errConversionUnsafe
 };
 
 /* static */

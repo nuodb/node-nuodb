@@ -2,12 +2,15 @@
 #include <sstream>
 #include <iostream>
 #include <exception>
+#include <inttypes.h>
 
 #include <napi.h>
 #include <uv.h>
 
 #include "NuoJsConnection.h"
 #include "NuoJsErrMsg.h"
+#include "NuoJsTypes.h"
+#include "NuoJsNapiExtensions.h"
 
 namespace NuoJs
 {
@@ -22,6 +25,7 @@ Napi::Object Connection::init(Napi::Env env, Napi::Object exports)
     Napi::Function func = DefineClass(env, "Connection", {
             InstanceAccessor("autoCommit", &Connection::getAutoCommit, &Connection::setAutoCommit),
             InstanceAccessor("readOnly", &Connection::getReadOnly, &Connection::setReadOnly),
+            InstanceMethod("execute", &Connection::execute),
             InstanceMethod("close", &Connection::close),
             InstanceMethod("commit", &Connection::commit)
         });
@@ -34,6 +38,7 @@ Napi::Object Connection::init(Napi::Env env, Napi::Object exports)
     return exports;
 }
 
+/* static */
 Napi::Value Connection::newInstance(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
@@ -566,4 +571,232 @@ void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& 
         return;
     }
 }
+
+class ExecuteAsyncWorker : public Napi::AsyncWorker
+{
+public:
+    ExecuteAsyncWorker(const Napi::Function& callback, Connection& target, std::string sql, Napi::Array binds)
+        : Napi::AsyncWorker(callback), target(target), sql(sql), binds(binds)
+    {}
+
+    ~ExecuteAsyncWorker()
+    {}
+
+    /**
+     * Executes on the worker thread.
+     * It is unsafe to access JS engine data structures on worker threads.
+     * All input and output MUST occur on this->.
+     */
+    void Execute()
+    {
+        try {
+            /* result set */ target.doExecute(sql);
+        } catch (std::exception& e) {
+            std::string message = ErrMsg::get(ErrMsgType::errSqlExecute, e.what());
+            SetError(message);
+        }
+    }
+
+    /**
+     * Executes on the main event loop, so it's safe to access JS engine data
+     * structures. Called when async work is complete.
+     */
+    void OnOK()
+    {
+        Napi::HandleScope scope(Env());
+        Callback().Call({ Env().Undefined() });
+    }
+
+private:
+    Connection& target;
+    std::string sql;
+    Napi::Array binds;
+};
+
+/**
+ * In the one execute method we need to handle four cases, both
+ * with and without binds, then for each of those cases, variants
+ * for async versus promise semantics. The various combinations
+ * are as follows, and the code below follows this structure:
+ *
+ *  - sql with binds:
+ *      all variants have at least the following arguments:
+ *          {string, array}
+ *    - promise:
+ *          - (sql, binds) -> function (err, result) {}
+ *              == {string, array}
+ *              2 args!
+ *    - async:
+ *          - (sql, binds, function (err, result)) {}
+ *              == {string, array, function}
+ *              3 args!
+ *
+ *  - sql without binds
+ *      all variants have at least the following arguments:
+ *          {string}
+ *    - promise:
+ *          - (sql) -> function (err, result) {}
+ *              == {string}
+ *              1 args!
+ *    - async:
+ *          - (sql, function (err, result)) {}
+ *              == {string, function}
+ *              2 args!
+ */
+Napi::Value Connection::execute(const Napi::CallbackInfo& info)
+{
+    TRACE("Execute");
+
+    Napi::Env env = info.Env();
+
+    // validate bounds of info array
+    if (info.Length() < 1 || info.Length() > 3) {
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamCount, "execute");
+        Napi::Error::New(env, message).ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    // first parameter is always a SQL DDL or DML string
+    if (!info[0].IsString()) {
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 0);
+        Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+    Napi::String sql = info[0].As<Napi::String>();
+
+    if (info.Length() > 1 && info[1].IsArray()) {
+        Napi::Array binds = info[1].As<Napi::Array>();
+        statement = prepareStatement(sql, binds);
+
+        if (info.Length() == 2) {
+            // sql-string, [binds] -> promise (DEFER PROMISES)
+            // todo ...
+        } else {
+            // sql-string, [binds], function (err, result)
+            if (!info[2].IsFunction()) {
+                std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 2);
+                Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
+                return info.Env().Undefined();
+            }
+            Napi::Function callback = info[2].As<Napi::Function>();
+            ExecuteAsyncWorker* asyncWorker = new ExecuteAsyncWorker(callback, *this, sql, binds);
+            asyncWorker->Queue();
+            return info.Env().Undefined();
+        }
+    } else {
+        // validate bounds of info array
+        if (info.Length() == 3) {
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidParamCount, "execute");
+            Napi::Error::New(env, message).ThrowAsJavaScriptException();
+            return info.Env().Undefined();
+        }
+        Napi::Array binds = Array::New(env);
+        statement = prepareStatement(sql, binds);
+        if (info.Length() == 1) {
+            // sql-string -> promise (DEFER PROMISES)
+            // ...
+        } else {
+            // sql-string, function (err, result)
+            if (!info[1].IsFunction()) {
+                std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 1);
+                Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
+                return info.Env().Undefined();
+            }
+            Napi::Function callback = info[1].As<Napi::Function>();
+            ExecuteAsyncWorker* asyncWorker = new ExecuteAsyncWorker(callback, *this, sql, binds);
+            asyncWorker->Queue();
+            return info.Env().Undefined();
+        }
+    }
+    return info.Env().Undefined();
 }
+
+NuoDB::PreparedStatement* Connection::prepareStatement(std::string sql, Napi::Array binds)
+{
+    TRACE("prepareStatement");
+
+    if (!open) {
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
+        throw std::runtime_error(message);
+    }
+
+    try {
+        NuoDB::PreparedStatement* statement = connection->prepareStatement(sql.c_str());
+        for (size_t index = 0; index < binds.Length(); index++) {
+            Napi::Value value = binds[index];
+
+            int sqlIdx = index + 1;
+            int sqlType = Type::fromEsType(value.Type());
+
+            // The top-level case statements below correspond to the five
+            // fundamental data types in ES. Within these types we need to
+            // check if it will result in a safe conversion (e.g. Number).
+            switch (sqlType) {
+                case NuoDB::SqlType::NUOSQL_NULL:
+                    statement->setNull(sqlIdx, NuoDB::NUOSQL_NULL);
+                    break;
+
+                case NuoDB::SqlType::NUOSQL_BOOLEAN:
+                    statement->setBoolean(sqlIdx, value.ToBoolean());
+                    break;
+
+                case NuoDB::SqlType::NUOSQL_DOUBLE:
+                    // If the value can be safely coerced to a sized integer
+                    // or float without loss of precision, send a numeric
+                    // value rather than a string. If we're dealing with
+                    // a number that is larger than can be safely coerced,
+                    // convert it to a string.
+                    if (isInt16(value.Env(), value)) {
+                        statement->setShort(sqlIdx, (int16_t)(int32_t)value.ToNumber());
+                    } else if (isInt32(value.Env(), value)) {
+                        statement->setInt(sqlIdx, (int32_t)value.ToNumber());
+                    } else if (isFloat(value.Env(), value)) {
+                        statement->setFloat(sqlIdx, (float)value.ToNumber());
+                    } else {
+                        statement->setString(sqlIdx, ((std::string)value.ToString()).c_str());
+                    }
+                    break;
+
+                case NuoDB::SqlType::NUOSQL_VARCHAR: {
+                    Napi::String ns = value.ToString();
+                    statement->setString(sqlIdx, ((std::string)ns).c_str());
+                    break;
+                }
+
+                case NUOSQL_UNDEFINED:
+                    if (isDate(value.Env(), value)) {
+                        char buffer[80];
+                        time_t seconds = (time_t)(value.ToNumber().Int64Value() / 1000);
+                        struct tm* timeinfo;
+                        timeinfo = localtime(&seconds);
+                        strftime(buffer, 80, "%F %T", timeinfo);
+                        statement->setString(sqlIdx, buffer);
+                    } else {
+                        Napi::String ns = value.ToString();
+                        statement->setString(sqlIdx, ((std::string)ns).c_str());
+                    }
+                    break;
+            }
+        }
+        return statement;
+    } catch (NuoDB::SQLException& e) {
+        throw std::runtime_error(e.getText());
+    }
+}
+
+void Connection::doExecute(std::string sql)
+{
+    TRACE("doExecute");
+
+    if (!open) {
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
+        throw std::runtime_error(message);
+    }
+
+    try {
+        statement->execute();
+    } catch (NuoDB::SQLException& e) {
+        throw std::runtime_error(e.getText());
+    }
+}
+} // namespace NuoJs

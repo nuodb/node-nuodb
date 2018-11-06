@@ -16,7 +16,8 @@
       "sources": [
         "src/NuoJsAddon.cpp",
         "src/NuoJsConnection.cpp",
-        "src/NuoJsErrMsg.cpp"
+        "src/NuoJsErrMsg.cpp",
+        "src/NuoJsTypes.cpp"
       ],
       "include_dirs": [
         "/opt/nuodb/include/",

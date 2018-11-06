@@ -20,10 +20,11 @@ enum ErrMsgType {
     errFailedCloseConnection = 11,
     errSqlExecute = 12,
     errInvalidTypeAssignment = 13,
+    errConversionUnsafe = 14,
 
     // New ones should be added here
 
-    errMaxErrors                // Max # of errors plus one
+    errMaxErrors     // Max # of errors plus one
 };
 
 class ErrMsg
