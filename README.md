@@ -13,6 +13,14 @@ NuoDB C++ client.
 
 ## Documentation
 
+## Related Links
+
+1. [Node Addon C++ API][40]
+2. [Node Addon C++ API (Github Project)][41]
+2. [Node ABI (N-API) Documentation][42]
+3. [Node ABI (N-API) Github Project)][43]
+4. [Node ABI Stable Examples (Github Project)][44]
+
 ## Examples
 
 See the [examples][30] directory.  Start with
@@ -81,3 +89,8 @@ This module is released under the [MIT License][36].
 [34]: https://github.com/nuodb/node-nuodb/blob/master/test/README.md
 [36]: https://opensource.org/licenses/MIT
 [31]: https://github.com/nuodb/node-nuodb/blob/master/examples/example.js#L1
+[40]: https://github.com/nodejs/node-addon-api#api
+[41]: https://github.com/nodejs/node-addon-api
+[42]: https://nodejs.org/api/n-api.html
+[43]: https://github.com/nodejs/node/blob/master/doc/api/n-api.md
+[44]: https://github.com/nodejs/abi-stable-node-addon-examples
