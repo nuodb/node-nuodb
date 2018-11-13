@@ -48,8 +48,7 @@ describe('22. typeBigInt.js', function () {
     });
 
     after(function (done) {
-      // helper.dropTable(connection, tableName, done);
-      done();
+      helper.dropTable(connection, tableName, done);
     });
 
     it('22.1.1 result set stores BIGINT correctly', function (done) {

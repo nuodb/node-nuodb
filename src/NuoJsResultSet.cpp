@@ -150,12 +150,15 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
     int esType = Type::toEsType(sqlType);
     switch (esType) {
         case ES_BOOLEAN:
+            printf("ES_BOOLEAN\n");
             return Napi::Boolean::New(env, sqlValue.getBoolean());
 
         case ES_STRING:
+            printf("ES_STRING\n");
             return Napi::String::New(env, sqlValue.getString());
 
         case ES_NUMBER: {
+            printf("ES_NUMBER\n");
             printf("@sqlToEsValue : Sql Type: %d\n", sqlType);
             switch (sqlType) {
                 case NuoDB::NUOSQL_SMALLINT:
@@ -171,15 +174,17 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
         }
 
         case ES_NULL:
+            printf("ES_NULL\n");
             return env.Null();
 
         case ES_UNDEFINED: {
+            printf("ES_UNDEFINED\n");
             // check for types not directly supported in the ES type system...
             switch (sqlType) {
                 case NuoDB::NUOSQL_BIGINT: {
                     int64_t v = sqlValue.getLong();
                     if (MIN_SAFE_INTEGER <= v && v <= MAX_SAFE_INTEGER) {
-                        return Napi::Number::New(env, sqlValue.getDouble());
+                        return Napi::Number::New(env, sqlValue.getLong());
                     } else {
                         return Napi::String::New(env, int64ToString(v));
                     }
