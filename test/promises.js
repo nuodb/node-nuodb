@@ -10,10 +10,11 @@ describe('3. testing promises', function () {
     nuodb.connect(config)
       .then(function (connection) {
         connection.should.be.ok();
-        connection.close(function (err) {
-          should.not.exist(err);
-          return done();
-        });
+        connection.close()
+          .catch(function (err) {
+            should.not.exist(err);
+          });
+        return done();
       })
       .catch(function (err) {
         console.log(err);

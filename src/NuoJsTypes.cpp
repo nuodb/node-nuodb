@@ -1,5 +1,5 @@
 #include "NuoJsTypes.h"
-#include "ResultSetMetaData.h"
+#include "NuoDB.h"
 
 namespace NuoJs
 {
@@ -18,11 +18,12 @@ int Type::reduceSqlType(int type)
         // NUOSQL_TINYINT: <- undocumented type
         case NUOSQL_SMALLINT:
         case NUOSQL_INTEGER:
-        case NUOSQL_BIGINT: // <- ES does not support 64-bit integers, so we have to handle as special case
-        case NUOSQL_FLOAT:
+        case NUOSQL_FLOAT: // AN ALIAS FOR DOUBLE!!!
         case NUOSQL_DOUBLE:
             return NUOSQL_DOUBLE;
             break;
+
+        // case NUOSQL_BIGINT: // <- ES does not support 64-bit integers, so we have to handle as special case
 
         case NUOSQL_CHAR:
         case NUOSQL_VARCHAR:
@@ -44,7 +45,7 @@ int Type::reduceSqlType(int type)
         // NUOSQL_BINARY:
         // NUOSQL_LONGVARBINARY:
         default:
-            return NUOSQL_VARCHAR;
+            return NUOSQL_UNDEFINED;
     }
 }
 
