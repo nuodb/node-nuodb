@@ -174,6 +174,15 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
         case ES_UNDEFINED: {
             // check for types not directly supported in the ES type system...
             switch (sqlType) {
+                case NuoDB::NUOSQL_TIME: {
+                    // Hackish, but ES doesn't actually support TIME
+                    std::string epochPrefix("1970-01-01T");
+                    Napi::String tsString = Napi::String::New(env, epochPrefix + sqlValue.getString());
+                    return env.Global()
+                           .Get("Date").As<Napi::Function>()
+                           .New(std::initializer_list<napi_value>{ tsString });
+                }
+                case NuoDB::NUOSQL_DATE:
                 case NuoDB::NUOSQL_TIMESTAMP: {
                     Napi::String tsString = Napi::String::New(env, sqlValue.getString());
                     return env.Global()
@@ -273,6 +282,8 @@ void ResultSet::doGetRows()
                     sqlValue.setBoolean(rs->getBoolean(column));
                     break;
 
+                case NuoDB::NUOSQL_DATE:
+                case NuoDB::NUOSQL_TIME:
                 case NuoDB::NUOSQL_TIMESTAMP: {
                     sqlValue.setString(rs->getString(column));
                     break;

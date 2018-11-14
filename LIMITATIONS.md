@@ -15,10 +15,15 @@
    with the result set. e.g. try `select 1 from dual`, which fails
    to return column names. It should return at least the DUAL table
    DUMMY column name.
-6. Documentation for DOUBLE types is incorrect; the range of values,
-   if used, will result in numeric overflow.
 
 ## ES Bugs and Limitations
+
+### TIME
+
+According to the ECMAScript standard, there is no support for a Time
+type, and Date does not accept time stamps only. Therefore, in the
+driver we represent all TIME objects as ES Dates, but having a common
+date being the common epoch (1970-01-01).
 
 ### BIGINT
 
@@ -26,7 +31,8 @@ According to the ECMAScript standard, there is only one number type: the
 double-precision 64-bit binary format IEEE 754 value (numbers between
 -(2^53 -1) and 2^53 -1). ECMAScript does NOT support 64-bit integers.
 As such, BIGINT database types are automatically converted to ECMAScript
-String objects.
+String objects for those values that are not safely represented as a
+Number. See Number.MAX_SAFE_INTEGER and Number.MIN_SAFE_INTEGER.
 
 Users may install auxiliary packages (such as node-int64, node-bigint,
 bignum, or int64) to work with large integers, converting the string
