@@ -20,6 +20,12 @@
 make test
 ```
 
+To run the full test suite inside the docker:
+
+```
+node_modules/.bin/mocha
+```
+
 2.2 Run specified test(s)
 
 For example, to run the timestamp tests, first open the build terminal:

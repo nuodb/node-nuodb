@@ -58,7 +58,7 @@ describe('26. typeTimestamp.js', function () {
     });
 
     it('26.1.1 result set stores TIMESTAMP correctly', function (done) {
-      connection.execute("SELECT * FROM " + tableName, [], function (err, results) {
+      connection.execute("SELECT * FROM " + tableName, [], { rowMode: nuodb.ROWS_AS_OBJECT }, function (err, results) {
         should.not.exist(err);
         results.should.be.ok();
         results.getRows(6, function (err, rows) {

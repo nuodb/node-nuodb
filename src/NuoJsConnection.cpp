@@ -3,6 +3,7 @@
 #include "NuoJsErrMsg.h"
 #include "NuoJsTypes.h"
 #include "NuoJsNapiExtensions.h"
+#include "NuoJsOptions.h"
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -501,12 +502,12 @@ void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& 
 
 Context Connection::createContext()
 {
-    Context context;
-    context.setConnection(connection);
-    context.setIsConnectionOpen(connectionIsOpen);
-    context.setStatement(statement);
-    context.setIsStatementOpen(statementIsOpen);
-    return context;
+    Context tmp(context);
+    tmp.setConnection(connection);
+    tmp.setIsConnectionOpen(connectionIsOpen);
+    tmp.setStatement(statement);
+    tmp.setIsStatementOpen(statementIsOpen);
+    return tmp;
 }
 
 class ExecuteAsyncWorker : public Napi::AsyncWorker
@@ -549,6 +550,9 @@ private:
     Napi::Array binds;
 };
 
+void Connection::processOptions(Napi::Object options)
+{}
+
 /**
  * In the one execute method we need to handle four cases, both
  * with and without binds, then for each of those cases, variants
@@ -585,65 +589,56 @@ Napi::Value Connection::execute(const Napi::CallbackInfo& info)
 
     Napi::Env env = info.Env();
 
+    size_t infoPos = 0;
+    size_t infoLength = info.Length();
+
     // validate bounds of info array
-    if (info.Length() < 1 || info.Length() > 3) {
+    if (infoLength < 1 || infoLength > 4) {
         std::string message = ErrMsg::get(ErrMsgType::errInvalidParamCount, "execute");
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
 
-    // first parameter is always a SQL DDL or DML string
-    if (!info[0].IsString()) {
-        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 0);
+    // (required) a SQL string, always index 0
+    if (!info[infoPos].IsString()) {
+        std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, infoPos);
         Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
-    Napi::String sql = info[0].As<Napi::String>();
+    Napi::String sql = info[infoPos++].As<Napi::String>();
 
-    if (info.Length() > 1 && info[1].IsArray()) {
-        Napi::Array binds = info[1].As<Napi::Array>();
-        statement = prepareStatement(sql, binds);
+    // (optional) binds, if present, always index 1
+    Napi::Array binds = Array::New(env);
+    if (infoLength > infoPos && info[infoPos].IsArray()) {
+        binds = info[infoPos++].As<Napi::Array>();
+    }
 
-        if (info.Length() == 2) {
-            // sql-string, [binds] -> promise (DEFER PROMISES)
-            // todo ...
-        } else {
-            // sql-string, [binds], function (err, result)
-            if (!info[2].IsFunction()) {
-                std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 2);
-                Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
-                return info.Env().Undefined();
-            }
-            Napi::Function callback = info[2].As<Napi::Function>();
-            ExecuteAsyncWorker* asyncWorker = new ExecuteAsyncWorker(callback, *this, sql, binds);
-            asyncWorker->Queue();
-            return info.Env().Undefined();
-        }
-    } else {
-        // validate bounds of info array
-        if (info.Length() == 3) {
-            std::string message = ErrMsg::get(ErrMsgType::errInvalidParamCount, "execute");
-            Napi::Error::New(env, message).ThrowAsJavaScriptException();
-            return info.Env().Undefined();
-        }
-        Napi::Array binds = Array::New(env);
-        statement = prepareStatement(sql, binds);
-        if (info.Length() == 1) {
-            // sql-string -> promise (DEFER PROMISES)
-            // ...
-        } else {
-            // sql-string, function (err, result)
-            if (!info[1].IsFunction()) {
-                std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, 1);
-                Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
-                return info.Env().Undefined();
-            }
-            Napi::Function callback = info[1].As<Napi::Function>();
-            ExecuteAsyncWorker* asyncWorker = new ExecuteAsyncWorker(callback, *this, sql, binds);
-            asyncWorker->Queue();
+    // (optional) execute options
+    if (infoLength > infoPos && !info[infoPos].IsFunction()) {
+        try {
+            getJsonOptions(env, info[infoPos++].As<Napi::Object>(), context);
+        } catch (std::exception& e) {
+            Napi::TypeError::New(env, e.what()).ThrowAsJavaScriptException();
             return info.Env().Undefined();
         }
     }
+
+    statement = prepareStatement(sql, binds);
+    if (infoLength > infoPos) {
+        // handle callback...
+        if (!info[infoPos].IsFunction()) {
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidParamType, infoPos);
+            Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
+            return info.Env().Undefined();
+        }
+        Napi::Function callback = info[infoPos].As<Napi::Function>();
+        ExecuteAsyncWorker* asyncWorker = new ExecuteAsyncWorker(callback, *this, sql, binds);
+        asyncWorker->Queue();
+        return info.Env().Undefined();
+    } else {
+        // handle promise...
+    }
+
     return info.Env().Undefined();
 }
 
@@ -748,20 +743,6 @@ NuoDB::ResultSet* Connection::getResultSet()
 
     try {
         return statement->getResultSet();
-/*
-        if (rs) {
-            while (rs->next()) {
-                NuoDB::ResultSetMetaData* metaData = rs->getMetaData();
-                auto columns = metaData->getColumnCount();
-                printf("cols: %d\n", columns);
-                for (auto index = 0; index < columns; index++) {
-                    printf("type [%d]: %d\n", index + 1, metaData->getColumnType(index + 1));
-                }
-                printf("found result\n");
-            }
-            rs->close();
-        }
-*/
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
     }

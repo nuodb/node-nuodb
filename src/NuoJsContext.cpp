@@ -3,7 +3,7 @@
 namespace NuoJs
 {
 Context::Context() :
-    rowMode(RowMode::ROWS_AS_OBJECT),
+    rowMode(RowMode::ROWS_AS_ARRAY),
     connection(nullptr),
     connectionIsOpen(false),
     statement(nullptr),
@@ -61,7 +61,27 @@ Context::~Context()
     }
 }
 
-Params Context::getParams() const
+Context& Context::operator=(Context other)
+{
+    params = other.params;
+    // std::swap(params, other.params);
+    std::swap(rowMode, other.rowMode);
+
+    std::swap(result, other.result);
+    std::swap(statement, other.statement);
+    std::swap(connection, other.connection);
+    std::swap(resultIsOpen, other.resultIsOpen);
+    std::swap(statementIsOpen, other.statementIsOpen);
+    std::swap(connectionIsOpen, other.connectionIsOpen);
+
+    // std::swap(rows, other.rows);
+    rows = other.rows;
+    std::swap(fetchSize, other.fetchSize);
+
+    return *this;
+}
+
+Params& Context::getParams()
 {
     return params;
 }
@@ -85,11 +105,19 @@ NuoDB::Connection* Context::getConnection() const
 }
 void Context::setConnection(NuoDB::Connection* c)
 {
+    if (connection == c) {
+        return;
+    }
     if (connection != nullptr) {
         connection->release();
+        connection = nullptr;
+        connectionIsOpen = false;
     }
-    connection = c;
-    connection->addRef();
+    if (c != nullptr) {
+        connection = c;
+        connection->addRef();
+        connectionIsOpen = true;
+    }
 }
 
 bool Context::isConnectionOpen() const
@@ -107,11 +135,19 @@ NuoDB::PreparedStatement* Context::getStatement() const
 }
 void Context::setStatement(NuoDB::PreparedStatement* s)
 {
+    if (statement == s) {
+        return;
+    }
     if (statement != nullptr) {
         statement->release();
+        statement = nullptr;
+        statementIsOpen = false;
     }
-    statement = s;
-    statement->addRef();
+    if (s != nullptr) {
+        statement = s;
+        statement->addRef();
+        statementIsOpen = true;
+    }
 }
 
 bool Context::isStatementOpen() const
@@ -129,11 +165,19 @@ NuoDB::ResultSet* Context::getResultSet() const
 }
 void Context::setResultSet(NuoDB::ResultSet* r)
 {
+    if (result == r) {
+        return;
+    }
     if (result != nullptr) {
         result->release();
+        result = nullptr;
+        resultIsOpen = false;
     }
-    result = r;
-    result->addRef();
+    if (r != nullptr) {
+        result = r;
+        result->addRef();
+        resultIsOpen = true;
+    }
 }
 
 bool Context::isResultSetOpen() const

@@ -43,6 +43,13 @@ In order to build the driver you need the following:
 
 ### Building
 
+#### Prerequisite
+
+In order to build and test, you MUST have built from [docker-node][45] a
+CentOS based Node JS Docker.
+
+#### Targets
+
 GNU make is used to simplify the build process. The following table details
 the makefile targets available:
 
@@ -68,6 +75,7 @@ To grab and build the Node JS Docker CentOS image:
 git clone git@github.com:nuodb/docker-node.git
 cd docker-node/8/centos/ && docker build -t node:8.12.0-centos .
 ```
+#### Steps
 
 To build and test a `build` Docker image:
 
@@ -102,3 +110,4 @@ This module is released under the [MIT License][36].
 [42]: https://nodejs.org/api/n-api.html
 [43]: https://github.com/nodejs/node/blob/master/doc/api/n-api.md
 [44]: https://github.com/nodejs/abi-stable-node-addon-examples
+[45]: https://github.com/nuodb/docker-node/tree/master/8/centos

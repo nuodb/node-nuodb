@@ -2,12 +2,13 @@
 #define NUOJS_CONTEXT_H
 
 #include "NuoJsAddon.h"
-#include "NuoJsOptions.h"
+#include "NuoJsRowMode.h"
 #include "NuoJsParams.h"
 #include "NuoJsValue.h"
 #include "NuoDB.h"
 
 #include <vector>
+#include <stdint.h>
 
 namespace NuoJs
 {
@@ -20,7 +21,9 @@ public:
 
     ~Context();
 
-    Params getParams() const;
+    Context& operator=(Context other);
+
+    Params& getParams();
     void setParams(const Params& params);
 
     RowMode getRowMode() const;

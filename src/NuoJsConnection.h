@@ -71,6 +71,8 @@ private:
     // Internal close method that works against a NuoDB connection object.
     void doClose();
 
+    void processOptions(Napi::Object options);
+
     // Internal method to prepare a statement and set its binds.
     NuoDB::PreparedStatement* prepareStatement(std::string sql, Napi::Array binds);
 
@@ -85,6 +87,8 @@ private:
     friend class CloseAsyncWorker;
     // Async worker for executing a statement.
     friend class ExecuteAsyncWorker;
+
+    Context context;
 
     Params params;
 

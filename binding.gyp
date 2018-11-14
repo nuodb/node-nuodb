@@ -3,12 +3,13 @@
     {
       "target_name": "nuodb",
       "cflags!": [
+        "-g",
         "-fno-exceptions"
       ],
       "cflags_cc!": [
+        "-g",
         "-fno-exceptions",
         "-Wno-overloaded-virtual",
-        "-DNDEBUG"
       ],
       "variables": {
         "nuodb_home": "<!(echo ${NUODB_HOME-\"/opt/nuodb\"})"
@@ -18,6 +19,8 @@
         "src/NuoJsConnection.cpp",
         "src/NuoJsContext.cpp",
         "src/NuoJsErrMsg.cpp",
+        "src/NuoJsJson.cpp",
+        "src/NuoJsOptions.cpp",
         "src/NuoJsParams.cpp",
         "src/NuoJsResultSet.cpp",
         "src/NuoJsTypes.cpp",
@@ -33,6 +36,9 @@
         "-Wl,-rpath,<(nuodb_home)/lib64",
         "-L<(nuodb_home)/lib64",
         "-lNuoRemote"
+      ],
+      "ldflags": [
+        "-g"
       ],
       "dependencies": [
         "<!(node -p \"require('node-addon-api').gyp\")"
