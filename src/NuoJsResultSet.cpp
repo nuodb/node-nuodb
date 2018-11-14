@@ -69,7 +69,6 @@ public:
     void OnOK()
     {
         Napi::HandleScope scope(Env());
-        printf("VALIDATING, ROWS BUFFERED: %zu\n", target.context.getRowsFetched());
         Napi::Value value = target.getRowsAsJsValue(Env());
         Callback().Call({ Env().Undefined(), value });
     }
@@ -150,16 +149,12 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
     int esType = Type::toEsType(sqlType);
     switch (esType) {
         case ES_BOOLEAN:
-            printf("ES_BOOLEAN\n");
             return Napi::Boolean::New(env, sqlValue.getBoolean());
 
         case ES_STRING:
-            printf("ES_STRING\n");
             return Napi::String::New(env, sqlValue.getString());
 
         case ES_NUMBER: {
-            printf("ES_NUMBER\n");
-            printf("@sqlToEsValue : Sql Type: %d\n", sqlType);
             switch (sqlType) {
                 case NuoDB::NUOSQL_SMALLINT:
                     return Napi::Number::New(env, sqlValue.getShort());
@@ -174,13 +169,18 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
         }
 
         case ES_NULL:
-            printf("ES_NULL\n");
             return env.Null();
 
         case ES_UNDEFINED: {
-            printf("ES_UNDEFINED\n");
             // check for types not directly supported in the ES type system...
             switch (sqlType) {
+                case NuoDB::NUOSQL_TIMESTAMP: {
+                    Napi::String tsString = Napi::String::New(env, sqlValue.getString());
+                    return env.Global()
+                           .Get("Date").As<Napi::Function>()
+                           .New(std::initializer_list<napi_value>{ tsString });
+                }
+
                 case NuoDB::NUOSQL_BIGINT: {
                     int64_t v = sqlValue.getLong();
                     if (MIN_SAFE_INTEGER <= v && v <= MAX_SAFE_INTEGER) {
@@ -198,14 +198,11 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
 Napi::Value ResultSet::getRowsAsJsValue(Napi::Env env)
 {
     Napi::Array rows = Napi::Array::New(env);
-    printf("---------------------------\n");
-    printf("Rows Total: %zu\n", context.getRowsFetched());
 
     // must precalculate b/c we're popping later...
     size_t rowsTotal = context.getRowsFetched();
 
     for (size_t rowIdx = 0; rowIdx < rowsTotal; rowIdx++) {
-        printf("Row: %zu\n", rowIdx);
         std::vector<SqlValue> sqlRow = context.popRow();
         if (context.getRowMode() == RowMode::ROWS_AS_OBJECT) {
             Napi::Object jsObject = Napi::Object::New(env);
@@ -213,8 +210,6 @@ Napi::Value ResultSet::getRowsAsJsValue(Napi::Env env)
                 SqlValue sqlValue = sqlRow[colIdx];
                 Napi::Value jsValue = sqlToEsValue(env, sqlValue);
                 jsObject.Set(sqlValue.getName(), jsValue);
-                printf("  Col Idx: %zu\n", colIdx);
-                printf("  Col Val: %s\n", jsValue.ToString().Utf8Value().c_str());
             }
             rows.Set(rowIdx, jsObject);
         } else {
@@ -243,7 +238,6 @@ void ResultSet::doGetRows()
     }
 
     size_t rowsToFetch = context.getFetchSize();
-    printf("ROWS TO FETCH: %zu\n", rowsToFetch);
     NuoDB::ResultSet* rs = context.getResultSet();
     NuoDB::ResultSetMetaData* metaData = rs->getMetaData();
     auto columns = metaData->getColumnCount();
@@ -254,43 +248,39 @@ void ResultSet::doGetRows()
             int sqlType = metaData->getColumnType(column);
 
             SqlValue sqlValue;
-            printf("column name: %s\n", metaData->getColumnName(column));
             sqlValue.setName(metaData->getColumnName(column));
             sqlValue.setSqlType(sqlType);
 
-            printf("Sql Type: %d\n", sqlType);
-
             switch (sqlType) {
                 case NuoDB::NUOSQL_SMALLINT:
-                    printf("MATCHED SMALLINT\n");
                     sqlValue.setShort(rs->getShort(column));
                     break;
 
                 case NuoDB::NUOSQL_INTEGER:
-                    printf("MATCHED INTEGER\n");
                     sqlValue.setInt(rs->getInt(column));
                     break;
 
                 case NuoDB::NUOSQL_BIGINT:
-                    printf("MATCHED BIGINT\n");
                     sqlValue.setLong(rs->getLong(column));
                     break;
 
                 case NuoDB::NUOSQL_FLOAT: // AN ALIAS FOR DOUBLE!!!
                 case NuoDB::NUOSQL_DOUBLE:
-                    printf("MATCHED DOUBLE\n");
                     sqlValue.setDouble(rs->getDouble(column));
                     break;
 
                 case NuoDB::NUOSQL_BOOLEAN:
-                    printf("MATCHED BOOLEAN\n");
                     sqlValue.setBoolean(rs->getBoolean(column));
                     break;
+
+                case NuoDB::NUOSQL_TIMESTAMP: {
+                    sqlValue.setString(rs->getString(column));
+                    break;
+                }
 
                 case NuoDB::NUOSQL_CHAR:
                 case NuoDB::NUOSQL_VARCHAR:
                 case NuoDB::NUOSQL_LONGVARCHAR:
-                    printf("MATCHED STRING\n");
                     sqlValue.setString(rs->getString(column));
                     break;
 
@@ -306,7 +296,6 @@ void ResultSet::doGetRows()
         }
         rowsToFetch++;
         context.pushRow(row);
-        printf("ROWS BUFFERED: %zu\n", context.getRowsFetched());
     }
 }
 

@@ -6,7 +6,7 @@ var async = require('async');
 var config = require('./config.js');
 var helper = require('./typeHelper.js');
 
-describe('22. typeBigInt.js', function () {
+describe('23. typeBigInt.js', function () {
 
   var connection = null;
   var tableName = "type_bigint";
@@ -35,7 +35,7 @@ describe('22. typeBigInt.js', function () {
     });
   });
 
-  describe('22.1 testing BIGINT data', function () {
+  describe('23.1 testing BIGINT data', function () {
     before('create table, insert data', function (done) {
       async.series([
         function (callback) {
@@ -51,7 +51,7 @@ describe('22. typeBigInt.js', function () {
       helper.dropTable(connection, tableName, done);
     });
 
-    it('22.1.1 result set stores BIGINT correctly', function (done) {
+    it('23.1.1 result set stores BIGINT correctly', function (done) {
       connection.execute("SELECT * FROM " + tableName, [], function (err, results) {
         should.not.exist(err);
         results.should.be.ok();

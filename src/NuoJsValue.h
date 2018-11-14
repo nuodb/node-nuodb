@@ -12,8 +12,8 @@ public:
     SqlValue();
     SqlValue(const SqlValue& rhs);
 
-    const char* getName() const;
-    void setName(const char*);
+    std::string getName() const;
+    void setName(std::string);
 
     int getSqlType() const;
     void setSqlType(int sqlType);
@@ -39,11 +39,11 @@ public:
     int64_t getLong() const;
     void setLong(int64_t value);
 
-    const char* getString() const;
-    void setString(const char* value);
+    std::string getString() const;
+    void setString(std::string value);
 
 private:
-    const char* name;
+    std::string name;
 
     int sqlType;
 
@@ -56,8 +56,8 @@ private:
         int64_t i64;
         float f4;
         double f8;
-        const char* s;
     } u;
+    std::string s;
 };
 
 std::string int64ToString(int64_t v);

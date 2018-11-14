@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <napi.h>
 
-#define NUODB_DEBUG
+// #define NUODB_DEBUG
 
 #ifdef NUODB_DEBUG
 # define LOG(msg) fprintf(stderr, "%s\n", msg);

@@ -9,26 +9,14 @@ SqlValue::SqlValue()
 {}
 
 SqlValue::SqlValue(const SqlValue& rhs)
-    : name(rhs.name),
-      sqlType(rhs.sqlType),
-      u(rhs.u)
-/*
-      b(rhs.b),
-      i8(rhs.i8),
-      i16(rhs.i16),
-      i32(rhs.i32),
-      i64(rhs.i64),
-      f4(rhs.f4),
-      f8(rhs.f8),
-      s(rhs.s),
-*/
+    : name(rhs.name), sqlType(rhs.sqlType), u(rhs.u), s(rhs.s)
 {}
 
-const char* SqlValue::getName() const
+std::string SqlValue::getName() const
 {
     return name;
 }
-void SqlValue::setName(const char* s)
+void SqlValue::setName(std::string s)
 {
     name = s;
 }
@@ -105,13 +93,13 @@ void SqlValue::setLong(int64_t value)
     u.i64 = value;
 }
 
-const char* SqlValue::getString() const
+std::string SqlValue::getString() const
 {
-    return u.s;
+    return s;
 }
-void SqlValue::setString(const char* value)
+void SqlValue::setString(std::string value)
 {
-    u.s = value;
+    s = value;
 }
 
 std::string int64ToString(int64_t v)

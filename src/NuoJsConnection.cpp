@@ -505,10 +505,8 @@ Context Connection::createContext()
     Context context;
     context.setConnection(connection);
     context.setIsConnectionOpen(connectionIsOpen);
-    printf("connection is open: %s\n", connectionIsOpen ? "true" : "false");
     context.setStatement(statement);
     context.setIsStatementOpen(statementIsOpen);
-    printf("statement is open: %s\n", statementIsOpen ? "true" : "false");
     return context;
 }
 

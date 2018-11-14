@@ -6,7 +6,7 @@ var async = require('async');
 var config = require('./config.js');
 var helper = require('./typeHelper.js');
 
-describe('21. typeInteger.js', function () {
+describe('22. typeInteger.js', function () {
 
   var connection = null;
   var tableName = "type_integer";
@@ -38,7 +38,7 @@ describe('21. typeInteger.js', function () {
     });
   });
 
-  describe('21.1 testing INTEGER data', function () {
+  describe('22.1 testing INTEGER data', function () {
     before('create table, insert data', function (done) {
       async.series([
         function (callback) {
@@ -54,7 +54,7 @@ describe('21. typeInteger.js', function () {
       helper.dropTable(connection, tableName, done);
     });
 
-    it('21.1.1 result set stores INTEGER correctly', function (done) {
+    it('22.1.1 result set stores INTEGER correctly', function (done) {
       connection.execute("SELECT * FROM " + tableName, [], function (err, results) {
         should.not.exist(err);
         results.should.be.ok();

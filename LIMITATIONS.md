@@ -66,3 +66,30 @@ ASSERT: /space/builds/RELEASE-PACKAGE48-RELEASELINUXTARBALL/Alpha/Foundation/Mut
 0x7fbda2c7ae25
 0x7fbda29a4bad clone+109
 ```
+
+```
+doConnect
+Error: failed to open database [no NuoDB nodes are available for database "test@ad1:48004"]
+    at Context.<anonymous> (/usr/src/nuodb/test/promises.js:10:11)
+    at callFnAsync (/usr/src/nuodb/node_modules/mocha/lib/runnable.js:400:21)
+    at Test.Runnable.run (/usr/src/nuodb/node_modules/mocha/lib/runnable.js:342:7)
+    at Runner.runTest (/usr/src/nuodb/node_modules/mocha/lib/runner.js:455:10)
+    at /usr/src/nuodb/node_modules/mocha/lib/runner.js:573:12
+    at next (/usr/src/nuodb/node_modules/mocha/lib/runner.js:369:14)
+    at /usr/src/nuodb/node_modules/mocha/lib/runner.js:379:7
+    at next (/usr/src/nuodb/node_modules/mocha/lib/runner.js:303:14)
+    at Immediate._onImmediate (/usr/src/nuodb/node_modules/mocha/lib/runner.js:347:5)
+    at runCallback (timers.js:810:20)
+    at tryOnImmediate (timers.js:768:5)
+    at processImmediate [as _immediateCallback] (timers.js:745:5)
+(node:198) UnhandledPromiseRejectionWarning: AssertionError: expected Error {
+  message: 'failed to open database [no NuoDB nodes are available for database "test@ad1:48004"]'
+} to not exist
+    at /usr/src/nuodb/test/promises.js:21:20
+    at <anonymous>
+    at runMicrotasksCallback (internal/process/next_tick.js:122:5)
+    at _combinedTickCallback (internal/process/next_tick.js:132:7)
+    at process._tickCallback (internal/process/next_tick.js:181:9)
+(node:198) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 4)
+(node:198) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+```

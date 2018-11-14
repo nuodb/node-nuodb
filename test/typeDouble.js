@@ -6,7 +6,7 @@ var async = require('async');
 var config = require('./config.js');
 var helper = require('./typeHelper.js');
 
-describe('23. typeDouble.js', function () {
+describe('24. typeDouble.js', function () {
 
   var connection = null;
   var tableName = "type_double";
@@ -35,7 +35,7 @@ describe('23. typeDouble.js', function () {
     });
   });
 
-  describe('23.1 testing DOUBLE data', function () {
+  describe('24.1 testing DOUBLE data', function () {
     before('create table, insert data', function (done) {
       async.series([
         function (callback) {
@@ -51,7 +51,7 @@ describe('23. typeDouble.js', function () {
       helper.dropTable(connection, tableName, done);
     });
 
-    it('23.1.1 result set stores DOUBLE correctly', function (done) {
+    it('24.1.1 result set stores DOUBLE correctly', function (done) {
       connection.execute("SELECT * FROM " + tableName, [], function (err, results) {
         should.not.exist(err);
         results.should.be.ok();

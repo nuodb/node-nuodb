@@ -6,7 +6,7 @@ var async = require('async');
 var config = require('./config.js');
 var helper = require('./typeHelper.js');
 
-describe('24. typeBoolean.js', function () {
+describe('20. typeBoolean.js', function () {
 
   var connection = null;
   var tableName = "type_boolean";
@@ -34,7 +34,7 @@ describe('24. typeBoolean.js', function () {
     });
   });
 
-  describe('24.1 testing BOOLEAN data', function () {
+  describe('20.1 testing BOOLEAN data', function () {
     before('create table, insert data', function (done) {
       async.series([
         function (callback) {
@@ -50,7 +50,7 @@ describe('24. typeBoolean.js', function () {
       helper.dropTable(connection, tableName, done);
     });
 
-    it('24.1.1 result set stores BOOLEAN correctly', function (done) {
+    it('20.1.1 result set stores BOOLEAN correctly', function (done) {
       connection.execute("SELECT * FROM " + tableName, [], function (err, results) {
         should.not.exist(err);
         results.should.be.ok();

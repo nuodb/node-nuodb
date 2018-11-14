@@ -1,5 +1,6 @@
 VERSION:=$(shell jq -r .version package.json)
 UNCRUSTIFY:=uncrustify
+PWD:=$(shell pwd)
 
 #:help: help        | Displays the GNU makefile help
 .PHONY: help
@@ -27,12 +28,19 @@ build:
 #:help: test        | Runs the `test` target, building and testing the driver.
 .PHONY: test
 test: build
-	docker run -it --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker volume create cores
+	docker run -it --cap-add=SYS_PTRACE --volume $(PWD)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+
+#:help: test-fast   | Runs the `test` target, building and testing the driver.
+.PHONY: test-fast
+test-fast:
+	docker volume create cores
+	docker run -it --cap-add=SYS_PTRACE --volume $(PWD)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: run-build   | Runs the `build` Docker variant
 .PHONY: run-build
 run-build:
-	docker run -it --network nuodb-net --rm nuodb/node-nuodb:$(VERSION)-build bash
+	docker run -it --cap-add=SYS_PTRACE --network nuodb-net --rm nuodb/node-nuodb:$(VERSION)-build bash
 
 #:help: onbuild     | Creates an `ONBUILD` Docker image variant
 .PHONY: onbuild
@@ -100,3 +108,8 @@ term:
 .PHONY: dn
 dn:
 	build-support/scripts/dn
+
+#:help: brute       | Runs the tests until an error occurs
+.PHONY: brute
+brute:
+	./build-support/scripts/brute

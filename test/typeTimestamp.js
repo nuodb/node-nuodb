@@ -6,19 +6,24 @@ var async = require('async');
 var config = require('./config.js');
 var helper = require('./typeHelper.js');
 
-describe('21. typeSmallInt.js', function () {
+describe('26. typeTimestamp.js', function () {
 
   var connection = null;
-  var tableName = "type_smallint";
+  var tableName = "type_timestamp";
 
-  // See: SMALLINT @ http://doc.nuodb.com/Latest/Content/SQL-Numeric-Types.htm
+  // See: TIMESTAMP @ http://doc.nuodb.com/Latest/Content/SQL-Date-and-Time-Types.htm
   var data = [
-    0,
-    1,
-    -128,
-    127,
-    -32768,
-    32767
+    new Date(-100000000),
+    new Date(0),
+    new Date(10000000000),
+    new Date(100000000000),
+    new Date(1995, 11, 17),
+    new Date('1995-12-17T03:24:00'),
+    new Date('2015-07-23 21:00:00'),
+    new Date('2015-07-23 22:00:00'),
+    new Date('2015-07-23 23:00:00'),
+    new Date('2015-07-24 00:00:00'),
+    new Date(2003, 9, 23, 11, 50, 30, 123)
   ];
 
   before('open connection', function (done) {
@@ -36,11 +41,11 @@ describe('21. typeSmallInt.js', function () {
     });
   });
 
-  describe('21.1 testing SMALLINT data', function () {
+  describe('26.1 testing TIMESTAMP data', function () {
     before('create table, insert data', function (done) {
       async.series([
         function (callback) {
-          helper.createTable(connection, tableName, 'SMALLINT', callback);
+          helper.createTable(connection, tableName, 'TIMESTAMP', callback);
         },
         function (callback) {
           helper.insertDataArray(connection, tableName, data, callback);
@@ -52,7 +57,7 @@ describe('21. typeSmallInt.js', function () {
       helper.dropTable(connection, tableName, done);
     });
 
-    it('21.1.1 result set stores SMALLINT correctly', function (done) {
+    it('26.1.1 result set stores TIMESTAMP correctly', function (done) {
       connection.execute("SELECT * FROM " + tableName, [], function (err, results) {
         should.not.exist(err);
         results.should.be.ok();
@@ -68,8 +73,5 @@ describe('21. typeSmallInt.js', function () {
       });
     });
   });
-
-  // todo: test big integers
-  // todo: test safe integers
 
 });
