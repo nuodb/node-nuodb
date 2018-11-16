@@ -182,6 +182,7 @@ Napi::Value sqlToEsValue(Napi::Env env, SqlValue sqlValue)
                            .Get("Date").As<Napi::Function>()
                            .New(std::initializer_list<napi_value>{ tsString });
                 }
+
                 case NuoDB::NUOSQL_DATE:
                 case NuoDB::NUOSQL_TIMESTAMP: {
                     Napi::String tsString = Napi::String::New(env, sqlValue.getString());
