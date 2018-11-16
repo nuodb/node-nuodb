@@ -35,7 +35,7 @@ enum EsType
 #define MAX_SAFE_INTEGER 9007199254740991
 
 // The MIN_SAFE_INTEGER constant represents the minimum safe integer in
-// JavaScript (-(253 - 1)).
+// JavaScript (-(2^53 - 1)).
 #define MIN_SAFE_INTEGER -9007199254740991
 
 // Type handles type conversion for SQL and ES data types.
