@@ -1,6 +1,5 @@
 VERSION:=$(shell jq -r .version package.json)
 UNCRUSTIFY:=uncrustify
-PWD:=$(shell pwd)
 
 #:help: help        | Displays the GNU makefile help
 .PHONY: help
@@ -29,13 +28,13 @@ build:
 .PHONY: test
 test: build
 	docker volume create cores
-	docker run -it --cap-add=SYS_PTRACE --volume $(PWD)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker run -it --cap-add=SYS_PTRACE --volume $(CURDIR)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: test-fast   | Runs the `test` target, building and testing the driver.
 .PHONY: test-fast
 test-fast:
 	docker volume create cores
-	docker run -it --cap-add=SYS_PTRACE --volume $(PWD)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker run -it --cap-add=SYS_PTRACE --volume $(CURDIR)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: run-build   | Runs the `build` Docker variant
 .PHONY: run-build
@@ -70,14 +69,14 @@ release:
 #:help: clean       | Cleans up any build artifacts
 .PHONY: clean
 clean:
-	@docker rm $(docker ps --all -q -f status=exited) || true
-	@docker rm $(docker ps --all -q -f status=created) || true
-	@docker rmi -f nuodb/node-nuodb:$(VERSION)-build
-	@docker rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
-	@docker rmi -f nuodb/node-nuodb:$(VERSION)-centos
-	@docker rmi -f nuodb/node-nuodb:$(VERSION)-example
-	@docker image prune -f
-	@rm -fr build node_modules
+	-docker rm $(docker ps --all -q -f status=exited)
+	-docker rm $(docker ps --all -q -f status=created)
+	-docker rmi -f nuodb/node-nuodb:$(VERSION)-build
+	-docker rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
+	-docker rmi -f nuodb/node-nuodb:$(VERSION)-centos
+	-docker rmi -f nuodb/node-nuodb:$(VERSION)-example
+	-docker image prune -f
+	-rm -fr build node_modules
 
 #:help: up          | Starts up a NuoDB cluster
 .PHONY: up
