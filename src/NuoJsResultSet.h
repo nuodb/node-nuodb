@@ -3,7 +3,6 @@
 
 #include "NuoJsAddon.h"
 #include "NuoJsContext.h"
-#include "NuoDB.h"
 
 namespace NuoJs
 {
