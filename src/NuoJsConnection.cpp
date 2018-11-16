@@ -1,16 +1,15 @@
-#include <stdio.h>
-
-#include <exception>
-#include <inttypes.h>
-
-#include <napi.h>
-#include <uv.h>
-
 #include "NuoJsConnection.h"
 #include "NuoJsResultSet.h"
 #include "NuoJsErrMsg.h"
 #include "NuoJsTypes.h"
 #include "NuoJsNapiExtensions.h"
+
+#include <stdio.h>
+#include <inttypes.h>
+#include <exception>
+
+#include <napi.h>
+#include <uv.h>
 
 namespace NuoJs
 {

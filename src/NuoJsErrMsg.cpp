@@ -1,7 +1,7 @@
+#include "NuoJsErrMsg.h"
+
 #include <stdio.h>
 #include <stdarg.h>
-
-#include "NuoJsErrMsg.h"
 
 namespace NuoJs
 {

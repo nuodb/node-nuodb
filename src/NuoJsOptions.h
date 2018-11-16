@@ -1,8 +1,6 @@
 #ifndef NUOJS_OPTIONS_H
 #define NUOJS_OPTIONS_H
 
-#include "NuoJsAddon.h"
-
 namespace NuoJs
 {
 // RowMode controls how results are returned; results may be returned as an

@@ -1,9 +1,10 @@
 #ifndef NUOJS_PARAMS_H
 #define NUOJS_PARAMS_H
 
+#include "NuoJsAddon.h"
+
 #include <string>
 #include <unordered_map>
-#include "NuoJsAddon.h"
 
 namespace NuoJs
 {

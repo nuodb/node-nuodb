@@ -1,13 +1,13 @@
 #ifndef NUOJS_CONTEXT_H
 #define NUOJS_CONTEXT_H
 
-#include <vector>
-
 #include "NuoJsAddon.h"
 #include "NuoJsOptions.h"
 #include "NuoJsParams.h"
 #include "NuoJsValue.h"
 #include "NuoDB.h"
+
+#include <vector>
 
 namespace NuoJs
 {

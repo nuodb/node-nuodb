@@ -1,7 +1,7 @@
 #ifndef NUOJS_NAPI_EXTENSIONS_H
 #define NUOJS_NAPI_EXTENSIONS_H
 
-#include <napi.h>
+#include "NuoJsAddon.h"
 
 // See: https://github.com/nodejs/node-addon-api/issues/57
 namespace NuoJs
