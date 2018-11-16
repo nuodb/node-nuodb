@@ -61,6 +61,14 @@ the makefile targets available:
 |  status 	|  Shows the NuoDB cluster status 	|  Debug and test 	|
 |  dn 	|  Stops the NuoDB cluster 	|  Debug and test 	|
 
+We require a CentOS variant of the official Node JS Docker.
+To grab and build the Node JS Docker CentOS image:
+
+```bash
+git clone git@github.com:nuodb/docker-node.git
+cd docker-node/8/centos/ && docker build -t node:8.12.0-centos .
+```
+
 To build and test a `build` Docker image:
 
 ```bash
