@@ -1,4 +1,4 @@
-#include <napi.h>
+#include "NuoJsAddon.h"
 #include "NuoJsConnection.h"
 #include "NuoJsResultSet.h"
 
