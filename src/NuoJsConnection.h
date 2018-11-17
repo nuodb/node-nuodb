@@ -3,7 +3,8 @@
 
 #include <napi.h>
 #include "NuoJsAddon.h"
-#include "NuoJsConfig.h"
+#include "NuoJsParams.h"
+#include "NuoJsContext.h"
 
 // nuodb emits lots of warnings about this; so disable it
 #ifdef __APPLE__
@@ -31,8 +32,6 @@ public:
 private:
     static Napi::FunctionReference constructor;
 
-    void hello(std::string msg);
-
     // Connect to a database asynchronously.
     Napi::Value connect(const Napi::CallbackInfo& info);
 
@@ -57,23 +56,14 @@ private:
     // Set the read only mode synchronously (accessor).
     void setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& value);
 
-    // Gets a config from the given NAPI object.
-    void getConfig(Napi::Env env, Napi::Object object, Config& config);
-    // Gets a string option from an object.
-    Napi::Value getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key);
-    // Sets an option from the named property in the object into the configuration.
-    void setOption(Napi::Env env, Napi::Object object, Config& config, std::string key, bool required);
-    // Sets an option from the named property in the object into the configuration; if the value does not exist use the provided default value.
-    void setOptionOrDefault(Napi::Env env, Napi::Object object, Config& config, std::string key, std::string value);
-
-    // Get connection string.
-    std::string getConnectionString(const Config& config);
-
     // Internal connect method that works against a NuoDB connection object.
-    void doConnect(Config& config);
+    void doConnect();
 
     // Internal execute method that works against a NuoDB connection object.
     void doExecute(std::string sql);
+
+    // Internal method to get the result set after having executed SQL.
+    NuoDB::ResultSet* getResultSet();
 
     // Internal commit method that works against a NuoDB connection object.
     void doCommit();
@@ -84,6 +74,9 @@ private:
     // Internal method to prepare a statement and set its binds.
     NuoDB::PreparedStatement* prepareStatement(std::string sql, Napi::Array binds);
 
+    // Internal method to create a context from this object.
+    Context createContext();
+
     // Async worker for creating connections.
     friend class ConnectAsyncWorker;
     // Async worker for committing transactions.
@@ -93,9 +86,13 @@ private:
     // Async worker for executing a statement.
     friend class ExecuteAsyncWorker;
 
+    Params params;
+
     NuoDB::Connection* connection;
+    bool connectionIsOpen;
+
     NuoDB::PreparedStatement* statement;
-    bool open;
+    bool statementIsOpen;
 };
 }
 

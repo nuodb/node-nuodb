@@ -1,28 +1,32 @@
+#include "NuoJsErrMsg.h"
+
 #include <stdio.h>
 #include <stdarg.h>
-
-#include "NuoJsErrMsg.h"
 
 namespace NuoJs
 {
 #define NUOJS_MAX_ERROR_MSG_LEN 256
 
 static const char* errMsg[] = {
-    "success",                               // errSuccess
-    "failed to connect [%s]",                // errConnect
-    "failed to open database [%s]",          // errOpen
-    "invalid number of parameters [%s]",     // errInvalidParamCount
-    "invalid type for parameter %d",         // errInvalidParamType
-    "missing property %s",                   // errMissingProperty
-    "invalid type for property %s",          // errInvalidPropertyType
-    "invalid value for property %s",         // errInvalidPropertyValue
-    "bad configuration [%s]",                // errBadConfiguration
-    "connection already open",               // errAlreadyOpen
-    "connection closed",                     // errConnectionClosed
-    "failed to close connection [%s]",       // errFailedCloseConnection
-    "failed to execute SQL statement [%s]",  // errSqlExecute
-    "invalid type in assignment",            // errInvalidTypeAssignment
-    "unsafe type conversion to %s will lose precision"   // errConversionUnsafe
+    "success",                                            // errSuccess
+    "failed to connect [%s]",                             // errConnect
+    "failed to open database [%s]",                       // errOpen
+    "invalid number of parameters [%s]",                  // errInvalidParamCount
+    "invalid type for parameter %d",                      // errInvalidParamType
+    "invalid value for parameter %d",                     // errInvalidParamValue
+    "missing property %s",                                // errMissingProperty
+    "invalid type for property %s",                       // errInvalidPropertyType
+    "invalid value for property %s",                      // errInvalidPropertyValue
+    "bad configuration [%s]",                             // errBadConfiguration
+    "connection already open",                            // errAlreadyOpen
+    "connection closed",                                  // errConnectionClosed
+    "failed to close connection [%s]",                    // errFailedCloseConnection
+    "failed to execute SQL statement [%s]",               // errSqlExecute
+    "invalid type in assignment",                         // errInvalidTypeAssignment
+    "unsafe type conversion to %s will lose precision",   // errConversionUnsafe
+    "failed to close result set [%s]",                    // errFailedCloseResultSet
+    "failed to get more result set rows [%s]",            // errGetRows
+    "statement is not open",                              // errNoStatement
 };
 
 /* static */

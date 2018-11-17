@@ -16,7 +16,23 @@
 
 2.1 Run complete test suite
 
+```
+make test
+```
+
 2.2 Run specified test(s)
+
+For example, to run the timestamp tests, first open the build terminal:
+
+```
+make run-build
+```
+
+Then run the test:
+
+```
+node_modules/.bin/mocha -g '26. typeTimestamp.js'
+```
 
 3. Add tests
 

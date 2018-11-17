@@ -26,10 +26,12 @@ inclusive of unit tests. The steps and current status are:
 |---------|:-------------:|------:|
 | Commit        | DONE | 2d |
 | Read-Only + Auto-Commit        | DONE | 1d |
+| Prepare       | WIP | 5d |
 | Execute       | WIP | 2d |
 | Results       | WIP | 5d |
-| Results - Streams       | WIP | 3d |
-| Prepare       | --- | 5d |
+| Results - Streams       | --- | 3d |
+| RowMode       | --- | 1d |
+| Rows v ResultSet | --- | 2d |
 
 The goal of the third phase is to stabilize and tune the integration.
 

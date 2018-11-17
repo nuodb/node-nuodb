@@ -1,16 +1,15 @@
-#include <stdio.h>
-#include <sstream>
-#include <iostream>
-#include <exception>
-#include <inttypes.h>
-
-#include <napi.h>
-#include <uv.h>
-
 #include "NuoJsConnection.h"
+#include "NuoJsResultSet.h"
 #include "NuoJsErrMsg.h"
 #include "NuoJsTypes.h"
 #include "NuoJsNapiExtensions.h"
+
+#include <stdio.h>
+#include <inttypes.h>
+#include <exception>
+
+#include <napi.h>
+#include <uv.h>
 
 namespace NuoJs
 {
@@ -51,12 +50,11 @@ Napi::Value Connection::newInstance(const Napi::CallbackInfo& info)
         // That seemed like a real headache, so we opted for the latter, to have the constructor
         // called, have it do nothing, and then delegate all the real work to the Connect method
         // of the unwrapped object.
-        Napi::EscapableHandleScope scope(env);
+        //
         // Construct and permit the object to survive the lifespan of this scope...
+        Napi::EscapableHandleScope scope(env);
         Napi::Object that = constructor.New({ info[0] });
         scope.Escape(napi_value(that)).ToObject();
-
-        // Connect to the database...
         Connection* c = ObjectWrap::Unwrap(that);
         return c->connect(info);
     } catch (std::exception& e) {
@@ -83,88 +81,20 @@ Napi::Value Connection::newInstance(const Napi::CallbackInfo& info)
     }
 }
 
-void Connection::hello(std::string msg)
-{
-    printf(msg.c_str());
-}
-
-Connection::Connection(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Connection>(info)
-{
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-    try {
-        open = false;
-        connection = NuoDB::Connection::create();
-    } catch (NuoDB::SQLException& exception) {
-        std::string message = ErrMsg::get(ErrMsgType::errOpen, exception.getText());
-        Napi::Error::New(env, message).ThrowAsJavaScriptException();
-    }
-}
-
-Napi::Value Connection::getNamedPropertyString(Napi::Env env, Napi::Object object, std::string key)
-{
-    if (!object.Has(key)) {
-        std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key.c_str());
-        Napi::Error::New(env, message).ThrowAsJavaScriptException();
-        return env.Undefined();
-    }
-    Napi::Value value = object[key];
-    if (!value.IsString()) {
-        std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
-        Napi::TypeError::New(env, message).ThrowAsJavaScriptException();
-        return env.Undefined();
-    }
-    return value.ToString();
-}
-
-void Connection::setOption(Napi::Env env, Napi::Object object, Config& config, std::string key, bool required)
-{
-    if (object.Has(key)) {
-        config.options[key] = getNamedPropertyString(env, object, key).ToString();
-    } else if (required) {
-        std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key.c_str());
-        throw std::runtime_error(message);
-    }
-}
-
-void Connection::setOptionOrDefault(Napi::Env env, Napi::Object object, Config& config, std::string key, std::string defaultValue)
-{
-    std::string value = defaultValue;
-    if (object.Has(key)) {
-        value = getNamedPropertyString(env, object, key).ToString();
-    }
-    config.options[key] = value;
-}
-
-void Connection::getConfig(Napi::Env env, Napi::Object object, Config& config)
-{
-    // get the database name (required)
-    setOption(env, object, config, "database", true);
-    // get the user name (required)
-    setOption(env, object, config, "user", true);
-    // get the password (required)
-    setOption(env, object, config, "password", true);
-
-    // get the host name (optional, default to localhost)
-    setOptionOrDefault(env, object, config, "hostname", "localhost");
-    // get the port (optional, default to 48004)
-    setOptionOrDefault(env, object, config, "port", "48004");
-    // get the schema (optional, default is USER)
-    setOptionOrDefault(env, object, config, "schema", "USER");
-}
+Connection::Connection(const Napi::CallbackInfo& info)
+    : Napi::ObjectWrap<Connection>(info), connectionIsOpen(false), statementIsOpen(false)
+{}
 
 class ConnectAsyncWorker : public Napi::AsyncWorker
 {
 public:
     // this transfers responsibility to cleanup config object to worker
-    ConnectAsyncWorker(const Napi::Function& callback, Connection& target, Config* config)
-        : Napi::AsyncWorker(callback), target(target), config(config)
+    ConnectAsyncWorker(const Napi::Function& callback, Connection& target)
+        : Napi::AsyncWorker(callback), target(target)
     {}
 
     ~ConnectAsyncWorker()
-    {
-        delete config;
-    }
+    {}
 
     /**
      * Executes on the worker thread.
@@ -174,7 +104,7 @@ public:
     void Execute()
     {
         try {
-            target.doConnect(*config);
+            target.doConnect();
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             SetError(message);
@@ -193,7 +123,6 @@ public:
 
 private:
     Connection& target;
-    Config* config;
 };
 
 // Connect to the database asynchronously.
@@ -219,9 +148,8 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
     Napi::Object options = info[0].As<Napi::Object>();
 
     // Retrievig the config must be done within the JS engine event loop.
-    Config* config = new Config;
     try {
-        getConfig(info.Env(), options, *config);
+        getJsonParams(info.Env(), options, params);
     } catch (std::exception& e) {
         std::string message = ErrMsg::get(ErrMsgType::errBadConfiguration, e.what());
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
@@ -237,7 +165,7 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
         }
         Napi::Function callback = info[1].As<Napi::Function>();
 
-        ConnectAsyncWorker* asyncWorker = new ConnectAsyncWorker(callback, *this, config);
+        ConnectAsyncWorker* asyncWorker = new ConnectAsyncWorker(callback, *this);
         asyncWorker->Queue();
         return info.Env().Undefined();
     }
@@ -245,7 +173,7 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
     else if (info.Length() == 1) {
         auto deferred = Napi::Promise::Deferred::New(env);
         try {
-            doConnect(*config);
+            doConnect();
             deferred.Resolve(Value());
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
@@ -258,27 +186,26 @@ Napi::Value Connection::connect(const Napi::CallbackInfo& info)
     }
 }
 
-void Connection::doConnect(Config& config)
+void Connection::doConnect()
 {
     TRACE("doConnect");
 
-    if (open) {
+    if (connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errAlreadyOpen);
         throw std::runtime_error(message);
     }
-
-    std::ostringstream connection_string;
-    connection_string << config.options["database"] << "@" << config.options["hostname"] << ":" << config.options["port"];
+    connection = NuoDB::Connection::create();
+    std::string connection_string = getConnectionString(params);
 
     // free properties!
     NuoDB::Properties* props = connection->allocProperties();
-    props->putValue("user", config.options["user"].c_str());
-    props->putValue("password", config.options["password"].c_str());
-    props->putValue("schema", config.options["schema"].c_str());
+    props->putValue("user", params["user"].c_str());
+    props->putValue("password", params["password"].c_str());
+    props->putValue("schema", params["schema"].c_str());
 
     try {
-        connection->openDatabase(connection_string.str().c_str(), props);
-        open = true;
+        connection->openDatabase(connection_string.c_str(), props);
+        connectionIsOpen = true;
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
     }
@@ -370,7 +297,7 @@ void Connection::doCommit()
 {
     TRACE("doCommit");
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
@@ -459,15 +386,15 @@ Napi::Value Connection::close(const Napi::CallbackInfo& info)
 
 void Connection::doClose()
 {
-    TRACE("doClose");
+    TRACE("Connection::doClose");
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
 
     try {
-        open = false;
+        connectionIsOpen = false;
         connection->close();
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
@@ -481,7 +408,7 @@ Napi::Value Connection::getAutoCommit(const Napi::CallbackInfo& info)
 
     Napi::Env env = info.Env();
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
@@ -502,7 +429,7 @@ void Connection::setAutoCommit(const Napi::CallbackInfo& info, const Napi::Value
 
     Napi::Env env = info.Env();
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return;
@@ -530,7 +457,7 @@ Napi::Value Connection::getReadOnly(const Napi::CallbackInfo& info)
 
     Napi::Env env = info.Env();
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return info.Env().Undefined();
@@ -551,7 +478,7 @@ void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& 
 
     Napi::Env env = info.Env();
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         Napi::Error::New(env, message).ThrowAsJavaScriptException();
         return;
@@ -572,6 +499,16 @@ void Connection::setReadOnly(const Napi::CallbackInfo& info, const Napi::Value& 
     }
 }
 
+Context Connection::createContext()
+{
+    Context context;
+    context.setConnection(connection);
+    context.setIsConnectionOpen(connectionIsOpen);
+    context.setStatement(statement);
+    context.setIsStatementOpen(statementIsOpen);
+    return context;
+}
+
 class ExecuteAsyncWorker : public Napi::AsyncWorker
 {
 public:
@@ -590,7 +527,7 @@ public:
     void Execute()
     {
         try {
-            /* result set */ target.doExecute(sql);
+            target.doExecute(sql);
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errSqlExecute, e.what());
             SetError(message);
@@ -603,8 +540,7 @@ public:
      */
     void OnOK()
     {
-        Napi::HandleScope scope(Env());
-        Callback().Call({ Env().Undefined() });
+        Callback().Call({ Env().Undefined(), ResultSet::newInstance(Env(), target.createContext()) });
     }
 
 private:
@@ -715,7 +651,7 @@ NuoDB::PreparedStatement* Connection::prepareStatement(std::string sql, Napi::Ar
 {
     TRACE("prepareStatement");
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
@@ -763,7 +699,7 @@ NuoDB::PreparedStatement* Connection::prepareStatement(std::string sql, Napi::Ar
                     break;
                 }
 
-                case NUOSQL_UNDEFINED:
+                case NuoDB::NUOSQL_UNDEFINED:
                     if (isDate(value.Env(), value)) {
                         char buffer[80];
                         time_t seconds = (time_t)(value.ToNumber().Int64Value() / 1000);
@@ -778,6 +714,7 @@ NuoDB::PreparedStatement* Connection::prepareStatement(std::string sql, Napi::Ar
                     break;
             }
         }
+        statementIsOpen = true;
         return statement;
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
@@ -788,13 +725,43 @@ void Connection::doExecute(std::string sql)
 {
     TRACE("doExecute");
 
-    if (!open) {
+    if (!connectionIsOpen) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
 
     try {
         statement->execute();
+    } catch (NuoDB::SQLException& e) {
+        throw std::runtime_error(e.getText());
+    }
+}
+
+NuoDB::ResultSet* Connection::getResultSet()
+{
+    TRACE("getResultSet");
+
+    if (!connectionIsOpen) {
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
+        throw std::runtime_error(message);
+    }
+
+    try {
+        return statement->getResultSet();
+/*
+        if (rs) {
+            while (rs->next()) {
+                NuoDB::ResultSetMetaData* metaData = rs->getMetaData();
+                auto columns = metaData->getColumnCount();
+                printf("cols: %d\n", columns);
+                for (auto index = 0; index < columns; index++) {
+                    printf("type [%d]: %d\n", index + 1, metaData->getColumnType(index + 1));
+                }
+                printf("found result\n");
+            }
+            rs->close();
+        }
+*/
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
     }
