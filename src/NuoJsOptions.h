@@ -1,6 +1,8 @@
 #ifndef NUOJS_OPTIONS_H
 #define NUOJS_OPTIONS_H
 
+#include "NuoJsAddon.h"
+
 namespace NuoJs
 {
 // getJsonOptions returns the JSON parameters provided by the user.

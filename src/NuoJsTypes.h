@@ -1,8 +1,7 @@
 #ifndef NUOJS_TYPES_H
 #define NUOJS_TYPES_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include "NuoJsAddon.h"
 
 namespace NuoDB
 {

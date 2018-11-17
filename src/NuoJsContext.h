@@ -8,7 +8,6 @@
 #include "NuoDB.h"
 
 #include <vector>
-#include <stdint.h>
 
 namespace NuoJs
 {

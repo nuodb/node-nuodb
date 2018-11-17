@@ -2,6 +2,7 @@
 #define NUOJS_ADDON_H
 
 #include <stddef.h>
+#include <stdint.h>
 #include <napi.h>
 
 // #define NUODB_DEBUG
