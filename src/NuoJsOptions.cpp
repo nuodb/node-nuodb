@@ -18,9 +18,37 @@ void getJsonOptions(Napi::Env env, Napi::Object object, Context& context)
     if (object.Has("rowMode")) {
         Napi::Value rowMode = getJsonNumber(env, object, "rowMode");
         if (rowMode.IsNumber()) {
-            context.setRowMode(toRowMode(rowMode.ToNumber().Int32Value()));
+            int32_t mode = rowMode.ToNumber().Int32Value();
+            if (mode != ROWS_AS_ARRAY && mode != ROWS_AS_OBJECT) {
+                std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyValue, "rowMode");
+                throw std::runtime_error(message);
+            }
+            context.setRowMode(toRowMode(mode));
         } else {
             std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, "rowMode");
+            throw std::runtime_error(message);
+        }
+    }
+    if (object.Has("fetchSize")) {
+        Napi::Value fetchSize = getJsonNumber(env, object, "fetchSize");
+        if (fetchSize.IsNumber()) {
+            int32_t size = fetchSize.ToNumber().Int32Value();
+            if (size < 0) {
+                std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyValue, "fetchSize");
+                throw std::runtime_error(message);
+            }
+            context.setFetchSize(size);
+        } else {
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, "fetchSize");
+            throw std::runtime_error(message);
+        }
+    }
+    if (object.Has("autoCommit")) {
+        Napi::Value autoCommit = getJsonBoolean(env, object, "autoCommit");
+        if (autoCommit.IsBoolean()) {
+            context.setAutoCommit(toRowMode(autoCommit.ToBoolean()));
+        } else {
+            std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, "autoCommit");
             throw std::runtime_error(message);
         }
     }

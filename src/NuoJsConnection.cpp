@@ -637,6 +637,15 @@ Napi::Value Connection::execute(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     } else {
         // handle promise...
+        auto deferred = Napi::Promise::Deferred::New(env);
+        try {
+            doExecute(sql);
+            deferred.Resolve(ResultSet::newInstance(env, createContext()));
+        } catch (std::exception& e) {
+            std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
+            deferred.Reject(Napi::Error::New(env, message).Value());
+        }
+        return deferred.Promise();
     }
 
     return info.Env().Undefined();

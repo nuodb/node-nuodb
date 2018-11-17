@@ -32,6 +32,9 @@ public:
     NuoDB::Connection* getConnection() const;
     void setConnection(NuoDB::Connection* c);
 
+    bool isAutoCommit() const;
+    void setAutoCommit(bool b);
+
     bool isConnectionOpen() const;
     void setIsConnectionOpen(bool b);
 
@@ -60,6 +63,10 @@ private:
 
     RowMode rowMode;
 
+    size_t fetchSize;
+
+    bool autoCommit;
+
     NuoDB::Connection* connection;
     bool connectionIsOpen;
 
@@ -70,7 +77,6 @@ private:
     bool resultIsOpen;
 
     std::vector<std::vector<SqlValue> > rows;
-    size_t fetchSize;
 };
 } // namespace NuoJs
 

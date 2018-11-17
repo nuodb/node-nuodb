@@ -4,6 +4,8 @@ namespace NuoJs
 {
 Context::Context() :
     rowMode(RowMode::ROWS_AS_ARRAY),
+    fetchSize(0),
+    autoCommit(true),
     connection(nullptr),
     connectionIsOpen(false),
     statement(nullptr),
@@ -15,6 +17,8 @@ Context::Context() :
 Context::Context(const Context& c) :
     params(c.params),
     rowMode(c.rowMode),
+    fetchSize(c.fetchSize),
+    autoCommit(c.autoCommit),
     connection(nullptr),
     connectionIsOpen(c.connectionIsOpen),
     statement(nullptr),
@@ -66,6 +70,8 @@ Context& Context::operator=(Context other)
     params = other.params;
     // std::swap(params, other.params);
     std::swap(rowMode, other.rowMode);
+    std::swap(fetchSize, other.fetchSize);
+    std::swap(autoCommit, other.autoCommit);
 
     std::swap(result, other.result);
     std::swap(statement, other.statement);
@@ -76,9 +82,17 @@ Context& Context::operator=(Context other)
 
     // std::swap(rows, other.rows);
     rows = other.rows;
-    std::swap(fetchSize, other.fetchSize);
 
     return *this;
+}
+
+bool Context::isAutoCommit() const
+{
+    return autoCommit;
+}
+void Context::setAutoCommit(bool b)
+{
+    autoCommit = b;
 }
 
 Params& Context::getParams()
