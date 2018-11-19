@@ -2,13 +2,24 @@
   "targets": [
     {
       "target_name": "nuodb",
+      "cflags": [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-pedantic"
+      ],
       "cflags!": [
         "-fno-exceptions"
       ],
+      "cflags_cc": [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-pedantic"
+      ],
       "cflags_cc!": [
         "-fno-exceptions",
-        "-Wno-overloaded-virtual",
-        "-DNDEBUG"
+        "-Wno-overloaded-virtual"
       ],
       "variables": {
         "nuodb_home": "<!(echo ${NUODB_HOME-\"/opt/nuodb\"})"
