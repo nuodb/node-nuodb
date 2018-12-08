@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export VERSION=3.0.0
+docker volume create cores
+while docker run -it --cap-add=SYS_PTRACE --volume $(pwd)/cores:/cores --name test --rm --network nuodb-net nuodb/node-nuodb:${VERSION}-build npm run test; do :; done
