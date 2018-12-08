@@ -35,7 +35,24 @@ connection.execute("SELECT 1 FROM DUAL")
       .catch(e => console.log(e.stack))
   })
   .catch(e => console.log(e.stack())
+```
 
+We also support async/await out of the box, here is a comprehensive example:
+
+```javascript
+(async () => {
+  var connection = await driver.connect(config);
+  try {
+    var results = await connection.execute('SELECT 1 AS VALUE FROM DUAL');
+    var rows = await results.getRows();
+    console.log(rows);
+  } catch (e) {
+    await connection.rollback();
+    throw e;
+  } finally {
+    await connection.close();
+  }
+})().catch(e => console.log(e.stack));
 ```
 
 If your query has parameters you need to supply binding variables in the execute method:
