@@ -89,4 +89,4 @@ All **DATE**, **TIME**, **TIMESTAMP** types in SQL are represented as an ES **Da
 
 #### Default Type
 
-All other types are represented an an ES **String**.
+All other types are represented as an ES **String**.
