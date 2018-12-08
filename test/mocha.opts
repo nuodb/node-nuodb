@@ -1,6 +1,0 @@
---reporter spec
---recursive
---check-leaks
---require should
---require async
---ui bdd
