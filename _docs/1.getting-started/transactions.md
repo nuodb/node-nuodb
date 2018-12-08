@@ -41,8 +41,9 @@ var driver = new Driver();
 NuoDB supports multiple transaction isolation levels; the supported levels are
 [documented online][0]; the two isolation levels that are supported in the driver are:
 
-* Isolation.CONSISTENT_READ
-* Isolation.READ_COMMITTED
+> * Isolation.CONSISTENT_READ
+> * Isolation.READ_COMMITTED
+
 
 The isolation level is specified when executing a transaction:
 
