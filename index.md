@@ -24,7 +24,8 @@ echo 'FROM nuodb/node-nuodb:${VERSION}-onbuild' >> Dockerfile
 ```
 2. Build a Docker:
 ```bash
-docker build --build-arg VERSION=$(VERSION) -t acme/example:latest .
+export VERSION=...
+docker build --build-arg VERSION=${VERSION} -t acme/example:latest .
 ```
 3. Run your application:
 ```bash
