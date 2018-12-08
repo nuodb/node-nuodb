@@ -14,17 +14,19 @@ To connect to NuoDB using static configuration, with credentials provided
 as environment varaibles, and then close the connection:
 
 ```javascript
-var nuodb = require('node-nuodb');
+'use strict';
+
+var { Driver } = require('node-nuodb');
 
 var config = {
   database: 'test',
   hostname: 'ad1',
-  database: 'test',
-  port: '48004',
+  port: 48004,
   schema: 'USER',
 };
 
-nuodb.connect(config, function (err, connection) {
+var driver = new Driver();
+driver.connect(config, function (err, connection) {
   if (err) {
     // handle error
   }
@@ -36,29 +38,20 @@ nuodb.connect(config, function (err, connection) {
 });
 ```
 
-To connect to NuoDB using static configuration, and then close the connection:
+To connect to NuoDB using static configuration, and credentials provided
+as javascript variables, and then close the connection:
 
 ```javascript
-var nuodb = require('node-nuodb');
+'use strict';
+
+var { Driver } = require('node-nuodb');
 
 var config = {
-  database: 'test',
-  hostname: 'ad1',
-  database: 'test',
-  port: '48004',
+  ...
   user: 'dba',
   password: 'dba',
-  schema: 'USER',
+  ...
 };
 
-nuodb.connect(config, function (err, connection) {
-  if (err) {
-    // handle error
-  }
-  connection.close(function (err) {
-    if (err) {
-      // handle error
-    }
-  });
-});
+driver.connect(config, ...
 ```

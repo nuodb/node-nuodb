@@ -46,9 +46,9 @@ proliferation of value.
 
 Entirely Open Source, feel free to inspect, modify or contribute to [the project][0].
 
-#### Future Proof
+#### Proven Foundation
 
-Written against the Node ABI and Node Addon C++ API, the driver supports Node JS 8 and newer.
+Written using the Node NAN API, the driver supports Node JS 8 and newer.
 
 [0]: https://github.com/nuodb/node-nuodb
 [1]: https://www.nuodb.com

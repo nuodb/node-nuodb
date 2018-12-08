@@ -4,4 +4,4 @@ category: Getting Started
 order: 4
 ---
 
-TBD
+> Streaming support is coming soon!

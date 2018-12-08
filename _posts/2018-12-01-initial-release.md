@@ -7,9 +7,9 @@ NuoDB open sources its new **node-nuodb** Node JS driver.
 
 **Features:**
 
-* Row Modes
-* Row Caching
-* Result Set Streaming
+* DDL/DML Statements
+* Row Modes and Row Caching
+* Async/Await, Callbacks, Promises
 
 **Fixes:**
 

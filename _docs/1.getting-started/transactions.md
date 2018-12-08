@@ -8,24 +8,31 @@ Use options to control commit behavior and isolation level.
 
 > Commit behavior can be configured at the connection or statement level.
 
-By default transactions are not read-only, and auto-commit is enabled; unless
-otherwise configured, users should not have to call commit as statements are
-committed at the point of execution.
+## Transaction Boundaries
+
+By default transactions are configured with auto-commit enabled. For more complex
+transaction scenarios involving commits involving multiple statements, you must
+disable auto-commit, and control the transaction boundaries yourself.
 
 The following shows how to set configure the commit behavior at the connection level,
-and manually control transaction boundaries:
+and manually control transaction boundaries with options to commit or rollback:
 
 ```javascript
-nuodb.connect(config, function (err, connection) {
-  connection.autoCommit = false;   // default true
-  connection.readOnly = true;     // default false
-  // ...
-  connection.commit(function(err) { // only required if autoCommit is set to false
-    // ...
-    connection.close(function (err) {
-      // ...
-    });
-  });
-});
+const { Driver } = require('node-nuodb')
+
+var driver = new Driver();
+(async () => {
+  const connection = await driver.connect(...)
+  try {
+    await connection.execute(...)
+    await connection.execute(...)
+    const connection.commit()
+  } catch (e) {
+    await connection.rollback()
+    throw e
+  } finally {
+    connection.close()
+  }
+})().catch(e => console.log(err.stack))
 
 ```
