@@ -31,8 +31,25 @@ var driver = new Driver();
     await connection.rollback()
     throw e
   } finally {
-    connection.close()
+    await connection.close()
   }
 })().catch(e => console.log(err.stack))
-
 ```
+
+## Transaction Isolation Level
+
+NuoDB supports multiple transaction isolation levels; the supported levels are
+[documented online][0]; the two isolation levels that are supported in the driver are:
+
+> * Isolation.CONSISTENT_READ
+> * Isolation.READ_COMMITTED
+
+The isolation level is specified when executing a transaction:
+
+```javascript
+...
+var results = await connection.execute('SELECT 1 AS VALUE FROM DUAL', { isolationLevel: Isolation.CONSISTENT_READ } );
+...
+```
+
+[0]: http://doc.nuodb.com/Latest/Content/Description-of-NuoDB-Transaction-Isolation-Levels.htm
