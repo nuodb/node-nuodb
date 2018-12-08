@@ -111,6 +111,11 @@ are documented below:
 > an array of values (default = RowMode.ROWS_AS_ARRAY). Permissible values:
 > * RowMode.ROWS_AS_ARRAY
 > * RowMode.ROWS_AS_OBJECT
+>
+> **isolationLevel**: enumeration value, indicating the desired transaction isolation level
+> to use (default = Isolation.CONSISTENT_READ). Permissible values:
+> * Isolation.CONSISTENT_READ
+> * Isolation.READ_COMMITTED
 
 #### callback
 
