@@ -64,6 +64,10 @@ to the **Driver** according to the following rules:
 * Time should be represented with an Epoch Date
 * Date should be represented with hours, minutes, seconds, set to zero.
 
+> NuoDB supports timestamps with 9 digits of precision (nanoseconds), but Javascript only supports
+> 3 digits of precision (milliseconds). Bear this in mind when reading values from NuoDB with Node.js
+> based applications.
+
 ## SQL to Javascript Mapping
 
 #### Null Types
