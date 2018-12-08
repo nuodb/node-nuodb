@@ -9,6 +9,11 @@ Use node-nuodb to connect Node.js 8 and 10 to NuoDB Databases.
 
 ### Getting Started
 
+Modern applications are increasingly deployed as Docker containers. Supporting
+modern application deployment models, the `node-nuodb` driver is conveniently
+packaged in Docker containers, making it trivial to build and deploy database
+applications.
+
 Getting your NuoDB application deployed is as simple as 1-2-3:
 
 
