@@ -53,6 +53,23 @@ connection.execute("SELECT * FROM MYTABLE WHERE id = ?", [ 54 ], (err, results) 
 ...
 ```
 
+If you want to supply special options (detailed below) you need to supply these as
+an object in the execute method; here is an example defining the rowMode:
+
+```javascript
+var { Driver, RowMode } = require('..');
+...
+connection.execute("SELECT * FROM MYTABLE WHERE id = ?", [ 54 ], { rowMode: RowMode.ROWS_AS_OBJECT } (err, results) => {
+  results.getRows(function (err, rows) {
+    // ...
+    results.close(function (err) {
+      ...
+    });
+  });
+});
+...
+```
+
 ## Parameters
 
 The connection class provides an execute method taking the following parameters that
@@ -91,9 +108,9 @@ are documented below:
 > result streaming (default = 1000)
 >
 > **rowMode**: enumeration value, indicating whether to return results as objects or as
-> an array of values (default = Driver.ROWS_AS_ARRAY). Permissible values:
-> * Driver.ROWS_AS_ARRAY
-> * Driver.ROWS_AS_OBJECT
+> an array of values (default = RowMode.ROWS_AS_ARRAY). Permissible values:
+> * RowMode.ROWS_AS_ARRAY
+> * RowMode.ROWS_AS_OBJECT
 
 #### callback
 
