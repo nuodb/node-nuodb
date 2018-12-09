@@ -64,6 +64,10 @@ We also support async/await and promise semantics:
 var { Driver } = require('node-nuodb');
 var driver = new Driver();
 
+var config = {
+  ...
+};
+
 // async/await...
 (async () => {
   var connection = await driver.connect(config);
