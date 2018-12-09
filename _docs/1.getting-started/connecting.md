@@ -61,7 +61,7 @@ We also support async/await and promise semantics:
 ```javascript
 'use strict';
 
-var { Driver } = require('..');
+var { Driver } = require('node-nuodb');
 var driver = new Driver();
 
 // async/await...
