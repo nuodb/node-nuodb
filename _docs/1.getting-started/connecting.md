@@ -11,7 +11,7 @@ configuration properties.
 > Use environment variables to provide credentials to the Docker containers.
 
 To connect to NuoDB using static configuration, with credentials provided
-as environment varaibles, and then close the connection:
+as environment variables, and then close the connection:
 
 ```javascript
 'use strict';
@@ -39,7 +39,7 @@ driver.connect(config, function (err, connection) {
 ```
 
 To connect to NuoDB using static configuration, and credentials provided
-as javascript variables, and then close the connection:
+as Javascript variables, and then close the connection:
 
 ```javascript
 'use strict';
@@ -98,6 +98,6 @@ default values:
 ## Environment Variables
 
 Any of the configuration properties passed to the connect method may
-alternatively be specified as envirionment variables. The variable
+alternatively be specified as environment variables. The variable
 names are their upper case equivalent names, with a **NUODB_** common
 prefix.

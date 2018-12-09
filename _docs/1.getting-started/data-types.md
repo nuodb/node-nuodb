@@ -6,7 +6,7 @@ order: 6
 
 NuoDB supports a rich set of data types. However, with Node.js having only a few fundamental
 data types, data type mapping must occur from SQL types to types available in Node.js. And
-given the overloading of types in Node, there are rules with which approrpriate SQL types are
+given the overloading of types in Node, there are rules with which appropriate SQL types are
 chosen during inserts.
 
 ## Javascript to SQL Mapping
