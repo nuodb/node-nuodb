@@ -82,7 +82,17 @@ var config = {
 })().catch(e => console.log(e.stack));
 
 // promises...
-
+driver.connect(config);
+  .then(connection => {
+    connection.execute("SELECT 1 FROM DUAL")
+      .then(results => {
+        results.getRows()
+          .then(rows => console.log(rows))
+          .catch(e => console.log(e.stack))
+      })
+      .catch(e => console.log(e.stack()))
+  })
+  .catch(e => console.log(e.stack()))
 ```
 
 ## Configuration Values
