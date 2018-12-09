@@ -7,8 +7,8 @@ order: 1
 Node NuoDB is distributed as a set of Docker containers. The *node-nuodb* container
 is provided as two variants:
 
-* nuodb/node-nuodb:3.3.0-centos
-* nuodb/node-nuodb:3.3.0-onbuild
+* nuodb/node-nuodb:3.0.0-centos
+* nuodb/node-nuodb:3.0.0-onbuild
 
 > ONBUILD variants simplify deployment of NuoDB-based applications.
 
@@ -63,5 +63,7 @@ docker build --build-arg VERSION=${VERSION} -t acme/example:latest .
 ```
 3. Run your application:
 ```bash
-docker run -it --name example --rm --network nuodb-net acme/example:latest
+docker run -it --name example --rm \
+  -e NUODB_USER=dba -e NUODB_PASSWORD=dba \
+  --network nuodb-net acme/example:latest
 ```

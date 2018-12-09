@@ -6,7 +6,7 @@ order: 1
 
 Connecting to the NuoDB database requires database credentials. These
 credentials can be provided using environment variables, or as static
-configuration.
+configuration properties.
 
 > Use environment variables to provide credentials to the Docker containers.
 
@@ -55,3 +55,49 @@ var config = {
 
 driver.connect(config, ...
 ```
+
+We also support async/await and promise semantics:
+
+```javascript
+'use strict';
+
+var { Driver } = require('..');
+var driver = new Driver();
+
+// async/await...
+(async () => {
+  var connection = await driver.connect(config);
+  try {
+    ...
+  } catch (e) {
+    await connection.rollback();
+    throw e;
+  } finally {
+    await connection.close();
+  }
+})().catch(e => console.log(e.stack));
+
+// promises...
+
+```
+
+## Configuration Values
+
+Following is the full list of configuration properties, and their
+default values:
+
+| Property  | Type    | Required |  Default  |
+| --------- | ------- | -------- | --------- |
+| database  | String  | Yes      |           |
+| hostname  | String  | No       | localhost |
+| port      | Integer | No       | 48004     |
+| schema    | String  | No       | USER      |
+| user      | String  | Yes      |           |
+| password  | String  | Yes      |           |
+
+## Environment Variables
+
+Any of the configuration properties passed to the connect method may
+alternatively be specified as envirionment variables. The variable
+names are their upper case equivalent names, with a **NUODB_** common
+prefix.

@@ -48,8 +48,12 @@ NuoDB supports multiple transaction isolation levels; the supported levels are
 The isolation level is specified when executing a transaction:
 
 ```javascript
+var { Driver, Isolation } = require('node-nuodb');
 ...
-var results = await connection.execute('SELECT 1 AS VALUE FROM DUAL', { isolationLevel: Isolation.CONSISTENT_READ } );
+var results = await connection.execute(
+  'SELECT 1 AS VALUE FROM DUAL', {
+    isolationLevel: Isolation.CONSISTENT_READ
+  });
 ...
 ```
 

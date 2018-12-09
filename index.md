@@ -29,7 +29,7 @@ docker build --build-arg VERSION=${VERSION} -t acme/example:latest .
 ```
 3. Run your application:
 ```bash
-docker run -it --name example --rm --network nuodb-net acme/example:latest
+docker run -it --name example --rm -e NUODB_USER=dba -e NUODB_PASSWORD=dba --network nuodb-net acme/example:latest
 ```
 
 > Feel free to send us feedback at [Github Issues][2].

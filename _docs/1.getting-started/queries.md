@@ -10,7 +10,6 @@ If your query has no parameters you do not need to specify binding variables
 in the execute method:
 
 ```javascript
-
 // callback
 connection.execute("SELECT 1 FROM DUAL", function (err, results) {
   results.getRows(function (err, rows) {
@@ -74,7 +73,7 @@ If you want to supply special options (detailed below) you need to supply these 
 an object in the execute method; here is an example defining the rowMode:
 
 ```javascript
-var { Driver, RowMode } = require('..');
+var { Driver, RowMode } = require('node-nuodb');
 ...
 connection.execute("SELECT * FROM MYTABLE WHERE id = ?", [ 54 ], { rowMode: RowMode.ROWS_AS_OBJECT } (err, results) => {
   results.getRows(function (err, rows) {
