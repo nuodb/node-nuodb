@@ -25,7 +25,6 @@ ResultSet::ResultSet()
 ResultSet::~ResultSet()
 {
     TRACE("ResultSet::~ResultSet");
-    printf("r");
 }
 
 /* static */

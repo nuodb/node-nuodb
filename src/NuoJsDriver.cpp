@@ -28,7 +28,6 @@ Driver::Driver()
 Driver::~Driver()
 {
     TRACE("Driver::~Driver");
-    printf("d");
 }
 
 /* static */

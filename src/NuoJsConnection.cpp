@@ -26,7 +26,6 @@ Connection::Connection()
 Connection::~Connection()
 {
     TRACE("Connection::~Connection");
-    printf("c");
 }
 
 /* static */
