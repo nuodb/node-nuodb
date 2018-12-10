@@ -9,7 +9,7 @@ data types, data type mapping must occur from SQL types to types available in No
 given the overloading of types in Node, there are rules with which appropriate SQL types are
 chosen during inserts.
 
-## Javascript to SQL Mapping
+## ECMAScript to SQL Mapping
 
 #### Null
 
@@ -28,9 +28,9 @@ aliases:
 
 #### Number
 
-The **Number** type in ES is used to represent all numeric types in Javascript. They are represented
-as IEEE Double Precision numbers. The limitation of this approach chosen in Javascript is that
-only 53 bits are usable for representing integer numbers; there is NO support in Javascript for
+The **Number** type in ES is used to represent all numeric types in ECMAScript. They are represented
+as IEEE Double Precision numbers. The limitation of this approach chosen in ECMAScript is that
+only 53 bits are usable for representing integer numbers; there is NO support in ECMAScript for
 64-bit integers.
 
 Inserts of **Number** types into the database uses the shortest permissible representation:
@@ -64,11 +64,11 @@ to the **Driver** according to the following rules:
 * Time should be represented with an Epoch Date
 * Date should be represented with hours, minutes, seconds, set to zero.
 
-> NuoDB supports timestamps with 9 digits of precision (nanoseconds), but Javascript only supports
+> NuoDB supports timestamps with 9 digits of precision (nanoseconds), but ECMAScript only supports
 > 3 digits of precision (milliseconds). Bear this in mind when reading values from NuoDB with Node.js
 > based applications.
 
-## SQL to Javascript Mapping
+## SQL to ECMAScript Mapping
 
 #### Null Types
 
