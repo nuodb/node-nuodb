@@ -1,10 +1,10 @@
-#ifndef NUOJS_ADDON_H
-#define NUOJS_ADDON_H
-
 // Copyright (c) 2018-2019, NuoDB, Inc.
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
+
+#ifndef NUOJS_ADDON_H
+#define NUOJS_ADDON_H
 
 #include <stddef.h>
 #include <stdint.h>

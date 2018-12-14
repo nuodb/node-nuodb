@@ -84,9 +84,9 @@ $ make test
 
 ## License
 
-This module is released under the [MIT License][1].
+This module is released under the [BSD 3-Clause License][1].
 
-[1]: https://opensource.org/licenses/MIT
+[1]: https://opensource.org/licenses/BSD-3-Clause
 [2]: https://github.com/nuodb/node-nuodb/issues
 [3]: https://nuodb.github.io/node-nuodb/
 [4]: https://github.com/nuodb/node-nuodb-demo

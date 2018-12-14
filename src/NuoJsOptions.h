@@ -1,10 +1,10 @@
-#ifndef NUOJS_OPTIONS_H
-#define NUOJS_OPTIONS_H
-
 // Copyright (c) 2018-2019, NuoDB, Inc.
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
+
+#ifndef NUOJS_OPTIONS_H
+#define NUOJS_OPTIONS_H
 
 #include "NuoJsAddon.h"
 #include "NuoJsRowMode.h"
