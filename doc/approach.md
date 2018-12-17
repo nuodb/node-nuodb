@@ -104,3 +104,19 @@ Lastly, there are three Docker deliverables to Docker Hub...
 More detail is available in the [online documentation][0] on usage of the API and of the Dockers distributed.
 
 [0]: https://nuodb.github.io/node-nuodb/
+
+## Internal Build Process
+
+We said that we wrap the whole build process using Docker, but what do the Dockers themselves run?
+
+In the world of Node.js there are two fundamental tools related to packaging, dependency management, and for compilation. The tools are:
+
+- `node-gyp` : for compiling native code, e.g. C/C++
+- `npm` : for identifying the package, and for declaring dependencies
+
+For each of these there is a file present in projects:
+
+- `node-gyp`: `"binding.gyp"`
+- `npm`: `"package.json"`
+
+For the uninitiated, best to look at online documentation, or peek at the files in this project; it's fairly straight-forward though.
