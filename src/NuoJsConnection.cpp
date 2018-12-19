@@ -303,8 +303,8 @@ void Connection::doRollback()
 class ExecuteWorker : public Nan::AsyncWorker
 {
 public:
-    ExecuteWorker(Nan::Callback* callback, Connection* self, NuoDB::PreparedStatement* statement, Options options)
-        : Nan::AsyncWorker(callback), self(self), statement(statement), options(options), hasResults(false)
+    ExecuteWorker(Nan::Callback* callback, Connection* self, NuoDB::PreparedStatement* statement, Options options, const char* error)
+        : Nan::AsyncWorker(callback), self(self), statement(statement), options(options), error(error), hasResults(false)
     {
         TRACE("ExecuteWorker::ExecuteWorker");
     }
@@ -317,6 +317,10 @@ public:
     virtual void Execute()
     {
         TRACE("ExecuteWorker::Execute");
+        if (error) {
+            SetErrorMessage(error);
+            return;
+        }
         try {
             hasResults = self->doExecute(statement);
         } catch (std::exception& e) {
@@ -332,7 +336,6 @@ public:
         if (hasResults) {
             TRACE(">>>>>> HAS RESULTS");
             results = ResultSet::createFrom(statement, options);
-            // todo result set maintain strong reference to connection to prevent connection from closing early
         }
         Local<Value> argv[] = {
             Nan::Null(),
@@ -345,6 +348,7 @@ protected:
     Connection* self;
     NuoDB::PreparedStatement* statement;
     Options options;
+    const char* error;
     bool hasResults;
 };
 
@@ -394,11 +398,17 @@ NAN_METHOD(Connection::execute)
     self->setAutoCommit(options.getAutoCommit());
     self->setReadOnly(options.getReadOnly());
 
-    NuoDB::PreparedStatement* statement = self->createStatement(sql, binds);
+    const char* error = nullptr;
+    NuoDB::PreparedStatement* statement = nullptr;
+    try {
+        statement = self->createStatement(sql, binds);
+    } catch (std::exception& e) {
+        error = e.what();
+    }
 
     Nan::Callback* callback = new Nan::Callback(info[infoIdx].As<Function>());
 
-    ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options);
+    ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options, error);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
 }
@@ -412,60 +422,65 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
         throw std::runtime_error(message);
     }
 
-    NuoDB::PreparedStatement* statement = connection->prepareStatement(sql.c_str());
-    for (size_t index = 0; index < binds->Length(); index++) {
-        Local<Value> value = binds->Get(index);
+    NuoDB::PreparedStatement* statement = nullptr;
+    try {
+        statement = connection->prepareStatement(sql.c_str());
+        for (size_t index = 0; index < binds->Length(); index++) {
+            Local<Value> value = binds->Get(index);
 
-        int sqlIdx = index + 1;
-        int sqlType = Type::fromEsType(typeOf(value));
+            int sqlIdx = index + 1;
+            int sqlType = Type::fromEsType(typeOf(value));
 
-        // The top-level case statements below correspond to the five
-        // fundamental data types in ES. Within these types we need to
-        // check if it will result in a safe conversion (e.g. Number).
-        switch (sqlType) {
-            case NuoDB::SqlType::NUOSQL_NULL:
-                statement->setNull(sqlIdx, NuoDB::NUOSQL_NULL);
-                break;
+            // The top-level case statements below correspond to the five
+            // fundamental data types in ES. Within these types we need to
+            // check if it will result in a safe conversion (e.g. Number).
+            switch (sqlType) {
+                case NuoDB::SqlType::NUOSQL_NULL:
+                    statement->setNull(sqlIdx, NuoDB::NUOSQL_NULL);
+                    break;
 
-            case NuoDB::SqlType::NUOSQL_BOOLEAN:
-                statement->setBoolean(sqlIdx, toBool(value));
-                break;
+                case NuoDB::SqlType::NUOSQL_BOOLEAN:
+                    statement->setBoolean(sqlIdx, toBool(value));
+                    break;
 
-            case NuoDB::SqlType::NUOSQL_DOUBLE:
-                // If the value can be safely coerced to a sized integer
-                // or float without loss of precision, send a numeric
-                // value rather than a string. If we're dealing with
-                // a number that is larger than can be safely coerced,
-                // convert it to a string.
-                if (isInt16(value)) {
-                    statement->setShort(sqlIdx, toInt16(value));
-                } else if (isInt32(value)) {
-                    statement->setInt(sqlIdx, toInt32(value));
-                } else if (isFloat(value)) {
-                    statement->setFloat(sqlIdx, toFloat(value));
-                } else {
-                    statement->setDouble(sqlIdx, toDouble(value));
-                }
-                break;
+                case NuoDB::SqlType::NUOSQL_DOUBLE:
+                    // If the value can be safely coerced to a sized integer
+                    // or float without loss of precision, send a numeric
+                    // value rather than a string. If we're dealing with
+                    // a number that is larger than can be safely coerced,
+                    // convert it to a string.
+                    if (isInt16(value)) {
+                        statement->setShort(sqlIdx, toInt16(value));
+                    } else if (isInt32(value)) {
+                        statement->setInt(sqlIdx, toInt32(value));
+                    } else if (isFloat(value)) {
+                        statement->setFloat(sqlIdx, toFloat(value));
+                    } else {
+                        statement->setDouble(sqlIdx, toDouble(value));
+                    }
+                    break;
 
-            case NuoDB::SqlType::NUOSQL_VARCHAR: {
-                statement->setString(sqlIdx, toString(value).c_str());
-                break;
-            }
-
-            case NuoDB::NUOSQL_UNDEFINED:
-                if (isDate(value)) {
-                    char buffer[80];
-                    time_t seconds = (time_t)(toInt64(value) / 1000);
-                    struct tm* timeinfo;
-                    timeinfo = localtime(&seconds);
-                    strftime(buffer, 80, "%F %T", timeinfo);
-                    statement->setString(sqlIdx, buffer);
-                } else {
+                case NuoDB::SqlType::NUOSQL_VARCHAR: {
                     statement->setString(sqlIdx, toString(value).c_str());
+                    break;
                 }
-                break;
+
+                case NuoDB::NUOSQL_UNDEFINED:
+                    if (isDate(value)) {
+                        char buffer[80];
+                        time_t seconds = (time_t)(toInt64(value) / 1000);
+                        struct tm* timeinfo;
+                        timeinfo = localtime(&seconds);
+                        strftime(buffer, 80, "%F %T", timeinfo);
+                        statement->setString(sqlIdx, buffer);
+                    } else {
+                        statement->setString(sqlIdx, toString(value).c_str());
+                    }
+                    break;
+            }
         }
+    } catch (NuoDB::SQLException& e) {
+        throw std::runtime_error(e.getText());
     }
 
     return statement;
@@ -473,6 +488,11 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
 
 bool Connection::doExecute(NuoDB::PreparedStatement* statement)
 {
+    if (!isConnected()) {
+        std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
+        throw std::runtime_error(message);
+    }
+
     try {
         return statement->execute();
     } catch (NuoDB::SQLException& e) {

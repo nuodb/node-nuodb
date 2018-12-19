@@ -28,7 +28,7 @@ describe('2. testing connections', function () {
     });
   });
 
-  it('2.2 raises an exception if calling method, commit(), after close', function (done) {
+  it('2.2 raises an exception if calling method, commit(), after closed', function (done) {
     driver.connect(config, function (err, connection) {
       should.not.exist(err);
       connection.close(function (err) {
@@ -39,15 +39,57 @@ describe('2. testing connections', function () {
           done();
         });
       });
-    }
-    );
+    });
   });
 
-  it('2.3 setting auto-commit', function () {
+  it('2.3 raises an exception if calling method, rollback(), after closed', function (done) {
+    driver.connect(config, function (err, connection) {
+      should.not.exist(err);
+      connection.close(function (err) {
+        should.not.exist(err);
+        connection.rollback(function (err) {
+          should.exist(err);
+          should.strictEqual(err.message, "connection closed");
+          done();
+        });
+      });
+    });
+  });
+
+  it('2.4 raises an exception if calling method, close(), after closed', function (done) {
+    driver.connect(config, function (err, connection) {
+      should.not.exist(err);
+      connection.close(function (err) {
+        should.not.exist(err);
+        connection.close(function (err) {
+          should.exist(err);
+          should.strictEqual(err.message, "failed to close connection [connection closed]");
+          done();
+        });
+      });
+    });
+  });
+
+  it('2.5 raises an exception if calling method, execute(), after closed', function (done) {
+    driver.connect(config, function (err, connection) {
+      should.not.exist(err);
+      connection.close(function (err) {
+        should.not.exist(err);
+        connection.execute('SELECT * FROM SYSTEM.CONNECTIONS', function (err, results) {
+          should.exist(err);
+          should.not.exist(results);
+          should.strictEqual(err.message, "connection closed");
+          done();
+        });
+      });
+    });
+  });
+
+  it('2.10 setting auto-commit', function () {
     driver.connect(config, function (err, connection) {
       should.not.exist(err);
 
-      describe('2.3.1 with non-boolean values raises an exception', function () {
+      describe('2.10.1 with non-boolean values raises an exception', function () {
 
         var defaultValue;
 
@@ -69,23 +111,23 @@ describe('2. testing connections', function () {
           callback();
         };
 
-        it('2.3.1 Negative - 0', function (done) {
+        it('2.10.1 Negative - 0', function (done) {
           setAsGlobalOption(0, done);
         });
 
-        it('2.3.2 Negative - negative number', function (done) {
+        it('2.10.2 Negative - negative number', function (done) {
           setAsGlobalOption(-1, done);
         });
 
-        it('2.3.3 Negative - positive number', function (done) {
-          setAsGlobalOption(-1, done);
+        it('2.10.3 Negative - positive number', function (done) {
+          setAsGlobalOption(1, done);
         });
 
-        it('2.3.4 Negative - NaN', function (done) {
+        it('2.10.4 Negative - NaN', function (done) {
           setAsGlobalOption(NaN, done);
         });
 
-        it('2.3.5 Negative - undefined', function (done) {
+        it('2.10.5 Negative - undefined', function (done) {
           setAsGlobalOption(undefined, done);
         });
       });
@@ -98,11 +140,11 @@ describe('2. testing connections', function () {
     });
   });
 
-  it('2.4 setting read-only', function () {
+  it('2.11 setting read-only', function () {
     driver.connect(config, function (err, connection) {
       should.not.exist(err);
 
-      describe('2.4.1 with non-boolean values raises an exception', function () {
+      describe('2.11.1 with non-boolean values raises an exception', function () {
 
         var defaultValue;
 
@@ -124,23 +166,23 @@ describe('2. testing connections', function () {
           callback();
         };
 
-        it('2.4.1.1 Negative - 0', function (done) {
+        it('2.11.1.1 Negative - 0', function (done) {
           setAsGlobalOption(0, done);
         });
 
-        it('2.4.1.2 Negative - negative number', function (done) {
+        it('2.11.1.2 Negative - negative number', function (done) {
           setAsGlobalOption(-1, done);
         });
 
-        it('2.4.1.3 Negative - positive number', function (done) {
+        it('2.11.1.3 Negative - positive number', function (done) {
           setAsGlobalOption(-1, done);
         });
 
-        it('2.4.1.4 Negative - NaN', function (done) {
+        it('2.11.1.4 Negative - NaN', function (done) {
           setAsGlobalOption(NaN, done);
         });
 
-        it('2.4.1.5 Negative - undefined', function (done) {
+        it('2.11.1.5 Negative - undefined', function (done) {
           setAsGlobalOption(undefined, done);
         });
       });
