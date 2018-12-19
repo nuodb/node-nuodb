@@ -1,0 +1,6 @@
+generalwhitelist:
+  RHSA-2018:3032: binutils
+  RHSA-2018:3071: kerberos
+  RHSA-2018:3041: python
+  RHSA-2018:3140: gnome
+  RHSA-2018:3157: curl, libcurl

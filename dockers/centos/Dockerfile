@@ -44,6 +44,9 @@ RUN npm dedupe
 
 FROM node:8.12.0-centos AS release
 
+# update to ensure we have no known CVEs
+RUN yum -y update
+
 COPY --from=package /opt/nuodb/lib64 /opt/nuodb/lib64
 COPY --from=package /usr/src/nuodb /usr/src/nuodb
 COPY --from=package /usr/local/lib/node_modules /usr/local/lib/node_modules

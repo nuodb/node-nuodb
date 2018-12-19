@@ -78,6 +78,34 @@ release:
 	docker build --target release -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-centos .
 	docker build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
 
+#:help: start-clair | Starts clair so we can perform image scans.
+.PHONY: start-clair
+start-clair:
+	docker network create scanning
+	docker run -d -p 5432:5432 --net=scanning --rm --name db arminc/clair-db:2017-09-18
+	docker run -d -p 6060:6060 --net=scanning --rm --name clair --link db:postgres arminc/clair-local-scan:v2.0.6
+
+#:help: scan        | Runs the `scan` target, scaning the Docker containers.
+.PHONY: scan
+scan:
+	docker run --net=scanning --rm --name=scanner --link=clair:clair \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $(CURDIR)/clair-whitelist.yaml:/tmp/clair-whitelist.yaml nuodb/clair-scanner \
+		--clair="http://clair:6060" --ip="scanner" \
+    --threshold Medium --whitelist /tmp/clair-whitelist.yaml nuodb/node-nuodb:$(VERSION)-centos
+	docker run --net=scanning --rm --name=scanner --link=clair:clair \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $(CURDIR)/clair-whitelist.yaml:/tmp/clair-whitelist.yaml nuodb/clair-scanner \
+		--clair="http://clair:6060" --ip="scanner" \
+    --threshold Medium --whitelist /tmp/clair-whitelist.yaml nuodb/node-nuodb:$(VERSION)-onbuild
+
+#:help: stop-clair  | Stops clair so we can perform image scans.
+.PHONY: stop-clair
+stop-clair:
+	docker stop clair
+	docker stop db
+	docker network rm scanning
+
 #:help: clean       | Cleans up any build artifacts
 .PHONY: clean
 clean:
