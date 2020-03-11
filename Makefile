@@ -57,16 +57,6 @@ run-build:
 onbuild:
 	docker build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
 
-#:help: example     | Creates an `example` Docker image based upon `ONBUILD`
-.PHONY: example
-example:
-	cd examples/docker/ && docker build --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-example .
-
-#:help: run-example | Runs the `example` Docker variant
-.PHONY: run-example
-run-example:
-	docker run -it --name example --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-example
-
 #:help: package     | Creates a `package` Docker image
 .PHONY: package
 package:
@@ -114,7 +104,6 @@ clean:
 	-docker rmi -f nuodb/node-nuodb:$(VERSION)-build
 	-docker rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
 	-docker rmi -f nuodb/node-nuodb:$(VERSION)-centos
-	-docker rmi -f nuodb/node-nuodb:$(VERSION)-example
 	-docker image prune -f
 	-rm -fr build node_modules
 

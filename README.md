@@ -24,10 +24,9 @@ build and deployment processes.
 * [NuoDB Node.js Driver Documentation][3]
 * [NuoDB Node.js Driver Docker Sample Express Application][4]
 
-## Examples
+## Examples (EXPERIMENTAL)
 
-See the [examples][30] directory.  Start with
-[examples/example.js][31].
+See branch [examples][30].
 
 ## Help
 
@@ -90,6 +89,4 @@ This module is released under the [BSD 3-Clause License][1].
 [2]: https://github.com/nuodb/node-nuodb/issues
 [3]: https://nuodb.github.io/node-nuodb/
 [4]: https://github.com/nuodb/node-nuodb-demo
-[30]: https://github.com/nuodb/node-nuodb/blob/master/examples
-[31]: https://github.com/nuodb/node-nuodb/blob/master/examples/example.js#L1
 [44]: https://github.com/nodejs/abi-stable-node-addon-examples
