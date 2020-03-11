@@ -26,7 +26,7 @@ build and deployment processes.
 
 ## Examples (EXPERIMENTAL)
 
-See branch [examples][30].
+See branch [examples](https://github.com/nuodb/node-nuodb/tree/examples).
 
 ## Help
 
