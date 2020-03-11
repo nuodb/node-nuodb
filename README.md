@@ -24,7 +24,7 @@ build and deployment processes.
 * [NuoDB Node.js Driver Documentation][3]
 * [NuoDB Node.js Driver Docker Sample Express Application][4]
 
-## Examples
+## Examples (EXPERIMENTAL)
 
 See the [examples][30] directory.  Start with
 [examples/example.js][31].
