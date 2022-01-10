@@ -2,4 +2,7 @@
 
 docker stop te1 sm1 ad1
 docker network rm nuodb-net
-rm -fr vol1 vol2
+##rm -fr vol1 vol2
+
+#added to properly remove newly created volumes
+docker volume rm vol1 vol2 cores valgrind
