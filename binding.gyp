@@ -34,21 +34,22 @@
         "-g",
         "-Wall",
         "-Werror",
-        "-Wextra"
+        "-Wextra",
+        "-Wno-cast-function-type"
       ],
       "cflags_cc": [
         "-g",
         "-Wall",
         "-Werror",
         "-Wextra",
-        "-std=c++11"
+        "-std=c++14"
       ],
       "variables": {
         "nuodb_home": "<!(echo ${NUODB_HOME-\"/opt/nuodb\"})"
       },
       "include_dirs": [
         "src",
-        "/opt/nuodb/include/",
+        "<(nuodb_home)/include/",
         "<!(node -e \"require('nan')\")"
       ],
       "libraries": [

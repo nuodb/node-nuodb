@@ -31,7 +31,7 @@ private:
 
     // Release a database result set asynchronously.
     static NAN_METHOD(close);
-    friend class CloseWorker;
+    friend class ResultSetCloseWorker;
     void doClose();
 
     static NAN_METHOD(getRows);

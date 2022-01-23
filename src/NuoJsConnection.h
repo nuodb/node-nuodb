@@ -40,7 +40,7 @@ private:
     void doRollback();
 
     static NAN_METHOD(close);
-    friend class CloseWorker;
+    friend class ConnectionCloseWorker;
     void doClose();
 
     static NAN_GETTER(getReadOnly);
