@@ -15,6 +15,9 @@ namespace NuoJs
 void storeJsonParam(Local<Object> object, Params& params, std::string key, bool required)
 {
     Nan::HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    Local<Context> ctx = isolate->GetCurrentContext();
+
     MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
     Local<Value> local;
     if (maybe.ToLocal(&local)) {
@@ -22,7 +25,7 @@ void storeJsonParam(Local<Object> object, Params& params, std::string key, bool 
             std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
             throw std::runtime_error(message);
         }
-        Nan::Utf8String utf8str(local->ToString());
+        Nan::Utf8String utf8str(local->ToString(ctx).ToLocalChecked());
         params[key] = std::string(*utf8str, static_cast<size_t>(utf8str.length()));
     } else if (required) {
         std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key.c_str());
@@ -33,6 +36,9 @@ void storeJsonParam(Local<Object> object, Params& params, std::string key, bool 
 void storeJsonParamDefault(Local<Object> object, Params& params, std::string key, std::string value)
 {
     Nan::HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    Local<Context> ctx = isolate->GetCurrentContext();
+
     MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
     Local<Value> local;
     if (maybe.ToLocal(&local)) {
@@ -40,7 +46,7 @@ void storeJsonParamDefault(Local<Object> object, Params& params, std::string key
             std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
             throw std::runtime_error(message);
         }
-        Nan::Utf8String utf8str(local->ToString());
+        Nan::Utf8String utf8str(local->ToString(ctx).ToLocalChecked());
         value = std::string(*utf8str, static_cast<size_t>(utf8str.length()));
     }
     params[key] = value;

@@ -75,18 +75,18 @@ Local<Object> ResultSet::createFrom(class NuoDB::Statement* statement, Options o
     return scope.Escape(obj);
 }
 
-class CloseWorker : public Nan::AsyncWorker
+class ResultSetCloseWorker : public Nan::AsyncWorker
 {
 public:
-    CloseWorker(Nan::Callback* callback, ResultSet* self)
+    ResultSetCloseWorker(Nan::Callback* callback, ResultSet* self)
         : Nan::AsyncWorker(callback), self(self)
     {
-        TRACE("CloseWorker::CloseWorker");
+        TRACE("ResultSetCloseWorker::ResultSetCloseWorker");
     }
 
-    virtual ~CloseWorker()
+    virtual ~ResultSetCloseWorker()
     {
-        TRACE("CloseWorker::~CloseWorker");
+        TRACE("ResultSetCloseWorker::~ResultSetCloseWorker");
     }
 
     /**
@@ -96,7 +96,7 @@ public:
      */
     virtual void Execute()
     {
-        TRACE("CloseWorker::Execute");
+        TRACE("ResultSetCloseWorker::Execute");
         try {
             self->doClose();
         } catch (std::exception& e) {
@@ -111,7 +111,7 @@ public:
      */
     virtual void HandleOKCallback()
     {
-        TRACE("CloseWorker::OnOK");
+        TRACE("ResultSetCloseWorker::OnOK");
         Nan::HandleScope scope;
         Local<Value> argv[] = {
             Nan::Null()
@@ -137,7 +137,7 @@ NAN_METHOD(ResultSet::close)
     }
     Nan::Callback* callback = new Nan::Callback(info[0].As<Function>());
 
-    CloseWorker* worker = new CloseWorker(callback, self);
+    ResultSetCloseWorker* worker = new ResultSetCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
 }
@@ -316,6 +316,8 @@ Local<Value> ResultSet::getRowsAsJsValue()
 {
     TRACE("ResultSet::getRowsAsJsValue");
     Nan::EscapableHandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    Local<Context> ctx = isolate->GetCurrentContext();
 
     size_t count = rows.size();
     Local<Array> array = Nan::New<Array>(count);
@@ -329,10 +331,10 @@ Local<Value> ResultSet::getRowsAsJsValue()
                 Local<Value> jsKey = Nan::New<String>(sqlValue.getName()).ToLocalChecked();
                 TRACE("Object << sqlToEsValue");
                 Local<Value> jsValue = sqlToEsValue(sqlValue);
-                jsObject->Set(jsKey, jsValue);
+                jsObject->Set(ctx, jsKey, jsValue).Check();
                 TRACE("Object >> sqlToEsValue");
             }
-            array->Set(rowIdx, jsObject);
+            array->Set(ctx, rowIdx, jsObject).Check();
         } else {
             Local<Array> jsArray = Nan::New<Array>();
             for (size_t colIdx = 0; colIdx < sqlRow.size(); colIdx++) {
@@ -340,9 +342,9 @@ Local<Value> ResultSet::getRowsAsJsValue()
                 TRACE("Array << sqlToEsValue");
                 Local<Value> jsValue = sqlToEsValue(sqlValue);
                 TRACE("Array >> sqlToEsValue");
-                jsArray->Set(colIdx, jsValue);
+                jsArray->Set(ctx, colIdx, jsValue).Check();
             }
-            array->Set(rowIdx, jsArray);
+            array->Set(ctx, rowIdx, jsArray).Check();
         }
     }
     return scope.Escape(array);
@@ -409,16 +411,16 @@ void ResultSet::doGetRows(size_t count)
 
                 case NuoDB::NUOSQL_DATE:
                 case NuoDB::NUOSQL_TIME:
-                case NuoDB::NUOSQL_TIMESTAMP: {
-                    sqlValue.setString(result->getString(column));
-                    break;
-                }
-
+                case NuoDB::NUOSQL_TIMESTAMP:
                 case NuoDB::NUOSQL_CHAR:
                 case NuoDB::NUOSQL_VARCHAR:
-                case NuoDB::NUOSQL_LONGVARCHAR:
-                    sqlValue.setString(result->getString(column));
+                case NuoDB::NUOSQL_LONGVARCHAR: {
+                    const char* s = result->getString(column);
+                    if (!result->wasNull()) {
+                        sqlValue.setString(s);
+                    }
                     break;
+                }
 
                 default:
                     sqlValue.setString(result->getString(column));

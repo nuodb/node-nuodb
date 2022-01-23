@@ -12,6 +12,9 @@ namespace NuoJs
 std::string getJsonString(Local<Object> object, std::string key, std::string defaultValue)
 {
     Nan::EscapableHandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    Local<Context> ctx = isolate->GetCurrentContext();
+
     std::string value = defaultValue;
     MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
     Local<Value> local;
@@ -20,7 +23,7 @@ std::string getJsonString(Local<Object> object, std::string key, std::string def
             std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
             throw std::runtime_error(message);
         }
-        Nan::Utf8String utf8str(local->ToString());
+        Nan::Utf8String utf8str(local->ToString(ctx).ToLocalChecked());
         value = std::string(*utf8str, static_cast<size_t>(utf8str.length()));
     }
     return value;
@@ -61,6 +64,8 @@ uint32_t getJsonUint(Local<Object> object, std::string key, uint32_t defaultValu
 bool getJsonBoolean(Local<Object> object, std::string key, bool defaultValue)
 {
     Nan::EscapableHandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+
     bool value = defaultValue;
     MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
     Local<Value> local;
@@ -69,7 +74,7 @@ bool getJsonBoolean(Local<Object> object, std::string key, bool defaultValue)
             std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
             throw std::runtime_error(message);
         }
-        value = local->ToBoolean()->Value();
+        value = local->ToBoolean(isolate)->Value();
     }
     return value;
 }
