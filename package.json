@@ -40,6 +40,7 @@
     "lint": "eslint index.js lib/*.js test/*.js",
     "this-test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --check-leaks -g '22. typeInteger.js'",
     "test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --check-leaks test/",
+    "test-all": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --check-leaks test/",
     "valgrind": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log $(which node) valgrind.js",
     "valgrind-test": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log mocha --reporter spec --bail --check-leaks test/"
   }
