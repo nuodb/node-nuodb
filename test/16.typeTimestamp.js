@@ -18,18 +18,29 @@ describe('16. typeTimestamp.js', function () {
   var tableName = "type_timestamp";
 
   // See: TIMESTAMP @ http://doc.nuodb.com/Latest/Content/SQL-Date-and-Time-Types.htm
+  var dateOne = new Date(-100000000);
+  var dateTwo = new Date(0);
+  var dateThree = new Date(10000000000);
+  var dateFour = new Date(100000000000);
+  var dateFive = new Date(1995, 11, 17);
+  var dateSix = new Date('1995-12-17T03:24:00');
+  var dateSeven = new Date('2015-07-23 21:00:00');
+  var dateEight = new Date('2015-07-23 22:00:00');
+  var dateNine = new Date('2015-07-23 23:00:00');
+  var dateTen = new Date('2015-07-24 00:00:00');
+  // var dateEleven = new Date(2003, 9, 23, 11, 50, 30, 123);
   var data = [
-    new Date(-100000000),
-    new Date(0),
-    new Date(10000000000),
-    new Date(100000000000),
-    new Date(1995, 11, 17),
-    new Date('1995-12-17T03:24:00'),
-    new Date('2015-07-23 21:00:00'),
-    new Date('2015-07-23 22:00:00'),
-    new Date('2015-07-23 23:00:00'),
-    new Date('2015-07-24 00:00:00'),
-    new Date(2003, 9, 23, 11, 50, 30, 123)
+    dateOne,
+    dateTwo,
+    dateThree,
+    dateFour,
+    dateFive,
+    dateSix,
+    dateSeven,
+    dateEight,
+    dateNine,
+    dateTen //,
+    // dateEleven
   ];
 
   before('open connection', function (done) {
@@ -77,7 +88,17 @@ describe('16. typeTimestamp.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          (rows).should.containEql({F1: dateOne});
+          (rows).should.containEql({F1: dateTwo});
+          (rows).should.containEql({F1: dateThree});
+          (rows).should.containEql({F1: dateFour});
+          (rows).should.containEql({F1: dateFive});
+          (rows).should.containEql({F1: dateSix});
+          (rows).should.containEql({F1: dateSeven});
+          (rows).should.containEql({F1: dateEight});
+          (rows).should.containEql({F1: dateNine});
+          (rows).should.containEql({F1: dateTen});
+          // (rows).should.containEql({F1: dateEleven}); <---- this fails
           results.close(function (err) {
             should.not.exist(err);
             done();

@@ -69,7 +69,11 @@ describe('13. typeBigInt.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          (rows).should.containEql({F1: 0});
+          (rows).should.containEql({F1: 9007199254740990});
+          (rows).should.containEql({F1: -9007199254740990});
+          (rows).should.containEql({F1: '-9223372036854775808'});
+          (rows).should.containEql({F1: '9223372036854775807'});
           results.close(function (err) {
             should.not.exist(err);
             done();

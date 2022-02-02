@@ -70,7 +70,12 @@ describe('11. typeSmallInt.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          (rows).should.containEql({F1: 0});
+          (rows).should.containEql({F1: 1});
+          (rows).should.containEql({F1: -128});
+          (rows).should.containEql({F1: 127});
+          (rows).should.containEql({F1: -32768});
+          (rows).should.containEql({F1: 32767});
           results.close(function (err) {
             should.not.exist(err);
             done();

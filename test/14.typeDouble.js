@@ -69,7 +69,11 @@ describe('14. typeDouble.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          (rows).should.containEql({F1:0});
+          (rows).should.containEql({F1:-2.2250738585072014E-308});
+          (rows).should.containEql({F1:1.7976931348623157E+308});
+          (rows).should.containEql({F1:-1.7976931348623157E+308});
+          (rows).should.containEql({F1:2.2250738585072014E-308});
           results.close(function (err) {
             should.not.exist(err);
             done();
