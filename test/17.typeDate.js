@@ -18,18 +18,40 @@ describe('17. typeDate.js', function () {
   var tableName = "type_date";
 
   // See: TIME @ http://doc.nuodb.com/Latest/Content/SQL-Date-and-Time-Types.htm
+  // var dateOne = new Date(-100000000);
+  var dateOne = '09/08/2013';
+  // var dateTwo = new Date(0);
+  var dateTwo = '9/8/2013';
+  // var dateThree = new Date(10000000000);
+  var dateThree = '2013-09-08';
+  // var dateFour = new Date(100000000000);
+  var dateFour = '2013.8.9';
+  // var dateFive = new Date(1995, 11, 17);
+  var dateFive = '8.9.13';
+  // var dateSix = new Date('1995-12-17T03:24:00');
+  var dateSix = 'September 8, 13';
+  // var dateSeven = new Date('2015-07-23 21:00:00');
+  var dateSeven = 'Sep 08 2013';
+  // var dateEight = new Date('2015-07-23 22:00:00');
+  var dateEight = 'September 08 2013';
+  // var dateNine = new Date('2015-07-23 23:00:00');
+  var dateNine = '08/Sep/2013';
+  // var dateTen = new Date('2015-07-24 00:00:00');
+  var dateTen = '8/Sept/13';
+  // var dateEleven = new Date(2003, 9, 23, 11, 50, 30, 123);
+  var dateEleven = '20130908';
   var data = [
-    new Date(-100000000),
-    new Date(0),
-    new Date(10000000000),
-    new Date(100000000000),
-    new Date(1995, 11, 17),
-    new Date('1995-12-17T03:24:00'),
-    new Date('2015-07-23 21:00:00'),
-    new Date('2015-07-23 22:00:00'),
-    new Date('2015-07-23 23:00:00'),
-    new Date('2015-07-24 00:00:00'),
-    new Date(2003, 9, 23, 11, 50, 30, 123)
+    dateOne,
+    dateTwo,
+    dateThree,
+    dateFour,
+    dateFive,
+    dateSix,
+    dateSeven,
+    dateEight,
+    dateNine,
+    dateTen,
+    dateEleven
   ];
 
   before('open connection', function (done) {
@@ -75,7 +97,9 @@ describe('17. typeDate.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          for (var date of rows){
+            should.equal(date['F1'].getTime(), 1378598400000);
+          }
           results.close(function (err) {
             should.not.exist(err);
             done();

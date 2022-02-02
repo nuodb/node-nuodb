@@ -68,7 +68,9 @@ describe('10. typeBoolean.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          (rows.length).should.be.equal(4);
+          (rows).should.containEql({F1: true});
+          (rows).should.containEql({F1: false});
           results.close(function (err) {
             should.not.exist(err);
             done();

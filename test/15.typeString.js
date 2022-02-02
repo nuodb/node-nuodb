@@ -67,7 +67,9 @@ describe('15. typeString.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          (rows).should.containEql({F1:"hello world"});
+          (rows).should.containEql({F1:""});
+          (rows).should.containEql({F1: null});
           results.close(function (err) {
             should.not.exist(err);
             done();

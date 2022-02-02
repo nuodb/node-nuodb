@@ -18,18 +18,32 @@ describe('18. typeTime.js', function () {
   var tableName = "type_time";
 
   // See: TIME @ http://doc.nuodb.com/Latest/Content/SQL-Date-and-Time-Types.htm
+  // var dateOne = new Date(-100000000);
+  var dateOne = '23:11:00.000000';
+  // var dateTwo = new Date(0);
+  var dateTwo = '23:11:00';
+  // var dateThree = new Date(10000000000);
+  // var dateFour = new Date(100000000000);
+  var dateFour = '11:11 PM';
+  // var dateFive = new Date(1995, 11, 17);
+  // var dateSix = new Date('1995-12-17T03:24:00');
+  // var dateSeven = new Date('2015-07-23 21:00:00');
+  // var dateEight = new Date('2015-07-23 22:00:00');
+  // var dateNine = new Date('2015-07-23 23:00:00');
+  // var dateTen = new Date('2015-07-24 00:00:00');
+  // var dateEleven = new Date(2003, 9, 23, 11, 50, 30, 123);
   var data = [
-    new Date(-100000000),
-    new Date(0),
-    new Date(10000000000),
-    new Date(100000000000),
-    new Date(1995, 11, 17),
-    new Date('1995-12-17T03:24:00'),
-    new Date('2015-07-23 21:00:00'),
-    new Date('2015-07-23 22:00:00'),
-    new Date('2015-07-23 23:00:00'),
-    new Date('2015-07-24 00:00:00'),
-    new Date(2003, 9, 23, 11, 50, 30, 123)
+    dateOne,
+    dateTwo,
+    // dateThree,
+    dateFour //,
+    // dateFive,
+    // dateSix,
+    // dateSeven,
+    // dateEight,
+    // dateNine,
+    // dateTen,
+    // dateEleven
   ];
 
   before('open connection', function (done) {
@@ -75,7 +89,9 @@ describe('18. typeTime.js', function () {
           should.not.exist(err);
           should.exist(rows);
           console.log(rows);
-          // todo: figure out how to compare rows to input values
+          for (var time of rows){
+            should.equal(time["F1"].toLocaleTimeString(), '11:11:00 PM')
+          }
           results.close(function (err) {
             should.not.exist(err);
             done();
