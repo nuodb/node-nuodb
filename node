@@ -1,1 +1,0 @@
-c\n inspect node_modules/.bin/mocha --no-parallel --reporter spec --bail --check-leaks --full-trace test/5.createTable.js
