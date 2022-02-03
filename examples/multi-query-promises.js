@@ -20,7 +20,7 @@ const insertQuery = 'INSERT INTO EMPLOYEE (ID, HOURLY_WAGE) VALUES (?, ?);';
 const selectQuery = 'SELECT * FROM EMPLOYEE;';
 const updateQuery = 'UPDATE EMPLOYEE SET EMPLOYEE.HOURLY_WAGE = (?) WHERE EMPLOYEE.ID = (?);';
 
-//data is an array of 2-item arrays of the form [ID,VAL] to match the insertQuery
+//data is an array of 2-item arrays of the form [ID,HOURLY_WAGE] to match the insertQuery
 const initData = [[1,15],[2,15.5],[3,16],[4,16.5],[5,17]];
 
 // take in a query and connection object,
@@ -31,10 +31,11 @@ const toQueryTask = (query,connection) => (data) => async () => await connection
 const populateTable = async (connection) => {
     // map the initial data to a task to innsert the data
     const insertTasks = initData.map(toQueryTask(insertQuery,connection));
-    //wait for those tasks to complete in series
+    //wait for the tasks in the insertTasks array to complete in series
     await async.series(insertTasks);
 }
 
+// the data will be returned in an array of 2-item arrays of the form [HOURLY_WAGE, ID] to match the updateQuery
 const raise = (employee) => [employee.HOURLY_WAGE*1.2,employee.ID];
 
 const main = async () => {
