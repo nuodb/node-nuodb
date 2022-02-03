@@ -1,9 +1,0 @@
-PID 10642 received SIGSEGV for address: 0x0
-/home/ecoombes/node-nuodb/node_modules/segfault-handler/build/Release/segfault-handler.node(+0x37a5)[0x7f9cbc0f37a5]
-/lib/x86_64-linux-gnu/libpthread.so.0(+0x153c0)[0x7f9cbcb043c0]
-/home/ecoombes/node-nuodb/build/Debug/nuodb.node(_ZN5NuoJs9ResultSet9doGetRowsEm+0x103)[0x7f9cbc049c01]
-/home/ecoombes/node-nuodb/build/Debug/nuodb.node(_ZN5NuoJs13GetRowsWorker7ExecuteEv+0x41)[0x7f9cbc04a7a5]
-/home/ecoombes/node-nuodb/build/Debug/nuodb.node(_ZN3Nan12AsyncExecuteEP9uv_work_s+0x32)[0x7f9cbc037f4f]
-node[0x159ae24]
-/lib/x86_64-linux-gnu/libpthread.so.0(+0x9609)[0x7f9cbcaf8609]
-/lib/x86_64-linux-gnu/libc.so.6(clone+0x43)[0x7f9cbca1f293]
