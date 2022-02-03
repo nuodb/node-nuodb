@@ -45,7 +45,7 @@
         "-std=c++14"
       ],
       "variables": {
-        "nuodb_client_package": "<!(echo ${NUODB_CLIENT_PACKAGE-\"/opt/nuodb\"})"
+        "nuodb_client_package": "<!(echo ${NUODB_CLIENT_PACKAGE:-${NUODB_HOME:-\"/opt/nuodb\"}})"
       },
       "include_dirs": [
         "src",
