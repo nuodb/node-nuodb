@@ -25,52 +25,56 @@ const initData = [[1,15],[2,15.5],[3,16],[4,16.5],[5,17]];
 
 // take in a query and connection object,
 // return a function for mapping data to the task of executing a query 
-const toQueryTask = (query,connection) => (data) => async () => await connection.execute(query,data)
+const toQueryTask = (query,connection) => (data) => (taskComplete) => connection.execute(query,data).then(taskComplete)
 
 //async function to populate the table
-const populateTable = async (connection) => {
+const populateTable = (connection) => {
     // map the initial data to a task to innsert the data
     const insertTasks = initData.map(toQueryTask(insertQuery,connection));
-    //wait for the tasks in the insertTasks array to complete in series
-    await async.series(insertTasks);
+    //return a promise to complete the tasks in the insertTasks array in series
+    return async.series(insertTasks);
 }
 
 // the data will be returned in an array of 2-item arrays of the form [HOURLY_WAGE, ID] to match the updateQuery
 const raise = (employee) => [employee.HOURLY_WAGE*1.2,employee.ID];
 
-const main = async () => {
+const giveEmployeesRaises = (connection) => 
+    connection.execute(createTableQuery)
+        .then( () => populateTable(connection))
+
+        // get the results of a select query
+        .then( () => connection.execute(selectQuery))
+        .then( (resultSet) => resultSet.getRows())
+        .then( (employees) => {
+            //process the employee data
+            console.log("BEFORE RAISE:");
+            console.log(employees);
+
+            // process the results
+            const employeeRaises = employees.map(raise);
+
+            // update the table to reflect processed data
+            // create the updateTasks
+            const updateTasks = employeeRaises.map(toQueryTask(updateQuery,connection));
+
+            //return a promise to complete the tasks in series
+            return async.series(updateTasks);
+        })
+        .then(() => connection.execute(selectQuery))
+        .then((resultSet) => resultSet.getRows())
+        .then((employees) => {
+            // confirm results
+            console.log("AFTER RAISE:");
+            console.log(employees);
+        })
+        .then(() => connection.execute(dropTableQuery))
+        .then(() => connection.close())
+
+const main = () => {
     //setup driver, connection, create and populate tables for use.
     const driver = new Driver();
-    const connection = await driver.connect(config);
-    await connection.execute(createTableQuery);
-    await populateTable(connection);
-
-    // get the results of a select query
-    let resultSet = await connection.execute(selectQuery);
-    let employees = await resultSet.getRows();
-    console.log("BEFORE RAISE:");
-    console.log(employees);
-
-    // process the results
-    const employeeRaises = employees.map(raise);
-
-    // update the table to reflect processed data
-    // create the updateTasks
-    const updateTasks = employeeRaises.map(toQueryTask(updateQuery,connection));
-
-    //wait for them all to complete in series
-    await async.series(updateTasks);
-
-    // confirm results
-    resultSet = await connection.execute(selectQuery);
-    employees = await resultSet.getRows();
-    console.log("AFTER RAISE:");
-    console.log(employees)    
-
-
-    // clean up
-    await connection.execute(dropTableQuery);
-    await connection.close();
+    driver.connect(config)
+        .then(giveEmployeesRaises)
 }
 
 main();
