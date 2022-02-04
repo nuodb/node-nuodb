@@ -46,7 +46,7 @@ helper.dropTable = function (connection, tableName, done) {
 
 helper.insertDataArray = function (connection, tableName, values, done) {
   // console.log(values);
-  async.each(values, function (value, cb) {
+  async.series(values.map((value) => (cb) => {
     // console.log(value);
     connection.execute(helper.sqlInsert(tableName), [value], function (err, results) {
       should.not.exist(err);
@@ -54,9 +54,9 @@ helper.insertDataArray = function (connection, tableName, values, done) {
       if (err != null) {
         console.log(err);
       }
+      cb();
     });
-    cb();
-  }, done);
+  }), done);
 };
 
 helper.sqlCreateTwoColumnTable = function (tableName, types) {

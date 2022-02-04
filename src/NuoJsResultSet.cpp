@@ -373,6 +373,11 @@ void ResultSet::doGetRows(size_t count)
         result = statement->getResultSet();
     }
 
+    if(result == nullptr){
+        // if the result set is still null at this point, there is the potential that one connection is being used for multiple queries.
+        throw std::runtime_error("Cannot access result set. Please ensure there is only one actively executing query per connection.");
+    }
+
     bool fetchAll = count == 0;
     NuoDB::ResultSetMetaData* metaData = result->getMetaData();
     auto columns = metaData->getColumnCount();
