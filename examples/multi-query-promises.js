@@ -61,12 +61,15 @@ const giveEmployeesRaises = (connection) =>
             return async.series(updateTasks);
         })
         .then(() => connection.execute(selectQuery))
-        .then((resultSet) => resultSet.getRows())
-        .then((employees) => {
-            // confirm results
-            console.log("AFTER RAISE:");
-            console.log(employees);
-        })
+        .then((resultSet) =>
+            resultSet.getRows()
+            .then((employees) => {
+                // confirm results
+                console.log("AFTER RAISE:");
+                console.log(employees);
+            })
+            .then(() => resultSet.close())
+        )
         .then(() => connection.execute(dropTableQuery))
         .then(() => connection.close())
 

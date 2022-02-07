@@ -64,8 +64,10 @@ const giveEmployeesRaises = (err, connection) =>
                                 console.log("AFTER RAISE:");
                                 console.log(employees);
                                 //clean up
-                                connection.execute(dropTableQuery, () => {
-                                    connection.close()
+                                resultSet.close((err) => {
+                                    connection.execute(dropTableQuery, () => {
+                                        connection.close()
+                                    });
                                 });
                             });
                         });

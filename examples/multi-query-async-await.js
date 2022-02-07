@@ -69,6 +69,7 @@ const main = async () => {
 
 
     // clean up
+    await resultSet.close();
     await connection.execute(dropTableQuery);
     await connection.close();
 }
