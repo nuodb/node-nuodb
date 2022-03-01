@@ -428,8 +428,12 @@ void ResultSet::doGetRows(size_t count)
                 }
 
                 default:
-                    sqlValue.setString(result->getString(column));
-                    sqlValue.setSqlType(NuoDB::NUOSQL_VARCHAR);
+                    const char* s = result->getString(column);
+                    if (!result->wasNull()) {
+                        sqlValue.setString(s);
+                        sqlValue.setSqlType(NuoDB::NUOSQL_VARCHAR);
+                    }
+                    break;
             }
             // if the last value was null, set the value to null...
             if (result->wasNull()) {

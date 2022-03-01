@@ -60,10 +60,12 @@ const testCases = [
     data: [
       "1234",
       "abcd",
+      null,
     ],
     checkResults: (rows) => {
       (rows).should.containEql({F1:'31323334'});
       (rows).should.containEql({F1:'61626364'});
+      (rows).should.containEql({F1: null});
     }
   },
   {
