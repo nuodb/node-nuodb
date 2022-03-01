@@ -34,12 +34,16 @@ public:
 
     bool getReadOnly() const;
     void setReadOnly(bool);
+
+    uint32_t getQueryTimeout() const;
+    void setQueryTimeout(uint32_t);
 private:
     RowMode rowMode;
     uint32_t fetchSize;
     uint32_t isolationLevel;
     bool autoCommit;
     bool readOnly;
+    uint32_t queryTimeout;
 };
 
 // getJsonOptions returns the JSON query options provided by the user

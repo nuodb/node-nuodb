@@ -75,6 +75,15 @@ void Options::setReadOnly(bool v)
     readOnly = v;
 }
 
+uint32_t Options::getQueryTimeout() const
+{
+    return queryTimeout;
+}
+void Options::setQueryTimeout(uint32_t v)
+{
+    queryTimeout = v;
+}
+
 RowMode toRowMode(uint32_t value)
 {
     return (value == ROWS_AS_OBJECT) ? ROWS_AS_OBJECT : ROWS_AS_ARRAY;
@@ -87,5 +96,6 @@ void getJsonOptions(Local<Object> object, Options& options)
     options.setIsolationLevel(getJsonUint(object, "isolationLevel", options.getIsolationLevel()));
     options.setAutoCommit(getJsonBoolean(object, "autoCommit", options.getAutoCommit()));
     options.setReadOnly(getJsonBoolean(object, "readOnly", options.getReadOnly()));
+    options.setQueryTimeout(getJsonUint(object, "queryTimeout", options.getQueryTimeout()));
 }
 }

@@ -402,6 +402,7 @@ NAN_METHOD(Connection::execute)
     NuoDB::PreparedStatement* statement = nullptr;
     try {
         statement = self->createStatement(sql, binds);
+        statement->setQueryTimeout(options.getQueryTimeout());
     } catch (std::exception& e) {
         error = e.what();
     }
