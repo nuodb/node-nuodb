@@ -167,6 +167,7 @@ NuoDB::Connection* Driver::doConnect(Params& params)
         props->putValue("user", params["user"].c_str());
         props->putValue("password", params["password"].c_str());
         props->putValue("schema", params["schema"].c_str());
+        props->putValue("direct", params["direct"].c_str());
         std::string connection_string = getConnectionString(params);
         connection->openDatabase(connection_string.c_str(), props.get());
         return connection;

@@ -20,7 +20,7 @@ void storeJsonParam(Local<Object> object, Params& params, std::string key, bool 
 
     MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
     Local<Value> local;
-    if (maybe.ToLocal(&local)) {
+    if (maybe.ToLocal(&local) && !local->IsNullOrUndefined()) {
         if (!local->IsString()) {
             std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
             throw std::runtime_error(message);
@@ -67,6 +67,8 @@ void storeJsonParams(Local<Object> object, Params& params)
     storeJsonParamDefault(object, params, "schema", "USER");
     // get the port (optional, default to 48004)
     params["port"] = std::to_string(getJsonInt(object, "port", 48004));
+
+    storeJsonParam(object, params, "direct", false);
 }
 
 std::string getConnectionString(Params& params)

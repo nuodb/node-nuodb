@@ -336,6 +336,8 @@ public:
         if (hasResults) {
             TRACE(">>>>>> HAS RESULTS");
             results = ResultSet::createFrom(statement, options);
+        } else {
+            statement->close();
         }
         Local<Value> argv[] = {
             Nan::Null(),
