@@ -39,7 +39,7 @@ describe('10. pattern matching clauses', () => {
 
     await connection.execute(helper.sqlDropTable(tableName));
     await connection.execute(helper.sqlCreateTable(tableName,'STRING'));
-    await async.series(data.map( d => 
+    await async.series(data.map( d =>
       async () => await connection.execute(helper.sqlInsert(tableName),[d]))
     );
   });
