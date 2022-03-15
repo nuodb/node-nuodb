@@ -12,69 +12,65 @@
 
 namespace NuoJs
 {
-void storeJsonParam(Local<Object> object, Params& params, std::string key, bool required)
+
+void storeJsonParams(Local<Object> object, Params& params)
 {
-    Nan::HandleScope scope;
     Isolate* isolate = Isolate::GetCurrent();
     Local<Context> ctx = isolate->GetCurrentContext();
 
-    MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
-    Local<Value> local;
-    if (maybe.ToLocal(&local) && !local->IsNullOrUndefined()) {
-        if (!local->IsString()) {
-            std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
-            throw std::runtime_error(message);
+    // create local array of property names
+    MaybeLocal<Array> maybePropertyNames = Nan::GetPropertyNames(object);
+    Local<Array> localPropertyNames = maybePropertyNames.ToLocalChecked();
+
+    for(uint32_t i = 0; i < localPropertyNames->Length(); i++){
+        // access the key in the array as a string
+        MaybeLocal<Value> maybeKey = localPropertyNames->Get(ctx,i);
+        Local<Value> localKey = maybeKey.ToLocalChecked();
+        Nan::Utf8String keyutf8(localKey->ToString(ctx).ToLocalChecked());
+        std::string key(*keyutf8, static_cast<size_t>(keyutf8.length()));
+
+        // placeholder for the property value
+        MaybeLocal<Value> maybe = Nan::Get(object, localKey);
+        Local<Value> local;
+
+        // if the property is undefined/null ignore it
+        if(maybe.ToLocal(&local) && !local->IsNullOrUndefined()){
+            // convert the property
+            if(local->IsString()){
+                Nan::Utf8String utf8str(local->ToString(ctx).ToLocalChecked());
+                std::string value(*utf8str, static_cast<size_t>(utf8str.length()));
+                params[key.c_str()] = value.c_str();
+            } else if(local->IsInt32()) {
+                int32_t value = Nan::To<int32_t>(local).FromJust();
+                params[key.c_str()] = std::to_string(value).c_str();
+            } else {
+                // no handling for other property types
+                std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
+                throw std::runtime_error(message);
+            }
         }
-        Nan::Utf8String utf8str(local->ToString(ctx).ToLocalChecked());
-        params[key] = std::string(*utf8str, static_cast<size_t>(utf8str.length()));
-    } else if (required) {
-        std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key.c_str());
+    }
+}
+
+void checkParam(Params& params, const char* key){
+    if(!params.count(key)){
+        std::string message = ErrMsg::get(ErrMsgType::errMissingProperty, key);
         throw std::runtime_error(message);
     }
 }
 
-void storeJsonParamDefault(Local<Object> object, Params& params, std::string key, std::string value)
-{
-    Nan::HandleScope scope;
-    Isolate* isolate = Isolate::GetCurrent();
-    Local<Context> ctx = isolate->GetCurrentContext();
-
-    MaybeLocal<Value> maybe = Nan::Get(object, Nan::New(key).ToLocalChecked());
-    Local<Value> local;
-    if (maybe.ToLocal(&local)) {
-        if (!local->IsString()) {
-            std::string message = ErrMsg::get(ErrMsgType::errInvalidPropertyType, key.c_str());
-            throw std::runtime_error(message);
-        }
-        Nan::Utf8String utf8str(local->ToString(ctx).ToLocalChecked());
-        value = std::string(*utf8str, static_cast<size_t>(utf8str.length()));
-    }
-    params[key] = value;
-}
-
-void storeJsonParams(Local<Object> object, Params& params)
-{
-    // get the database name (required)
-    storeJsonParam(object, params, "database", true);
-    // get the user name (required)
-    storeJsonParam(object, params, "user", true);
-    // get the password (required)
-    storeJsonParam(object, params, "password", true);
-
-    // get the host name (optional, default to localhost)
-    storeJsonParamDefault(object, params, "hostname", "localhost");
-    // get the schema (optional, default is USER)
-    storeJsonParamDefault(object, params, "schema", "USER");
-    // get the port (optional, default to 48004)
-    params["port"] = std::to_string(getJsonInt(object, "port", 48004));
-
-    storeJsonParam(object, params, "direct", false);
-}
 
 std::string getConnectionString(Params& params)
 {
-    std::ostringstream connection_string;
-    connection_string << params["database"] << "@" << params["hostname"] << ":" << params["port"];
-    return connection_string.str();
+    try {
+        checkParam(params, "database");
+        checkParam(params, "hostname");
+        checkParam(params, "port");
+        std::ostringstream connection_string;
+        connection_string << params["database"] << "@" << params["hostname"] << ":" << params["port"];
+        return connection_string.str();
+    } catch (NuoDB::SQLException& e) {
+        throw std::runtime_error(e.getText());
+    }
 }
 } // namespace
