@@ -112,6 +112,8 @@ NAN_METHOD(Driver::connect)
 {
     TRACE("Driver::connect");
     Nan::HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    Local<Context> ctx = isolate->GetCurrentContext();
 
     if (!info.Length() || !info[(info.Length() - 1)]->IsFunction()) {
         Nan::ThrowError("connect arg count zero, or last arg is not a function");
@@ -135,7 +137,7 @@ NAN_METHOD(Driver::connect)
 
     Params params;
     try {
-        storeJsonParams(info[0]->ToObject(), params);
+        storeJsonParams(info[0]->ToObject(ctx).ToLocalChecked(), params);
     } catch (std::exception& e) {
         std::string message = ErrMsg::get(ErrMsgType::errBadConfiguration, e.what());
         Nan::ThrowError(message.c_str());
@@ -165,6 +167,7 @@ NuoDB::Connection* Driver::doConnect(Params& params)
         props->putValue("user", params["user"].c_str());
         props->putValue("password", params["password"].c_str());
         props->putValue("schema", params["schema"].c_str());
+        props->putValue("direct", params["direct"].c_str());
         std::string connection_string = getConnectionString(params);
         connection->openDatabase(connection_string.c_str(), props.get());
         return connection;

@@ -34,29 +34,30 @@
         "-g",
         "-Wall",
         "-Werror",
-        "-Wextra"
+        "-Wextra",
+        "-Wno-cast-function-type"
       ],
       "cflags_cc": [
         "-g",
         "-Wall",
         "-Werror",
         "-Wextra",
-        "-std=c++11"
+        "-std=c++14"
       ],
       "variables": {
-        "nuodb_home": "<!(echo ${NUODB_HOME-\"/opt/nuodb\"})"
+        "nuodb_client_package": "<!(echo ${NUODB_CLIENT_PACKAGE:-${NUODB_HOME:-\"/opt/nuodb\"}})"
       },
       "include_dirs": [
         "src",
-        "/opt/nuodb/include/",
+        "<(nuodb_client_package)/include/",
         "<!(node -e \"require('nan')\")"
       ],
       "libraries": [
         "-g",
         "-ldl",
         "-lpthread",
-        "-Wl,-rpath,<(nuodb_home)/lib64",
-        "-L<(nuodb_home)/lib64",
+        "-Wl,-rpath,<(nuodb_client_package)/lib64",
+        "-L<(nuodb_client_package)/lib64",
         "-lNuoRemote"
       ]
     }

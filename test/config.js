@@ -6,7 +6,7 @@
 var config = {};
 
 config.database = 'test';
-config.hostname = 'ad1';
+config.hostname = 'localhost';
 config.port = 48004;
 config.user = 'dba';
 config.password = 'dba';

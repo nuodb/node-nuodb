@@ -82,23 +82,23 @@ Local<Object> Connection::createFrom(class NuoDB::Connection* conn)
     return scope.Escape(obj);
 }
 
-class CloseWorker : public Nan::AsyncWorker
+class ConnectionCloseWorker : public Nan::AsyncWorker
 {
 public:
-    CloseWorker(Nan::Callback* callback, Connection* self)
+    ConnectionCloseWorker(Nan::Callback* callback, Connection* self)
         : Nan::AsyncWorker(callback), self(self)
     {
-        TRACE("CloseWorker::CloseWorker");
+        TRACE("ConnectionCloseWorker::ConnectionCloseWorker");
     }
 
-    virtual ~CloseWorker()
+    virtual ~ConnectionCloseWorker()
     {
-        TRACE("CloseWorker::~CloseWorker");
+        TRACE("ConnectionCloseWorker::~ConnectionCloseWorker");
     }
 
     virtual void Execute()
     {
-        TRACE("CloseWorker::Execute");
+        TRACE("ConnectionCloseWorker::Execute");
         try {
             self->doClose();
         } catch (std::exception& e) {
@@ -135,7 +135,7 @@ NAN_METHOD(Connection::close)
     }
     Nan::Callback* callback = new Nan::Callback(info[0].As<Function>());
 
-    CloseWorker* worker = new CloseWorker(callback, self);
+    ConnectionCloseWorker* worker = new ConnectionCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
 }
@@ -336,6 +336,8 @@ public:
         if (hasResults) {
             TRACE(">>>>>> HAS RESULTS");
             results = ResultSet::createFrom(statement, options);
+        } else {
+            statement->close();
         }
         Local<Value> argv[] = {
             Nan::Null(),
@@ -402,6 +404,7 @@ NAN_METHOD(Connection::execute)
     NuoDB::PreparedStatement* statement = nullptr;
     try {
         statement = self->createStatement(sql, binds);
+        statement->setQueryTimeout(options.getQueryTimeout());
     } catch (std::exception& e) {
         error = e.what();
     }
@@ -416,6 +419,8 @@ NAN_METHOD(Connection::execute)
 NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Array> binds)
 {
     Nan::HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    Local<Context> ctx = isolate->GetCurrentContext();
 
     if (!isConnected()) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
@@ -426,7 +431,7 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
     try {
         statement = connection->prepareStatement(sql.c_str());
         for (size_t index = 0; index < binds->Length(); index++) {
-            Local<Value> value = binds->Get(index);
+            Local<Value> value = binds->Get(ctx, index).ToLocalChecked();
 
             int sqlIdx = index + 1;
             int sqlType = Type::fromEsType(typeOf(value));
@@ -522,6 +527,7 @@ NAN_SETTER(Connection::setReadOnly)
 {
     TRACE("Connection::SetReadOnly");
     Nan::HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
 
     Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());
 
@@ -538,7 +544,7 @@ NAN_SETTER(Connection::setReadOnly)
     }
 
     if (!value.IsEmpty() && value->IsBoolean()) {
-        self->setReadOnly(value->BooleanValue());
+        self->setReadOnly(value->BooleanValue(isolate));
     }
 }
 
@@ -564,6 +570,7 @@ NAN_SETTER(Connection::setAutoCommit)
 {
     TRACE("Connection::SetAutoCommit");
     Nan::HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
 
     Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());
 
@@ -580,7 +587,7 @@ NAN_SETTER(Connection::setAutoCommit)
     }
 
     if (!value.IsEmpty() && value->IsBoolean()) {
-        self->setAutoCommit(value->BooleanValue());
+        self->setAutoCommit(value->BooleanValue(isolate));
     }
 }
 
