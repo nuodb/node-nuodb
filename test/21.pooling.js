@@ -34,17 +34,6 @@ describe("13. Test Result Set", () => {
   });
 
   it("do nothing", () => {
-    //   let err = null;
-    //   try {
-    //     const results = await connection.execute(tableQuery);
-    //     for(let i = 0; i < numRows; i+=getChunkSize){
-    //       const rows = await results.getRows(getChunkSize);
-    //       (rows.length).should.be.eql(getChunkSize);
-    //       (rows[getChunkSize-1]['F1']).should.be.eql(i);
-    //     }
-    //   } catch (e) {
-    //     err = e;
-    //   }
-    //   should.not.exist(err);
+    //
   });
 });
