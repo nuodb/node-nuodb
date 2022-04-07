@@ -21,19 +21,19 @@ const poolArgs = {
 describe("13. Test Result Set", () => {
   let pool = null;
 
-  before("open connection, init tables", async () => {
+  before("open pool", async () => {
     pool = new Pool(poolArgs);
     await pool.init();
     pool.should.be.ok();
     assert.equal(pool.all_connections.length(), 10);
   });
 
-  after("close connection", async () => {
+  after("close pool", async () => {
     await pool.closePool();
     assert.equal(pool.all_connections.length(), 0);
   });
 
-  it("13.1 Can get results in chunks", async () => {
+  it("do nothing", () => {
     //   let err = null;
     //   try {
     //     const results = await connection.execute(tableQuery);
