@@ -58,7 +58,7 @@ describe("13. test pooling", () => {
       connections.push(await pool.requestConnection());
     }
     should.equal(
-      Object.keys(pool.all_connections),
+      Object.keys(pool.all_connections).length,
       11,
       "pool should allow user to go up to 11 connections"
     );
@@ -66,7 +66,7 @@ describe("13. test pooling", () => {
       pool.releaseConnection(connection);
     }
     should.equal(
-      Object.keys(pool.all_connections),
+      Object.keys(pool.all_connections).length,
       10,
       "pool should return to soft limit connections when excess is returned"
     );
