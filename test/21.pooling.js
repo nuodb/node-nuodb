@@ -25,7 +25,7 @@ describe("13. test pooling", () => {
     pool = new Pool(poolArgs);
   });
 
-  it("properly initializes", async () => {
+  it("Pool can open", async () => {
     await pool.init();
     pool.should.be.ok();
     should.equal(
