@@ -36,13 +36,19 @@ describe("13. test pooling", () => {
     should.equal(pool.state, "running", "pool should be running after init");
   });
 
-  it("Allows user to request connections", async () => {
+  it("Allows user to request and return connections", async () => {
     let connection = await pool.requestConnection();
     connection.should.be.ok();
     should.equal(
       pool.free_connections.length,
       9,
-      "pool should still have the remaining 9 connections"
+      "pool should still have the remaining 9 free connections"
+    );
+    await pool.releaseConnection(connection);
+    should.equal(
+      pool.free_connections.length,
+      10,
+      "pool shoul return to 10 free connections once connection is released"
     );
   });
 
