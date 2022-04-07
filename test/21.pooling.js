@@ -35,6 +35,16 @@ describe("13. test pooling", () => {
     );
   });
 
+  it("Allows user to take request connections", async () => {
+    let connection = pool.requestConnection();
+    connection.should.be.ok();
+    should.equal(
+      pool.free_connections.length,
+      9,
+      "pool should still have the remaining 9 connections"
+    );
+  });
+
   it("Pool can close", async () => {
     await pool.closePool();
     should.equal(
