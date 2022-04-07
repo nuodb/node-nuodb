@@ -18,7 +18,7 @@ const poolArgs = {
   connection_retry_limit: 5,
 };
 
-describe("13. Test Result Set", () => {
+describe("13. test pooling", () => {
   let pool = null;
 
   before("open pool", async () => {
