@@ -33,6 +33,7 @@ describe("13. test pooling", () => {
       10,
       "pool should have 10 connections"
     );
+    should.equal(pool.state, "running", "pool should be running after init");
   });
 
   it("Allows user to request connections", async () => {
