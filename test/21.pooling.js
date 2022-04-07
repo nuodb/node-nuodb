@@ -19,7 +19,7 @@ const poolArgs = {
 };
 
 describe("13. test pooling", () => {
-  let pool = null;
+  var pool = null;
 
   before("open pool", async () => {
     pool = new Pool(poolArgs);
