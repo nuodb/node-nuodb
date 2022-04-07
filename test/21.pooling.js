@@ -25,7 +25,7 @@ describe("13. Test Result Set", () => {
     pool = new Pool(poolArgs);
     await pool.init();
     pool.should.be.ok();
-    assert.equal(
+    should.equal(
       pool.all_connections.length(),
       10,
       "pool should have 10 connections"
@@ -34,7 +34,7 @@ describe("13. Test Result Set", () => {
 
   after("close pool", async () => {
     await pool.closePool();
-    assert.equal(
+    should.equal(
       pool.all_connections.length(),
       0,
       "pool should have no connections"
