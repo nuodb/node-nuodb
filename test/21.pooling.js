@@ -23,13 +23,13 @@ describe("13. test pooling", () => {
 
   before("open pool", async () => {
     pool = new Pool(poolArgs);
-    await pool.init();
-    pool.should.be.ok();
-    should.equal(
-      pool.free_connections.length,
-      10,
-      "pool should have 10 connections"
-    );
+    // await pool.init();
+    // pool.should.be.ok();
+    // should.equal(
+    //   pool.free_connections.length,
+    //   10,
+    //   "pool should have 10 connections"
+    // );
   });
 
   after("close pool", async () => {
@@ -41,7 +41,13 @@ describe("13. test pooling", () => {
     );
   });
 
-  it("do nothing", () => {
-    //
+  it("properly initializes", () => {
+    await pool.init();
+    pool.should.be.ok();
+    should.equal(
+      pool.free_connections.length,
+      10,
+      "pool should have 10 connections"
+    )
   });
 });
