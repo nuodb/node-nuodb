@@ -35,6 +35,15 @@ describe("13. test pooling", () => {
     );
   });
 
+  it("Pool can close", async () => {
+    await pool.closePool();
+    should.equal(
+      pool.free_connections.length,
+      0,
+      "pool should have no connections"
+    );
+  });
+
   after("close pool", async () => {
     await pool.closePool();
     should.equal(
