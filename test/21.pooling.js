@@ -62,12 +62,10 @@ describe("13. test pooling", () => {
       11,
       "pool should allow user to go up to 11 connections"
     );
-    connections.forEach((connection) => {
-        await pool.releaseConnection(connection);
-    })
-    // for (const connection in connections) {
-    //   await pool.releaseConnection(connection);
-    // }
+    //! FIX THIS
+    for (const connection in connections) {
+      await pool.releaseConnection(connection);
+    }
     should.equal(
       Object.keys(pool.all_connections).length,
       10,
