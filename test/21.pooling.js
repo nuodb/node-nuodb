@@ -21,7 +21,7 @@ const poolArgs = {
 describe("13. test pooling", () => {
   var pool = null;
 
-  before("open pool", async () => {
+  before("open pool", () => {
     pool = new Pool(poolArgs);
     // await pool.init();
     // pool.should.be.ok();
