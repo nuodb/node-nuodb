@@ -35,7 +35,7 @@ describe("13. test pooling", () => {
     );
   });
 
-  it("Allows user to take request connections", async () => {
+  it("Allows user to request connections", async () => {
     let connection = await pool.requestConnection();
     connection.should.be.ok();
     should.equal(
