@@ -25,11 +25,12 @@ describe("13. Test Result Set", () => {
     pool = new Pool(poolArgs);
     await pool.init();
     pool.should.be.ok();
-    pool.all_connections.length().should.equal(10);
+    assert.equal(pool.all_connections.length(), 10);
   });
 
   after("close connection", async () => {
     await pool.closePool();
+    assert.equal(pool.all_connections.length(), 0);
   });
 
   it("13.1 Can get results in chunks", async () => {
