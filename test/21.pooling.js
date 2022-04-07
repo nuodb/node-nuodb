@@ -32,23 +32,23 @@ describe("13. test pooling", () => {
     // );
   });
 
-//   after("close pool", async () => {
-//     await pool.closePool();
-//     should.equal(
-//       pool.free_connections.length,
-//       0,
-//       "pool should have no connections"
-//     );
-//   });
+  //   after("close pool", async () => {
+  //     await pool.closePool();
+  //     should.equal(
+  //       pool.free_connections.length,
+  //       0,
+  //       "pool should have no connections"
+  //     );
+  //   });
 
-  it("properly initializes", () => {
+  it("properly initializes", async () => {
     await pool.init();
     pool.should.be.ok();
     should.equal(
       pool.free_connections.length,
       10,
       "pool should have 10 connections"
-    )
+    );
   });
 
   after("close pool", async () => {
