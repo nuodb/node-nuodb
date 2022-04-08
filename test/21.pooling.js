@@ -51,7 +51,7 @@ describe("13. test pooling", () => {
       "pool shoul return to 10 free connections once connection is released"
     );
   });
-
+  // ! must look at this
   it("Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
     let connections = [];
     for (let i = 0; i < 11; i++) {
@@ -62,10 +62,7 @@ describe("13. test pooling", () => {
       11,
       "pool should allow user to go up to 11 connections"
     );
-    //! FIX THIS
-    for (const connection in connections) {
-      await pool.releaseConnection(connection);
-    }
+    await pool.releaseConnection(connections[0]);
     should.equal(
       Object.keys(pool.all_connections).length,
       10,
