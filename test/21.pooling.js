@@ -105,6 +105,11 @@ describe("14. test pooling", () => {
       "connection should age out but not close"
     );
     await pool.releaseConnection(curr);
+    should.notEqual(
+      curr,
+      pool.all_connections[curr.id].connection,
+      "the aged out connection should no longer be in the pool after being returned"
+    );
   });
 
   it("14.6 Does not allow the pool to exceed the hard limit of connections", async () => {
