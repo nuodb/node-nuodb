@@ -103,7 +103,7 @@ describe("13. test pooling", () => {
 
   it("Does not allow the pool to exceed the hard limit of connections", async () => {
     connections = [];
-    for (let i = 0; i < 13; i++) {
+    for (let i = 0; i < 12; i++) {
       connections.push(await pool.requestConnection());
     }
   });
