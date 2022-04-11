@@ -113,7 +113,7 @@ describe("14. test pooling", () => {
       connections.push(await pool.requestConnection());
     }
     // asking for one more connection should result in error
-    ((pool) => {await pool.requestConnection()})should.throw('connection hard limit reached')
+    await pool.requestConnection().should.be.rejectedWith("testestest");
   });
 
   it("14.7 Pool can close", async () => {
