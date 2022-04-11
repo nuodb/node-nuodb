@@ -93,7 +93,6 @@ describe("13. test pooling", () => {
   it("Does not close a connection in use on age out", async () => {
     let curr = await pool.requestConnection();
     await pool._closeConnection(curr.id);
-    console.log("CHECK THIS OUT>>>>>>>", curr, pool.all_connections[curr.id]);
     should.equal(
       pool.all_connections[curr.id].ageStatus,
       true,
