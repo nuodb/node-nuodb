@@ -88,6 +88,12 @@ describe("14. test pooling", () => {
   });
 
   it("14.4 does not drop below soft limit of connections", async () => {
+    console.log(
+      "all_connections",
+      Object.keys(pool.all_connections).length,
+      "free_connections",
+      pool.free_connections.length
+    );
     await pool._closeConnection(connections[0].id);
     should.equal(
       Object.keys(pool.all_connections).length,
