@@ -51,12 +51,6 @@ describe("13. test pooling", () => {
       10,
       "pool shoul return to 10 free connections once connection is released"
     );
-    console.log(
-      connections.length,
-      "this is pool",
-      Object.keys(pool.all_connections).length,
-      pool.free_connections.length
-    );
   });
 
   it("Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
