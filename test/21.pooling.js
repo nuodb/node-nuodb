@@ -71,6 +71,15 @@ describe("13. test pooling", () => {
     );
   });
 
+  it("does not drop below soft limit of connections", async () => {
+    await pool._closeConnection(connections[0].id);
+    should.equal(
+      Object.keys(pool.all_connections).length,
+      10,
+      "pool should maintain re-open a connection when closing to below soft limit"
+    );
+  });
+
   it("Pool can close", async () => {
     await pool.closePool();
     should.equal(
