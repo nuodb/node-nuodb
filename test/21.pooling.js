@@ -82,7 +82,6 @@ describe("13. test pooling", () => {
         }
       })
     );
-    console.log("CHECK OUT THIS ID", connections[0].id, pool.all_connections);
     await pool._closeConnection(connections[0].id);
     should.equal(
       Object.keys(pool.all_connections).length,
