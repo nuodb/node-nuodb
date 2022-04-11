@@ -75,7 +75,6 @@ describe("14. test pooling", () => {
         try {
           await pool.releaseConnection(connection);
         } catch (e) {
-          console.log(e);
           // continue regardless of error
         }
       })
@@ -88,20 +87,7 @@ describe("14. test pooling", () => {
   });
 
   it("14.4 does not drop below soft limit of connections", async () => {
-    console.log(
-      "all_connections",
-      Object.keys(pool.all_connections).length,
-      "free_connections",
-      pool.free_connections.length
-    );
     await pool._closeConnection(connections[0].id);
-
-    console.log(
-      "all_connections",
-      Object.keys(pool.all_connections).length,
-      "free_connections",
-      pool.free_connections.length
-    );
 
     should.equal(
       Object.keys(pool.all_connections).length,
@@ -123,7 +109,7 @@ describe("14. test pooling", () => {
 
   it("14.6 Does not allow the pool to exceed the hard limit of connections", async () => {
     connections = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 12; i++) {
       connections.push(await pool.requestConnection());
     }
   });
