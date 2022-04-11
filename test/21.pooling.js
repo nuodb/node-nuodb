@@ -72,6 +72,7 @@ describe("13. test pooling", () => {
       10,
       "pool should return to soft limit connections when excess is returned"
     );
+    console.log("free connections", pool.free_connections.length);
   });
 
   it("does not drop below soft limit of connections", async () => {
@@ -90,6 +91,7 @@ describe("13. test pooling", () => {
       10,
       "pool should maintain re-open a connection when closing to below soft limit"
     );
+    console.log("free connections", pool.free_connections.length);
   });
 
   it("Does not close a connection in use on age out", async () => {
@@ -101,6 +103,7 @@ describe("13. test pooling", () => {
       "connection should age out but not close"
     );
     await pool.releaseConnection(curr);
+    console.log("free connections", pool.free_connections.length);
   });
 
   it("Does not allow the pool to exceed the hard limit of connections", async () => {
