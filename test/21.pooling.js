@@ -99,7 +99,7 @@ describe("13. test pooling", () => {
       true,
       "connection should age out but not close"
     );
-    pool.releaseConnection(curr);
+    await pool.releaseConnection(curr);
   });
 
   it("Pool can close", async () => {
