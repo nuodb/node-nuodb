@@ -75,6 +75,7 @@ describe("14. test pooling", () => {
         try {
           await connection.releaseConnection(connection);
         } catch (e) {
+          console.log(e);
           // continue regardless of error
         }
       })
