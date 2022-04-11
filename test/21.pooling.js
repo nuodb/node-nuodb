@@ -73,7 +73,7 @@ describe("14. test pooling", () => {
     await Promise.all(
       Object.keys(connections).map(async (connection) => {
         try {
-          await connection.releaseConnection(connection);
+          await pool.releaseConnection(connection);
         } catch (e) {
           console.log(e);
           // continue regardless of error
