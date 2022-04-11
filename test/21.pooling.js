@@ -114,6 +114,11 @@ describe("13. test pooling", () => {
     connections = [];
     for (let i = 0; i < 10; i++) {
       connections.push(await pool.requestConnection());
+      console.log(
+        connections.length,
+        "this is pool",
+        Object.keys(pool.all_connections).length
+      );
     }
   });
 
