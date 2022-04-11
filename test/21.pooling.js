@@ -19,7 +19,8 @@ const poolArgs = {
 };
 
 describe("13. test pooling", () => {
-  var pool = null;
+  let pool = null;
+  let connections = null;
 
   before("open pool", () => {
     pool = new Pool(poolArgs);
@@ -51,9 +52,9 @@ describe("13. test pooling", () => {
       "pool shoul return to 10 free connections once connection is released"
     );
   });
-  // ! must look at this
+
   it("Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
-    let connections = [];
+    connections = [];
     for (let i = 0; i < 11; i++) {
       connections.push(await pool.requestConnection());
     }
