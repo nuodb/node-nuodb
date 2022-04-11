@@ -117,7 +117,8 @@ describe("13. test pooling", () => {
       console.log(
         connections.length,
         "this is pool",
-        Object.keys(pool.all_connections).length
+        Object.keys(pool.all_connections).length,
+        pool.free_connections.length
       );
     }
   });
