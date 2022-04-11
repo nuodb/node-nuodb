@@ -102,6 +102,15 @@ describe("13. test pooling", () => {
   });
 
   it("Does not allow the pool to exceed the hard limit of connections", async () => {
+    await Promise.all(
+      Object.keys(connections).map(async (connection) => {
+        try {
+          await connection.releaseConnection(connection);
+        } catch (e) {
+          // continue regardless of error
+        }
+      })
+    );
     connections = [];
     for (let i = 0; i < 11; i++) {
       connections.push(await pool.requestConnection());
