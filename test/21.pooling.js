@@ -127,6 +127,8 @@ describe("14. test pooling", () => {
     );
   });
 
+  //? could write a test that checks that connections that dont belong are properly rejected
+
   after("close pool", async () => {
     await pool.closePool();
     should.equal(
