@@ -13,7 +13,7 @@ const poolArgs = {
   connection_limit: 10,
   connection_config: config,
   max_age: 10000,
-  checkTime: 200000000000,
+  checkTime: 50000,
   hardLimit: 12,
   connection_retry_limit: 5,
 };
