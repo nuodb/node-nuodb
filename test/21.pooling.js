@@ -71,7 +71,7 @@ describe("14. test pooling", () => {
       "pool should return to soft limit connections when excess is returned"
     );
     await Promise.all(
-      Object.keys(connections).map(async (connection) => {
+      connections.map(async (connection) => {
         try {
           await pool.releaseConnection(connection);
         } catch (e) {
