@@ -18,7 +18,7 @@ const poolArgs = {
   connection_retry_limit: 5,
 };
 
-describe("13. test pooling", () => {
+describe("14. test pooling", () => {
   let pool = null;
   let connections = null;
 
@@ -26,7 +26,7 @@ describe("13. test pooling", () => {
     pool = new Pool(poolArgs);
   });
 
-  it("Pool can open", async () => {
+  it("14.1 Pool can open", async () => {
     await pool.init();
     pool.should.be.ok();
     should.equal(
@@ -37,7 +37,7 @@ describe("13. test pooling", () => {
     should.equal(pool.state, "running", "pool should be running after init");
   });
 
-  it("Allows user to request and return connections", async () => {
+  it("14.2 Allows user to request and return connections", async () => {
     let connection = await pool.requestConnection();
     connection.should.be.ok();
     should.equal(
@@ -53,7 +53,7 @@ describe("13. test pooling", () => {
     );
   });
 
-  it("Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
+  it("14.3 Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
     connections = [];
     for (let i = 0; i < 11; i++) {
       connections.push(await pool.requestConnection());
@@ -70,14 +70,9 @@ describe("13. test pooling", () => {
       10,
       "pool should return to soft limit connections when excess is returned"
     );
-    should.equal(
-      pool.free_connections.length,
-      10,
-      "pool should remain with 10 free connections when none are in use"
-    );
   });
 
-  it("does not drop below soft limit of connections", async () => {
+  it("14.4 does not drop below soft limit of connections", async () => {
     await Promise.all(
       Object.keys(connections).map(async (connection) => {
         try {
@@ -93,9 +88,14 @@ describe("13. test pooling", () => {
       10,
       "pool should maintain re-open a connection when closing to below soft limit"
     );
+    should.equal(
+      pool.free_connections.length,
+      10,
+      "pool should remain with 10 free connections when none are in use"
+    );
   });
 
-  it("Does not close a connection in use on age out", async () => {
+  it("14.5 Does not close a connection in use on age out", async () => {
     let curr = await pool.requestConnection();
     await pool._closeConnection(curr.id);
     should.equal(
@@ -106,14 +106,14 @@ describe("13. test pooling", () => {
     await pool.releaseConnection(curr);
   });
 
-  it("Does not allow the pool to exceed the hard limit of connections", async () => {
+  it("14.6 Does not allow the pool to exceed the hard limit of connections", async () => {
     connections = [];
     for (let i = 0; i < 10; i++) {
       connections.push(await pool.requestConnection());
     }
   });
 
-  it("Pool can close", async () => {
+  it("14.7 Pool can close", async () => {
     await pool.closePool();
     should.equal(
       pool.free_connections.length,
