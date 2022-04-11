@@ -69,6 +69,9 @@ describe("13. test pooling", () => {
       10,
       "pool should return to soft limit connections when excess is returned"
     );
+  });
+
+  it("does not drop below soft limit of connections", async () => {
     await Promise.all(
       Object.keys(connections).map(async (connection) => {
         try {
@@ -78,9 +81,6 @@ describe("13. test pooling", () => {
         }
       })
     );
-  });
-
-  it("does not drop below soft limit of connections", async () => {
     console.log("CHECK OUT THIS ID", connections[0].id, pool.free_connections);
     await pool._closeConnection(connections[0].id);
     should.equal(
