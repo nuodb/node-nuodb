@@ -30,22 +30,26 @@ build:
 	docker build --target build --network nuodb-net -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
 
 #:help: test        | Runs the `test` target, building and testing the driver.
+#changed to properly create and mount volumes
 .PHONY: test
 test: build
 	docker volume create cores
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume $(CURDIR)/cores:/cores --volume $(CURDIR)/valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker volume create valgrind
+	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: test-only   | Runs the `test` target, testing the driver without building the Docker.
 .PHONY: test-only
 test-only:
 	docker volume create cores
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume $(CURDIR)/cores:/cores --volume $(CURDIR)/valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker volume create valgrind
+	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: valgrind    | Runs the `valgrind` target, building the driver and running a sample application under valgrind.
 .PHONY: valgrind
 valgrind: build
 	docker volume create cores
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume $(CURDIR)/cores:/cores --volume $(CURDIR)/valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run valgrind
+	docker volume create valgrind
+	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run valgrind
 
 #:help: run-build   | Runs the `build` Docker variant
 .PHONY: run-build
