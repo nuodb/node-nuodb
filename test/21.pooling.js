@@ -64,7 +64,7 @@ describe("13. test pooling", () => {
       "pool should allow user to go up to 11 connections"
     );
     await pool.releaseConnection(connections[0]);
-    pool.shift();
+    connections.shift();
     should.equal(
       Object.keys(pool.all_connections).length,
       10,
