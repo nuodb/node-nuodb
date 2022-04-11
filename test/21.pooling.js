@@ -14,7 +14,7 @@ const poolArgs = {
   connection_config: config,
   max_age: 10000,
   checkTime: 5000,
-  hardLimit: 50,
+  hardLimit: 12,
   connection_retry_limit: 5,
 };
 
@@ -99,6 +99,13 @@ describe("13. test pooling", () => {
       "connection should age out but not close"
     );
     await pool.releaseConnection(curr);
+  });
+
+  it("Does not allow the pool to exceed the hard limit of connections", async () => {
+    connections = [];
+    for (let i = 0; i < 13; i++) {
+      connections.push(await pool.requestConnection());
+    }
   });
 
   it("Pool can close", async () => {
