@@ -79,6 +79,11 @@ describe("14. test pooling", () => {
         }
       })
     );
+    should.equal(
+      pool.free_connections.length,
+      10,
+      "pool should remain with 10 free connections when none are in use"
+    );
   });
 
   it("14.4 does not drop below soft limit of connections", async () => {
@@ -87,11 +92,6 @@ describe("14. test pooling", () => {
       Object.keys(pool.all_connections).length,
       10,
       "pool should maintain re-open a connection when closing to below soft limit"
-    );
-    should.equal(
-      pool.free_connections.length,
-      10,
-      "pool should remain with 10 free connections when none are in use"
     );
   });
 
