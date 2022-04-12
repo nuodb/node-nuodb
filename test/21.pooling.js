@@ -158,7 +158,9 @@ describe("14 test pooling", () => {
     );
   });
 
-  //! could write a test that checks that connections that dont belong are properly rejected
+  //! write test to make sure not-aged out, live connections go back into the pool after being released
+  //? achieved with "14.6 does not drop below soft limit of connections"
+
   //! write tests that check the state of the pool and handles everything properly
 
   after("close pool", async () => {
