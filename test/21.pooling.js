@@ -149,7 +149,7 @@ describe("14 test pooling", () => {
       .should.be.rejectedWith("connection is not from this pool");
   });
 
-  it("14.9 Pool can close", async () => {
+  it("14.10 Pool can close", async () => {
     await pool.closePool();
     should.equal(
       pool.free_connections.length,
