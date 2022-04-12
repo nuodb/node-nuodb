@@ -39,7 +39,9 @@ describe("14 test pooling", () => {
   });
 
   it("should reject pool creation with missing arguments", () => {
-    new Pool(badPoolArgs).should.be.rejectedWith(
+    (() => {
+      new Pool(badPoolArgs);
+    }).should.be.rejectedWith(
       "cannot find required argument connection_limit in constructor arguments"
     );
   });
