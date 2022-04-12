@@ -34,7 +34,7 @@ describe("14 test pooling", () => {
     await pool
       .requestConnection()
       .should.be.rejectedWith(
-        "must initialize the pool before requesting a connection"
+        "cannot find required argument connection_limit in constructor arguments"
       );
   });
 
