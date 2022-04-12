@@ -18,6 +18,10 @@ const poolArgs = {
   connection_retry_limit: 5,
 };
 
+const badPoolArgs = {
+  wrong: "this is not how it is done",
+};
+
 describe("14 test pooling", () => {
   let pool = null;
   let connections = null;
@@ -32,6 +36,12 @@ describe("14 test pooling", () => {
       .should.be.rejectedWith(
         "must initialize the pool before requesting a connection"
       );
+  });
+
+  it("should reject pool creation with missing arguments", () => {
+    new Pool(badPoolArgs).should.be.rejectedWith(
+      "connection hard limit reached"
+    );
   });
 
   it("14.2 Pool can open", async () => {
