@@ -18,6 +18,10 @@ const poolArgs = {
   connection_retry_limit: 5,
 };
 
+const connectionDoesntBelong = {
+  I: "don't belong",
+};
+
 const badPoolArgs = {
   wrong: "this is not how it is done",
 };
@@ -139,6 +143,12 @@ describe("14 test pooling", () => {
       .should.be.rejectedWith("connection hard limit reached");
   });
 
+  it("14.9 rejects connections that do not belong to the pool", async () => {
+    await pool
+      .releaseConnection(connectionDoesntBelong)
+      .should.be.rejectedWith("connection is not from this pool");
+  });
+
   it("14.9 Pool can close", async () => {
     await pool.closePool();
     should.equal(
@@ -149,7 +159,7 @@ describe("14 test pooling", () => {
   });
 
   //! could write a test that checks that connections that dont belong are properly rejected
-  //! write tests that check the state of the pool and handle everything properly
+  //! write tests that check the state of the pool and handles everything properly
 
   after("close pool", async () => {
     await pool.closePool();
