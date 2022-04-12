@@ -34,13 +34,13 @@ describe("14 test pooling", () => {
     await pool
       .requestConnection()
       .should.be.rejectedWith(
-        "cannot find required argument connection_limit in constructor arguments"
+        "must initialize the pool before requesting a connection"
       );
   });
 
   it("should reject pool creation with missing arguments", () => {
     new Pool(badPoolArgs).should.be.rejectedWith(
-      "connection hard limit reached"
+      "cannot find required argument connection_limit in constructor arguments"
     );
   });
 
