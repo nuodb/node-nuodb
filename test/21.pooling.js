@@ -38,7 +38,7 @@ describe("14 test pooling", () => {
       );
   });
 
-  it("should reject pool creation with missing arguments", () => {
+  it("14.2 should reject pool creation with missing arguments", () => {
     (() => {
       const wrong = new Pool(badPoolArgs);
       return wrong;
@@ -47,7 +47,7 @@ describe("14 test pooling", () => {
     );
   });
 
-  it("14.2 Pool can open", async () => {
+  it("14.3 Pool can open", async () => {
     await pool.init();
     pool.should.be.ok();
     should.equal(
@@ -58,7 +58,7 @@ describe("14 test pooling", () => {
     should.equal(pool.state, "running", "pool should be running after init");
   });
 
-  it("14.3 Allows user to request and return connections", async () => {
+  it("14.4 Allows user to request and return connections", async () => {
     let connection = await pool.requestConnection();
     connection.should.be.ok();
     should.equal(
@@ -74,7 +74,7 @@ describe("14 test pooling", () => {
     );
   });
 
-  it("14.4 Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
+  it("14.5 Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
     connections = [];
     for (let i = 0; i < 11; i++) {
       connections.push(await pool.requestConnection());
@@ -107,7 +107,7 @@ describe("14 test pooling", () => {
     );
   });
 
-  it("14.5 does not drop below soft limit of connections", async () => {
+  it("14.6 does not drop below soft limit of connections", async () => {
     await pool._closeConnection(connections[0].id);
 
     should.equal(
@@ -117,7 +117,7 @@ describe("14 test pooling", () => {
     );
   });
 
-  it("14.6 Does not close a connection in use on age out", async () => {
+  it("14.7 Does not close a connection in use on age out", async () => {
     let curr = await pool.requestConnection();
     await pool._closeConnection(curr.id);
     should.equal(
@@ -128,7 +128,7 @@ describe("14 test pooling", () => {
     await pool.releaseConnection(curr);
   });
 
-  it("14.7 Does not allow the pool to exceed the hard limit of connections", async () => {
+  it("14.8 Does not allow the pool to exceed the hard limit of connections", async () => {
     connections = [];
     for (let i = 0; i < 12; i++) {
       connections.push(await pool.requestConnection());
@@ -139,7 +139,7 @@ describe("14 test pooling", () => {
       .should.be.rejectedWith("connection hard limit reached");
   });
 
-  it("14.8 Pool can close", async () => {
+  it("14.9 Pool can close", async () => {
     await pool.closePool();
     should.equal(
       pool.free_connections.length,
