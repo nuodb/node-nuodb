@@ -88,15 +88,15 @@ describe("14 test pooling", () => {
       11,
       "pool should allow user to go up to 11 connections"
     );
-    await Promise.all(
-      connections.map(async (connection) => {
-        try {
-          await pool.releaseConnection(connection);
-        } catch (e) {
-          // continue regardless of error
-        }
-      })
-    );
+    // await Promise.all(
+    connections.map(async (connection) => {
+      try {
+        await pool.releaseConnection(connection);
+      } catch (e) {
+        // continue regardless of error
+      }
+    });
+    // );
     should.equal(
       pool.free_connections.length,
       10,
