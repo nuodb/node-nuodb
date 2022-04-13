@@ -88,13 +88,6 @@ describe("14 test pooling", () => {
       11,
       "pool should allow user to go up to 11 connections"
     );
-    await pool.releaseConnection(connections[0]);
-    connections.shift();
-    should.equal(
-      Object.keys(pool.all_connections).length,
-      10,
-      "pool should return to soft limit connections when excess is returned"
-    );
     await Promise.all(
       connections.map(async (connection) => {
         try {
