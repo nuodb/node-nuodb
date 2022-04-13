@@ -129,6 +129,10 @@ describe("14 test pooling", () => {
     await pool
       .requestConnection()
       .should.be.rejectedWith("connection hard limit reached");
+
+    for (let i = 0; i < connections.length; i++) {
+      await pool.releaseConnection(connections[i]);
+    }
   });
 
   it("14.9 rejects connections that do not belong to the pool", async () => {
@@ -137,7 +141,7 @@ describe("14 test pooling", () => {
       .should.be.rejectedWith("connection is not from this pool");
   });
 
-  it("does not allow release of connections that are not in use/have already been released", async () => {
+  it("14.10 does not allow release of connections that are not in use/have already been released", async () => {
     const connection = await pool.requestConnection();
     await pool.releaseConnection(connection);
     await pool
@@ -147,7 +151,7 @@ describe("14 test pooling", () => {
       );
   });
 
-  it("14.10 Pool can close", async () => {
+  it("14.11 Pool can close", async () => {
     await pool.closePool();
     should.equal(
       pool.free_connections.length,
