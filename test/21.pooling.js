@@ -90,7 +90,7 @@ describe("14 test pooling", () => {
     );
     console.log("connections length", connections.length);
     for (let i = 0; i < connections.length; i++) {
-      await pool.releaseConnection(connection[i]);
+      await pool.releaseConnection(connections[i]);
     }
     // await Promise.all(
     //   connections.map(async (connection) => {
