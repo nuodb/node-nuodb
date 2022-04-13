@@ -137,6 +137,16 @@ describe("14 test pooling", () => {
       .should.be.rejectedWith("connection is not from this pool");
   });
 
+  it("does not allow release of connections that are not in use/have already been released", async () => {
+    const connection = await pool.requestConnection();
+    await pool.releaseConnection(connection);
+    await pool
+      .releaseConnection(connection)
+      .should.be.rejectedWith(
+        "cannot return a connection that has already been returned to the pool"
+      );
+  });
+
   it("14.10 Pool can close", async () => {
     await pool.closePool();
     should.equal(
