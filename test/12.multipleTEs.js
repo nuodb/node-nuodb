@@ -20,6 +20,8 @@ const errTextSystemNotSetup = `The system should have more than 2 nodes (1 SM, 1
 const numConnectionsToTest = 20;
 const roundRobinDelta = numConnectionsToTest / 5;
 
+const testRepeat = 2;
+
 let nodes = null;
 
 const filterTEOnly = (n) => n.TYPE === "Transaction"
@@ -117,26 +119,28 @@ describe('12. Test Connection to multiple TEs', () => {
       nodes
         .filter(filterTEOnly)
         .map((n) => async () => {
-          // connect to each unique TE directly
-          let err = null;
-          try {
-            const nodeConfig = {... config
-              , LBQuery: `round_robin(node_id(${n.ID}))`};
-            const nodeConnection = await driver.connect(nodeConfig);
-            nodeConnection.should.be.ok();
-            const results = await nodeConnection.execute(getNodeIdQuery);
-            const rows = await results.getRows();
+          for(let i = 0; i < testRepeat; i++){
+            // connect to each unique TE directly
+            let err = null;
+            try {
+              const nodeConfig = {... config
+                , LBQuery: `round_robin(node_id(${n.ID}))`};
+              const nodeConnection = await driver.connect(nodeConfig);
+              nodeConnection.should.be.ok();
+              const results = await nodeConnection.execute(getNodeIdQuery);
+              const rows = await results.getRows();
 
-            // the connected node should be the same one as specified when opening the connection
-            (rows.length).should.be.eql(1);
-            (rows[0]["[GETNODEID]"]).should.be.eql(n.ID);
+              // the connected node should be the same one as specified when opening the connection
+              (rows.length).should.be.eql(1);
+              (rows[0]["[GETNODEID]"]).should.be.eql(n.ID);
 
-            await nodeConnection.close();
-          } catch (e) {
-            console.log(e);
-            err = e;
+              await nodeConnection.close();
+            } catch (e) {
+              console.log(e);
+              err = e;
+            }
+            should.not.exist(err);
           }
-          should.not.exist(err);
         })
     );
   });
