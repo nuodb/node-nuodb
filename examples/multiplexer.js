@@ -80,13 +80,6 @@ const curryShardMapper = (numShards) => (id) => {
 const curryPoll = (numShards) => async (thisArg) => {
   const latestNumShards = await getLatestNumShards();
 
-  // change the mapper and poll if necessary
-  if(latestNumShards != numShards){
-    console.log(`shard change from ${numShards} to ${latestNumShards}!`);
-    thisArg.shardMapper = curryShardMapper(latestNumShards);
-    thisArg.poll = curryPoll(latestNumShards);
-  }
-
   // commission or decommission as needed
   if(latestNumShards < numShards){
     for(let shardId = numShards-1; shardId >= latestNumShards; shardId--){
@@ -98,6 +91,13 @@ const curryPoll = (numShards) => async (thisArg) => {
       console.log(`comissioning shard ${shardId}`);
       await thisArg.commissionShard(getShardConfig(shardId));
     }
+  }
+
+  // change the mapper and poll if necessary
+  if(latestNumShards != numShards){
+    console.log(`shard change from ${numShards} to ${latestNumShards}!`);
+    thisArg.shardMapper = curryShardMapper(latestNumShards);
+    thisArg.poll = curryPoll(latestNumShards);
   }
 
 }
