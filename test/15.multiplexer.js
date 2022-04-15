@@ -5,7 +5,7 @@
 
 'use strict';
 
-const ShardMultiplexer = require('../lib/multiplexer');
+const { ShardMultiplexer } = require('..');
 const should = require('should');
 const config = require('./config');
 
