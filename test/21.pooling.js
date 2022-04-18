@@ -60,12 +60,6 @@ describe("14 test pooling", () => {
       "pool should have 10 connections"
     );
     should.equal(pool.state, "running", "pool should be running after init");
-    //here to....
-    function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-    await sleep(5000);
-    //here is temporary
   });
 
   it("14.4 Allows user to request and return connections", async () => {
