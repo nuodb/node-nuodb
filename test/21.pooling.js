@@ -125,7 +125,7 @@ describe("14 test pooling", () => {
     for (let i = 0; i < 12; i++) {
       connections.push(await pool.requestConnection());
     }
-    // asking for one more connection should result in error
+
     await pool
       .requestConnection()
       .should.be.rejectedWith("connection hard limit reached");
@@ -159,11 +159,6 @@ describe("14 test pooling", () => {
       "pool should have no connections"
     );
   });
-
-  //! write test to make sure not-aged out, live connections go back into the pool after being released
-  //? achieved with "14.6 does not drop below soft limit of connections"
-
-  //! write tests that check the state of the pool and handles everything properly
 
   after("close pool", async () => {
     await pool.closePool();
