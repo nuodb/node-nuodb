@@ -47,7 +47,7 @@ describe("14 test pooling", () => {
       const wrong = new Pool(badPoolArgs);
       return wrong;
     }).should.throw(
-      "cannot find required argument connection_limit in constructor arguments"
+      "cannot find required argument connectionConfig in constructor arguments"
     );
   });
 
