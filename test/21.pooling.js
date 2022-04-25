@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019, NuoDB, Inc.
+// Copyright (c) 2022-2023, NuoDB, Inc.
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
@@ -105,7 +105,7 @@ describe("14 test pooling", () => {
     should.equal(
       Object.keys(pool.all_connections).length,
       10,
-      "pool should maintain re-open a connection when closing to below soft limit"
+      "pool should maintain an open a connection when closing to below soft limit"
     );
   });
 
