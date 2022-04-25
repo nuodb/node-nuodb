@@ -158,7 +158,7 @@ describe("14 test pooling", () => {
       9,
       "pool should have 9 connections"
     );
-    connection.close();
+    await connection.close();
     should.equal(
       pool.free_connections.length,
       10,
