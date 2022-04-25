@@ -151,7 +151,7 @@ describe("14 test pooling", () => {
       );
   });
 
-  it("Has changed the connection.close method to return the connection to the pool", async () => {
+  it("14.11 Has changed the connection.close method to return the connection to the pool", async () => {
     const connection = await pool.requestConnection();
     should.equal(
       pool.free_connections.length,
