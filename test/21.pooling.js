@@ -100,7 +100,7 @@ describe("14 test pooling", () => {
   });
 
   it("14.6 does not drop below soft limit of connections", async () => {
-    await pool._closeConnection(pool.free_connections[0].id);
+    await pool._closeConnection(pool.free_connections[0]._id);
 
     should.equal(
       Object.keys(pool.all_connections).length,
@@ -111,9 +111,9 @@ describe("14 test pooling", () => {
 
   it("14.7 Does not close a connection in use on age out", async () => {
     let curr = await pool.requestConnection();
-    await pool._closeConnection(curr.id);
+    await pool._closeConnection(curr._id);
     should.equal(
-      pool.all_connections[curr.id].ageStatus,
+      pool.all_connections[curr._id].ageStatus,
       true,
       "connection should age out but not close"
     );
