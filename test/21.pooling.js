@@ -158,10 +158,6 @@ describe("14 test pooling", () => {
       9,
       "pool should have 9 connections"
     );
-    console.log(
-      connection.id,
-      ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    );
     await connection.close();
     should.equal(
       pool.free_connections.length,
