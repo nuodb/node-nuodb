@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019, NuoDB, Inc.
+// Copyright (c) 2022-2023, NuoDB, Inc.
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
@@ -10,12 +10,12 @@ var should = require("should");
 var config = require("./config");
 
 const poolArgs = {
-  connection_limit: 10,
-  connection_config: config,
-  max_age: 10000,
-  checkTime: 50000,
-  hardLimit: 12,
-  connection_retry_limit: 5,
+  minAvailable: 10,
+  connectionConfig: config,
+  maxAge: 2000,
+  checkTime: 10000,
+  maxLimit: 12,
+  connectionRetryLimit: 5,
 };
 
 const connectionDoesntBelong = {
@@ -100,12 +100,12 @@ describe("14 test pooling", () => {
   });
 
   it("14.6 does not drop below soft limit of connections", async () => {
-    await pool._closeConnection(connections[0].id);
+    await pool._closeConnection(pool.free_connections[0].id);
 
     should.equal(
       Object.keys(pool.all_connections).length,
       10,
-      "pool should maintain re-open a connection when closing to below soft limit"
+      "pool should maintain an open a connection when closing to below soft limit"
     );
   });
 
@@ -125,7 +125,7 @@ describe("14 test pooling", () => {
     for (let i = 0; i < 12; i++) {
       connections.push(await pool.requestConnection());
     }
-    // asking for one more connection should result in error
+
     await pool
       .requestConnection()
       .should.be.rejectedWith("connection hard limit reached");
@@ -159,11 +159,6 @@ describe("14 test pooling", () => {
       "pool should have no connections"
     );
   });
-
-  //! write test to make sure not-aged out, live connections go back into the pool after being released
-  //? achieved with "14.6 does not drop below soft limit of connections"
-
-  //! write tests that check the state of the pool and handles everything properly
 
   after("close pool", async () => {
     await pool.closePool();
