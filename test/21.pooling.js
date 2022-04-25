@@ -10,12 +10,12 @@ var should = require("should");
 var config = require("./config");
 
 const poolArgs = {
-  connection_limit: 10,
-  connection_config: config,
-  max_age: 2000,
+  minAvailable: 10,
+  connectionConfig: config,
+  maxAge: 2000,
   checkTime: 10000,
-  hardLimit: 12,
-  connection_retry_limit: 5,
+  maxLimit: 12,
+  connectionRetryLimit: 5,
 };
 
 const connectionDoesntBelong = {
