@@ -151,7 +151,22 @@ describe("14 test pooling", () => {
       );
   });
 
-  it("14.11 Pool can close", async () => {
+  it("Has changed the connection.close method to return the connection to the pool", async () => {
+    const connection = await pool.requestConnection();
+    should.equal(
+      pool.free_connections.length,
+      9,
+      "pool should have 9 connections"
+    );
+    connection.close();
+    should.equal(
+      pool.free_connections.length,
+      10,
+      "calling close on the connection should return it to the pool"
+    );
+  });
+
+  it("14.12 Pool can close", async () => {
     await pool.closePool();
     should.equal(
       pool.free_connections.length,
