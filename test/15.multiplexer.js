@@ -15,12 +15,12 @@ const POOL_STATE_CLOSED = "closed";
 const defaultShardConfig = {
   id: -1,
   pool_config: {
-    connection_limit: 10,
-    connection_config: config,
-    max_age: 5000,
+    minAvailable: 10,
+    connectionConfig: config,
+    maxAge: 5000,
     checkTime: 60 * 1000,
-    hardLimit: 100,
-    connection_retry_limit: 5,
+    maxLimit: 100,
+    connectionRetryLimit: 5,
   },
 }
 

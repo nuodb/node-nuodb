@@ -49,12 +49,12 @@ const getLatestNumShards = async () => {
 const defaultShardConfig = {
   id: -1,
   pool_config: {
-    connection_limit: 10,
-    connection_config: defaultConnectionConfig,
-    max_age: 1000,
+    minAvailable: 10,
+    connectionConfig: defaultConnectionConfig,
+    maxAge: 1000,
     checkTime: 60 * 1000,
-    hardLimit: 100,
-    connection_retry_limit: 5,
+    maxLimit: 100,
+    connectionRetryLimit: 5,
   },
 }
 const getShardConfig = (shardId) => {
@@ -63,7 +63,7 @@ const getShardConfig = (shardId) => {
     id: shardId,
     pool_config: {
       ...defaultShardConfig.pool_config,
-      connection_config: {
+      connectionConfig: {
         ...defaultConnectionConfig,
         LBQuery: `round_robin(first(label(shard ${shardId})))` 
       }
@@ -129,13 +129,12 @@ const main = async () => {
     const rows = await results.getRows();
     console.log(`rows for pre-mapped id ${id}`);
     console.log(rows);
-    results.close();
-    multiplexer.releaseConnection(conn);
+    await results.close();
+    await multiplexer.releaseConnection(conn);
   }
   const multiplexerConfig = await getInitialMultiplexerConfig();
   const multiplexer = new ShardMultiplexer(multiplexerConfig);
   await multiplexer.init();
-  await testConnection(0);
   setInterval(() => {
     try{
       testConnection(0);
