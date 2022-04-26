@@ -1,3 +1,8 @@
+// Copyright (c) 2018-2022, NuoDB, Inc.
+// All rights reserved.
+//
+// Redistribution and use permitted under the terms of the 3-clause BSD license.
+
 const { ShardMultiplexer }= require('..');
 const defaultConnectionConfig = require('../test/config');
 const Pool = require('../lib/pool');
