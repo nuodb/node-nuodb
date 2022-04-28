@@ -12,15 +12,15 @@ docker run -d --name ad1 --rm \
     -p 48005:48005 \
     -e "NUODB_DOMAIN_ENTRYPOINT=ad1" \
     ${IMG_NAME} nuoadmin
+#changed to properly create and mount volumes
+docker volume create vol1
 
-mkdir vol1
-chmod a+rw vol1
-mkdir vol2
-chmod a+rw vol2
+docker volume create vol2
+
 
 docker run -d --name sm1 --hostname sm1 --rm \
-    --volume $(pwd)/vol1:/var/opt/nuodb/backup \
-    --volume $(pwd)/vol2:/var/opt/nuodb/archive \
+    --volume vol1:/var/opt/nuodb/backup \
+    --volume vol2:/var/opt/nuodb/archive \
     --net nuodb-net ${IMG_NAME} nuodocker \
     --api-server ad1:8888 start sm \
     --db-name test --server-id ad1 \
