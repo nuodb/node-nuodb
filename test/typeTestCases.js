@@ -244,7 +244,15 @@ const testCases = [
     ],
     checkResults: (rows) => {
       for (var time of rows){
-        should.equal(time["F1"].toLocaleTimeString(), '11:11:00 PM')
+        const dateObj = time["F1"];
+        /**
+         * Time is written and read from the db in local time (and interpretted as such by node).
+         * using toLocaleString causes time zone formatting differences between regions
+         * using toISOString will cause differences between time zones as different regions 11:11 PM is a different time in UTC
+         * Comparing the raw hours/minutes will allow us to keep the result of this test consistent across time zones.
+        */
+        should.equal(dateObj.getHours(),23);
+        should.equal(dateObj.getMinutes(),11);
       }
     }
 

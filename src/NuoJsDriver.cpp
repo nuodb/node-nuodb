@@ -164,10 +164,11 @@ NuoDB::Connection* Driver::doConnect(Params& params)
         NuoDB::Connection* connection = NuoDB::Connection::create();
         std::unique_ptr<NuoDB::Properties, std::function<void(NuoDB::Properties*)> >
         props(connection->allocProperties(), [](NuoDB::Properties* ptr) { ptr->release(); });
-        props->putValue("user", params["user"].c_str());
-        props->putValue("password", params["password"].c_str());
-        props->putValue("schema", params["schema"].c_str());
-        props->putValue("direct", params["direct"].c_str());
+        // put all parameters into the props object
+        for(const auto& element : params){
+            props->putValue(element.first.c_str(),element.second.c_str());
+        }
+
         std::string connection_string = getConnectionString(params);
         connection->openDatabase(connection_string.c_str(), props.get());
         return connection;
