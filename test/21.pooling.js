@@ -5,7 +5,7 @@
 
 "use strict";
 
-const Pool = require("../lib/pool.js");
+const { Pool } = require("..");
 var should = require("should");
 var config = require("./config");
 
