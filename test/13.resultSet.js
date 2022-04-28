@@ -5,6 +5,8 @@
 
 'use strict';
 
+const RESULT_SET_TEST_TIMEOUT = 50000;
+
 var { Driver } = require('..');
 
 var should = require('should');
@@ -61,4 +63,4 @@ describe('13. Test Result Set', () => {
   });
 
 
-});
+}).timeout(RESULT_SET_TEST_TIMEOUT);
