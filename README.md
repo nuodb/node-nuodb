@@ -44,26 +44,49 @@ arguments should be provided to the pool as an object as such:
 ### Methods
 
 After a pool is created the user must initiate it by using the init method:
-`await Pool.init()`
+
+```
+await Pool.init()
+```
+
 This will populate the pool. The pool is unaivable until this completes.
 
 Once the pool has been successfully initialized it is ready for use. The user uses:
-`const newConnection = await Pool.requestConnection()`
+
+```
+const newConnection = await Pool.requestConnection()
+```
+
 to get a connection, this method will return a connection ready for use.
 
 Once the user has finished using a connection, it can be returned to the pool with:
-`await Pool.releaseConnection(<connection>)`
+
+```
+await Pool.releaseConnection(<connection>)
+```
+
 Connections that have been released back to the connection should not be used anymore.
 Connections that are somehow failing should be returned to the pool where they will dealt with and replaced.
 
 A pool can be shutdown with:
-`await Pool.closePool()`
+
+```
+await Pool.closePool()
+```
+
 This will close all of the pools connections regardless of weither or not they are in use.
 
 Users cannot manually close connections provided by the pool, and calling:
-`connection.close()`
+
+```
+connection.close()
+```
+
 on a connection provided by the pool will have the same effect as calling:
-`Pool.releaseConnection(connection)`
+
+```
+Pool.releaseConnection(connection)
+```
 
 ### Usage
 
