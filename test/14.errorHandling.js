@@ -62,6 +62,12 @@ describe('13. Test Connection to multiple TEs', () => {
   let driver = null;
   let conn = null
 
+  let deadlock_create_table = true;
+  let deadlock_populate_table = true;
+  let deadlock_drop_table = false;
+  
+  let test_index = false;
+
   before('open connection, init tables', async () => {
     driver = new Driver();
 
@@ -73,14 +79,21 @@ describe('13. Test Connection to multiple TEs', () => {
 
     try {
       // create the tables
-      await conn.execute('CREATE TABLE IF NOT EXISTS T1 (F1 int)');
-      await conn.execute('CREATE TABLE IF NOT EXISTS T2 (F1 int)');
-      await conn.execute('CREATE TABLE IF NOT EXISTS T3 (F1 int)');
-      await conn.execute('CREATE UNIQUE INDEX UNIQUENESS_INDEX ON T3(F1)');
+      if (deadlock_create_table) {
+        await conn.execute('CREATE TABLE IF NOT EXISTS T1 (F1 int)');
+        await conn.execute('CREATE TABLE IF NOT EXISTS T2 (F1 int)');
+      }
+
+      if (test_index) {
+        await conn.execute('CREATE TABLE IF NOT EXISTS T3 (F1 int)');
+        await conn.execute('CREATE UNIQUE INDEX UNIQUENESS_INDEX ON T3(F1)');
+      }
 
       // insert data into the tables
-      await conn.execute('INSERT INTO T1 VALUES (1)');
-      await conn.execute('INSERT INTO T2 VALUES (1)');
+      if (deadlock_populate_table) {
+        await conn.execute('INSERT INTO T1 VALUES (1)');
+        await conn.execute('INSERT INTO T2 VALUES (1)');
+      }
 
       const results = await conn.execute('select * from T1');
       const rows = await results.getRows();
@@ -97,10 +110,15 @@ describe('13. Test Connection to multiple TEs', () => {
 
     try {
       // clean up tables
-      //await conn.execute('DROP TABLE IF EXISTS T1');
-      //await conn.execute('DROP TABLE IF EXISTS T2');
-      await conn.execute('DROP TABLE IF EXISTS T3');
-      await conn.execute('DROP INDEX UNIQUENESS_INDEX IF EXISTS');
+      if (deadlock_drop_table) {
+        await conn.execute('DROP TABLE IF EXISTS T1');
+        await conn.execute('DROP TABLE IF EXISTS T2');
+      }
+
+      if (test_index) {
+        await conn.execute('DROP TABLE IF EXISTS T3');
+        await conn.execute('DROP INDEX UNIQUENESS_INDEX IF EXISTS');
+      }
 
       // close connections
       await conn.close();
@@ -109,28 +127,56 @@ describe('13. Test Connection to multiple TEs', () => {
     }
     should.not.exist(err)
   });
-/*
+
   it('13.1 Can detect deadlock', async () => {
     // open up two connections with autocommit off
     const c1 = await driver.connect(config);
     const c2 = await driver.connect(config);
 
     c1.should.be.ok();
-//*
-    const ilrc =  {isolationLevel: 2};
-    await c1.execute('set isolation level read committed');
-    await c2.execute('set isolation level read committed');
-    await c1.execute('set autocommit off');
-    //await sleep(5000);
-    await c2.execute('set autocommit off');
-    //await sleep(5000);
-    // acquire locks
-    //const res1 = await c1.execute('select * from T1 for update');
-    await c1.execute('lock table T1 EXCLUSIVE', ilrc);
-    //await sleep(5000);
 
-    await c2.execute('lock table T2 EXCLUSIVE', ilrc);
-    //await sleep(5000);
+    const ilrc =  {isolationLevel: 2};
+
+    const read_committed = false;
+    const lock_table = false;
+    const select_for_update = false;
+    const select_for_update_read_results = false;
+    const update_lock = true;
+    const post_commit = true;
+
+    if(read_committed){
+      await c1.execute('set isolation level read committed');
+      await c2.execute('set isolation level read committed');
+
+    }
+
+    await c1.execute('set autocommit off');
+    await c2.execute('set autocommit off');
+    
+    if (lock_table){
+      await c1.execute('lock table T1 EXCLUSIVE', ilrc);
+      await c2.execute('lock table T2 EXCLUSIVE', ilrc);
+    }
+
+    if (select_for_update) {
+      if (select_for_update_read_results) {
+        const rs1 = await c1.execute('select * from t1 for update');
+        const r1 = await rs1.getrows();
+        console.log(r1);
+
+        const rs2 = await c2.execute('select * from t2 for update');
+        const r2 = await rs2.getrows();
+        console.log(r2);
+      } else {
+        await c1.execute('select * from T1 for update');
+        await c2.execute('select * from T2 for update');
+      }
+    }
+
+    if(update_lock) {
+      await c2.execute('update T2 set F1=F1+1');
+      await c1.execute('update T1 set F1=F1+1');
+    }
 
     // now produce a deadlock condition
     let err = null;
@@ -138,15 +184,17 @@ describe('13. Test Connection to multiple TEs', () => {
       console.log("updating now");
       setTimeout(()=>console.log("update should be finished"),15000);
       await c1.execute('update T2 set F1=F1+1');
-      //await sleep(5000);
       await c2.execute('update T1 set F1=F1+1');
-      //await sleep(5000);
     }  catch (e) {
       err = e;
       console.error(e);
     }
-    c1.commit();
-    c2.commit();
+
+    if (post_commit) {
+      await c1.commit();
+      await c2.commit();
+    }
+
     should.exist(err);
 
     // close the connections
@@ -154,8 +202,8 @@ describe('13. Test Connection to multiple TEs', () => {
     await c2.close();
     
   });
-
-/**/
+//*/
+/*
   it('13.2 Can detect an index uniqueness error', async () => {
     let err = null;
     try {
@@ -167,6 +215,7 @@ describe('13. Test Connection to multiple TEs', () => {
     }
     should.exist(err);
   });
+  //*/
 /*
   it('13.3 Can detect when a TE goes down', async () => {
     const postData = {
