@@ -39,7 +39,7 @@ The NuoDB Node.js driver comes with a built in connection pool available.
 
 **id:** optional argument to give the pool an id. As default the pool will be provided the “new Date().getTime()” at the time of its creation as its id.
 
-arguments should be provided to the pool as an object as such:
+Arguments should be provided to the pool as an object. Please refer to the Usage section for an example.
 
 ### Usage
 
