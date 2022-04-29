@@ -91,11 +91,8 @@ await Pool.closePool()
 This will close all of the pools connections regardless of weither or not they are in use.
 
 Users cannot manually close connections provided by the pool, and calling:
-
 `connection.close()`
-
 on a connection provided by the pool will have the same effect as calling:
-
 `Pool.releaseConnection(connection)`
 
 ## Related Links
