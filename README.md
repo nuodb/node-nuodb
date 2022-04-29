@@ -41,6 +41,20 @@ The NuoDB Node.js driver comes with a built in connection pool available.
 
 arguments should be provided to the pool as an object as such:
 
+### Usage
+
+```
+const myPool = new Pool({
+    minAvailalbe: <arg>,
+    connectionConfig: <connection config obj>,
+    maxAge: <arg>,
+    checkTime: <arg>,
+    maxLimit: <arg>,
+    connectionRetryLimit: <arg>,
+    id: <arg>
+})
+```
+
 ### Methods
 
 After a pool is created the user must initiate it by using the init method:
@@ -86,20 +100,6 @@ on a connection provided by the pool will have the same effect as calling:
 
 ```
 Pool.releaseConnection(connection)
-```
-
-### Usage
-
-```
-const myPool = new Pool({
-    minAvailalbe: <arg>,
-    connectionConfig: <connection config obj>,
-    maxAge: <arg>,
-    checkTime: <arg>,
-    maxLimit: <arg>,
-    connectionRetryLimit: <arg>,
-    id: <arg>
-})
 ```
 
 ## Related Links
