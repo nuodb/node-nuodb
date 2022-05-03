@@ -57,7 +57,7 @@ const sleep = (ms) => new Promise((res,rej) => {
 });
 
 
-describe('13. Test Connection to multiple TEs', () => {
+describe('14. Test errors', () => {
 
   let driver = null;
   let conn = null
@@ -135,43 +135,14 @@ describe('13. Test Connection to multiple TEs', () => {
 
     c1.should.be.ok();
 
-    const ilrc =  {isolationLevel: 2};
 
-    const read_committed = false;
-    const lock_table = false;
-    const select_for_update = false;
-    const select_for_update_read_results = false;
     const update_lock = true;
     const post_commit = true;
 
-    if(read_committed){
-      await c1.execute('set isolation level read committed');
-      await c2.execute('set isolation level read committed');
-
-    }
 
     await c1.execute('set autocommit off');
     await c2.execute('set autocommit off');
     
-    if (lock_table){
-      await c1.execute('lock table T1 EXCLUSIVE', ilrc);
-      await c2.execute('lock table T2 EXCLUSIVE', ilrc);
-    }
-
-    if (select_for_update) {
-      if (select_for_update_read_results) {
-        const rs1 = await c1.execute('select * from t1 for update');
-        const r1 = await rs1.getrows();
-        console.log(r1);
-
-        const rs2 = await c2.execute('select * from t2 for update');
-        const r2 = await rs2.getrows();
-        console.log(r2);
-      } else {
-        await c1.execute('select * from T1 for update');
-        await c2.execute('select * from T2 for update');
-      }
-    }
 
     if(update_lock) {
       await c2.execute('update T2 set F1=F1+1');
@@ -183,8 +154,10 @@ describe('13. Test Connection to multiple TEs', () => {
     try {
       console.log("updating now");
       setTimeout(()=>console.log("update should be finished"),15000);
-      await c1.execute('update T2 set F1=F1+1');
-      await c2.execute('update T1 set F1=F1+1');
+      await Promise.all(
+        [c1.execute('update T2 set F1=F1+1'),
+       c2.execute('update T1 set F1=F1+1')]
+      )
     }  catch (e) {
       err = e;
       console.error(e);
@@ -202,8 +175,7 @@ describe('13. Test Connection to multiple TEs', () => {
     await c2.close();
     
   });
-//*/
-/*
+
   it('13.2 Can detect an index uniqueness error', async () => {
     let err = null;
     try {
@@ -215,8 +187,6 @@ describe('13. Test Connection to multiple TEs', () => {
     }
     should.exist(err);
   });
-  //*/
-/*
   it('13.3 Can detect when a TE goes down', async () => {
     const postData = {
       engineType: 'TE',
@@ -224,18 +194,28 @@ describe('13. Test Connection to multiple TEs', () => {
       dbName: 'test'
     }
     const newTE = await startTE(JSON.stringify(postData));
+    let err = null;
 
+    // convert this to a promise that the TE will enter the running state
     const pollForTERunning = async (startId, retry) => {
       const procData = await getProcess(startId);
       if(procData.state == 'RUNNING'){
-        // do the test
-
+        try {
+        // connect to the new te
+          // confirm that the connection is good
+          // kill the te forcibly (using kill -9)  process.execSync
+          // trap the error
+      } catch (e) {
+        err = e;
+      }
+        // resolve the promise here
       } else if(retry > 0){
         // queue up another poll
         setTimeout(pollForTERunning(startId, retry-1), 1000);
       }
     }
 
+    should.exist(err);
 
     const directConnection = await driver.connect({...config, LBQuery: `round_robin(start_id(${newTE.startId}))`});
     const results = await directConnection.execute('select getnodeid() from dual');
@@ -244,5 +224,5 @@ describe('13. Test Connection to multiple TEs', () => {
     await results.close();
     await directConnection.close();
   });
-  */
+
 });
