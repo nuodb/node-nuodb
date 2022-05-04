@@ -9,7 +9,8 @@ const { Driver } = require("..");
 
 const should = require("should");
 const config = require("./config");
-const async = require("async");
+//eslint cleanup
+// const async = require("async");
 const http = require("http");
 
 const startTE = (postData) =>
@@ -59,12 +60,12 @@ const getProcess = (startId) =>
     req.on("error", (e) => rej(e));
     req.end();
   });
-
+/* eslint cleanup
 const sleep = (ms) =>
   new Promise((res, rej) => {
     setTimeout(() => res(), ms);
   });
-
+*/
 describe("14. Test errors", () => {
   let driver = null;
   let conn = null;
