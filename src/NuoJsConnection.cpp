@@ -359,6 +359,7 @@ NAN_METHOD(Connection::execute)
 {
     TRACE("Connection::execute");
     Nan::HandleScope scope;
+    const char* error = nullptr;
 
     Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());
 
@@ -386,21 +387,24 @@ NAN_METHOD(Connection::execute)
 
     // query options (optional) that can be specified by the user
     Options options;
-    options.setAutoCommit(self->isAutoCommit());
-    options.setReadOnly(self->isReadOnly());
-    if (infoLen > infoIdx && !info[infoIdx]->IsFunction()) {
-        try {
-            getJsonOptions(info[infoIdx++].As<Object>(), options);
-        } catch (std::exception& e) {
-            Nan::ThrowError(e.what());
-            return;
-        }
+    try {
+      options.setAutoCommit(self->isAutoCommit());
+      options.setReadOnly(self->isReadOnly());
+      if (infoLen > infoIdx && !info[infoIdx]->IsFunction()) {
+          try {
+              getJsonOptions(info[infoIdx++].As<Object>(), options);
+          } catch (std::exception& e) {
+              Nan::ThrowError(e.what());
+              return;
+          }
+      }
+      self->setIsolationLevel(options.getIsolationLevel());
+      self->setAutoCommit(options.getAutoCommit());
+      self->setReadOnly(options.getReadOnly());
+    } catch (std::exception& e) {
+        error = e.what();
     }
-    self->setIsolationLevel(options.getIsolationLevel());
-    self->setAutoCommit(options.getAutoCommit());
-    self->setReadOnly(options.getReadOnly());
 
-    const char* error = nullptr;
     NuoDB::PreparedStatement* statement = nullptr;
     try {
         statement = self->createStatement(sql, binds);
