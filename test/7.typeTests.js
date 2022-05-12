@@ -31,14 +31,20 @@ describe('7. testing types', async () => {
     const {data,type} = curr;
     // use specified table name for test if exists, otherwise determine programatically by type
     const tableName = curr.tableName ?? `table_${type}`;
+    const tableCreate = curr.tableCreate ?? helper.sqlCreateTable(tableName, type);
+    const testDescription = curr.description ?? `type ${type}`;
 
-    describe(`7.${index} Testing ${type}`, () => {
+    describe(`7.${index} Testing ${testDescription}`, () => {
 
       before(`create ${type} table, insert data`, async () => {
         await connection.execute(helper.sqlDropTable(tableName));
-        await connection.execute(helper.sqlCreateTable(tableName,type));
+        await connection.execute(tableCreate);
         await async.series(data.map((d) => async () => {
-          await connection.execute(helper.sqlInsert(tableName),[d]);
+          if(curr.tableInsert != undefined){
+            await connection.execute(curr.tableInsert, d);
+          } else {
+            await connection.execute(helper.sqlInsert(tableName),[d]);
+          }
         }))
       });
 
@@ -47,7 +53,7 @@ describe('7. testing types', async () => {
       });
 
       it(`7.${index} result set stores ${type} correctly`, async () => {
-        const results = await connection.execute("SELECT * FROM " + tableName);
+        const results = await connection.execute("SELECT F1 FROM " + tableName);
         results.should.be.ok();
 
         const rows = await results.getRows();
