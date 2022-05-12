@@ -57,7 +57,6 @@ describe('13. Test Result Set', () => {
   });
 
   after('close connection', async () => {
-    console.log("after");
     await connection.execute(dropTableChunk);
     await connection.execute(dropJoinableTables('a'));
     await connection.execute(dropJoinableTables('b'));
@@ -83,10 +82,8 @@ describe('13. Test Result Set', () => {
   it('13.2 Can get full result set from tables with duplicate column name', async () => {
     let err = null;
     try {
-      console.log("13.2");
       const results = await connection.execute(selectFromJoinableTables('a','b'), {rowMode:0});
       const rows = await results.getRows();
-      console.log(rows);
       const columns = Object.keys(rows[0]);
       (columns.length).should.be.eql(4);
     } catch (e) {
@@ -99,7 +96,6 @@ describe('13. Test Result Set', () => {
   it('13.3 Can alias a column label', async () => {
     let err = null;
     try {
-      console.log("13.2");
       const results = await connection.execute(selectAliasFromJoinableTables('a','b'));
       const rows = await results.getRows();
       const columns = Object.keys(rows[0]);
