@@ -8,8 +8,6 @@ const { Driver } = require("..");
 const {exec} = require("child_process");
 const should = require("should");
 const config = require("./config");
-//eslint cleanup
-// const async = require("async");
 const http = require("http");
 
 const POLL_RETRY = 5;
@@ -19,6 +17,7 @@ const postData = {
   host: "nuoadmin-0",
   dbName: "test",
 };
+const sleep = (ms) => new Promise((res) => {setTimeout(()=>res(), ms)})
 const startTE = (postData) =>
   new Promise((res, rej) => {
     const req = http.request(
@@ -73,7 +72,6 @@ const killTE = (pid) =>  new Promise((res,rej) => {
   }); 
 });
 const pollForTERunning = async (startId) => {
-  const sleep = (ms) => new Promise((res) => {setTimeout(()=>res(), ms)})
 
   let procData = await getProcess(startId);
   for(let i = 0; i < POLL_RETRY && procData.state != "RUNNING"; i++){
@@ -88,8 +86,75 @@ const pollForTERunning = async (startId) => {
   
 }
 
+const alterIPTableRules = (source,port,action) => Promise.all([
+    new Promise((res) => {
+      exec(`iptables -${action} INPUT -p tcp -s ${source} -j DROP ;`, (error,stdout,stderr) => {
+        if(error)
+          console.error(error)
+        if(stderr)
+          console.error(error)
+    
+        res();
+      })
+    }),
+    new Promise((res) => {
+      exec(`iptables -${action} OUTPUT -p tcp -s ${source} -j DROP ;`, (error,stdout,stderr) => {
+        if(error)
+          console.error(error)
+        if(stderr)
+          console.error(error)
+    
+        res();
+      })
+    })
+  ])
 
+const netDown = async () => {
+  await alterIPTableRules('localhost','8888','I');
+}
 
+const netUp = async () => {
+  await alterIPTableRules('localhost','8888','D');
+}
+
+const netSlow = async () => {
+  await new Promise((res) => {
+    exec('tc qdisc add dev ens192 root netem delay 60000ms', (e,si,se) => {
+      if(e)
+        console.error(e);
+      if(se)
+        console.error(e);
+      if(si)
+        console.log(si);
+      res();
+    })
+
+  });
+}
+
+const netFast = async () => {
+  await new Promise((res) => {
+    exec('tc qdisc delete dev ens192 root netem delay 60000ms', (e,si,se) => {
+      if(e)
+        console.error(e);
+      if(se)
+        console.error(e);
+      if(si)
+        console.log(si);
+      res();
+    })
+
+  });
+}
+
+/*
+(
+  async () => {
+    await netUp();
+  }
+)()
+//*/
+//*
 describe("14. Test errors", () => {
   let driver = null;
   let conn = null;
@@ -284,4 +349,48 @@ describe("14. Test errors", () => {
       // do nothing
     }
   });
+
+  it('14.5 Can detect a network timeout on connection', async () => {
+    await netDown();
+    let err;
+    try {
+      const conn = await driver.connect(config);
+      const results = await conn.execute('select * from system.nodes');
+      const rows = await results.getRows();
+      await results.close();
+    } catch (e) {
+      err = e;
+      console.error(e);
+    }
+    await netUp();
+    should.exist(err);
+    
+  });
+//*/ 
+  it('14.6 Can detect a network timeout on an open connection', async () => {
+    console.log("entering 14.6");
+    await sleep(2000);
+    const conn = await driver.connect(config);
+    console.log('connection created');
+    await netSlow();
+    let err;
+    try {
+      console.log('net slowed');
+      await conn.execute('create table netTest(F1 int)');
+      console.log('table created');
+      await conn.execute('insert into netTest values (13)');
+      const results = await conn.execute('select * from system.nodes');
+      const rows = await results.getRows();
+      await results.close();
+      await conn.execute('drop table netTest');
+    } catch (e) {
+      err = e;
+      console.error(e);
+    }
+    await netFast();
+    should.exist(err);
+    
+  });
+//*/
+
 });
