@@ -10,6 +10,8 @@ const should = require("should");
 const config = require("./config");
 const http = require("http");
 
+//15 minutes, a long time but a lot of these tests take time to alter network settings and wait for those changes to be realized.
+const ERROR_HANDLING_TEST_TIMEOUT = 900000;
 const POLL_RETRY = 5;
 const POLL_WAIT = 500;
 const postData = {
@@ -66,11 +68,10 @@ const getProcess = (startId) =>
     req.end();
   });
 
-const killTE = (pid) =>  new Promise((res,rej) => {
-  exec(`kill -9 ${pid}`, (error, stdout,stderr) => {
-    res();
-  }); 
+const killTE = (pid) => new Promise((res) => {
+  exec(`kill -9 ${pid}`, () => res())
 });
+
 const pollForTERunning = async (startId) => {
 
   let procData = await getProcess(startId);
@@ -83,83 +84,37 @@ const pollForTERunning = async (startId) => {
     return procData
   else
     throw "TE is not running..."
-  
+
 }
 
-const alterIPTableRules = (source,port,action) => Promise.all([
-    new Promise((res) => {
-      exec(`iptables -${action} INPUT -p tcp -s ${source} -j DROP ;`, (error,stdout,stderr) => {
-        if(error)
-          console.error(error)
-        if(stderr)
-          console.error(error)
-    
-        res();
-      })
-    }),
-    new Promise((res) => {
-      exec(`iptables -${action} OUTPUT -p tcp -s ${source} -j DROP ;`, (error,stdout,stderr) => {
-        if(error)
-          console.error(error)
-        if(stderr)
-          console.error(error)
-    
-        res();
-      })
-    })
-  ])
-
-const netDown = async () => {
-  await alterIPTableRules('localhost','8888','I');
-}
-
-const netUp = async () => {
-  await alterIPTableRules('localhost','8888','D');
-}
-
-const netSlow = async () => {
-  await new Promise((res) => {
-    exec('tc qdisc add dev ens192 root netem delay 60000ms', (e,si,se) => {
-      if(e)
-        console.error(e);
-      if(se)
-        console.error(e);
-      if(si)
-        console.log(si);
+const alterIPTableRules = (source,action) => Promise.all([
+  // action = 'D' for deleting the rule, 'I' for inserting the rule
+  // create this rule for both input and output an resolve alterIPTableRules
+  new Promise((res) => {
+    exec(`iptables -${action} INPUT -p tcp -s ${source} -j DROP ;`, (error,stdout,stderr) => {
+      if(stderr)
+        console.error(error)
       res();
     })
-
-  });
-}
-
-const netFast = async () => {
-  await new Promise((res) => {
-    exec('tc qdisc delete dev ens192 root netem delay 60000ms', (e,si,se) => {
-      if(e)
-        console.error(e);
-      if(se)
-        console.error(e);
-      if(si)
-        console.log(si);
+  }),
+  new Promise((res) => {
+    exec(`iptables -${action} OUTPUT -p tcp -s ${source} -j DROP ;`, (error,stdout,stderr) => {
+      if(stderr)
+        console.error(error)
       res();
     })
+  })
+])
 
-  });
-}
+const netDown = async () => await alterIPTableRules('localhost','I');
+const netUp = async () => await alterIPTableRules('localhost','D');
 
-/*
-(
-  async () => {
-    await netUp();
-  }
-)()
-//*/
-//*
 describe("14. Test errors", () => {
   let driver = null;
   let conn = null;
 
   before("open connection, init tables", async () => {
+    await netUp();
     driver = new Driver();
 
     conn = await driver.connect(config);
@@ -281,7 +236,6 @@ describe("14. Test errors", () => {
     });
 
     // kill the TE
-    
     try {
       await killTE(TEProcData.pid);
     } catch (e) {
@@ -290,12 +244,12 @@ describe("14. Test errors", () => {
 
     // try to execute a query on the TE
     let results;
-    let rows;
     try {
       results = await directConnection.execute(
         "select getnodeid() from dual"
       );
-      rows = await results.getRows();
+      await results.getRows();
+      await results.close();
     } catch (e) {
       err = e;
       console.error(e);
@@ -329,13 +283,13 @@ describe("14. Test errors", () => {
 
     // try to execute a query on the TE, kill before getting results
     let results;
-    let rows;
     try {
       results = await directConnection.execute(
         "select getnodeid() from dual"
       );
       await killTE(TEProcData.pid);
-      rows = await results.getRows();
+      await results.getRows();
+      await results.close();
     } catch (e) {
       err = e;
       console.error(e);
@@ -356,7 +310,7 @@ describe("14. Test errors", () => {
     try {
       const conn = await driver.connect(config);
       const results = await conn.execute('select * from system.nodes');
-      const rows = await results.getRows();
+      await results.getRows();
       await results.close();
     } catch (e) {
       err = e;
@@ -364,33 +318,60 @@ describe("14. Test errors", () => {
     }
     await netUp();
     should.exist(err);
-    
-  });
-//*/ 
+  }).timeout(ERROR_HANDLING_TEST_TIMEOUT);
+
   it('14.6 Can detect a network timeout on an open connection', async () => {
-    console.log("entering 14.6");
-    await sleep(2000);
-    const conn = await driver.connect(config);
-    console.log('connection created');
-    await netSlow();
-    let err;
+    const newTE = await startTE(JSON.stringify(postData));
+    let err, results;
+    // wait to do anything until the TE is running.
+    let TEProcData;
     try {
-      console.log('net slowed');
-      await conn.execute('create table netTest(F1 int)');
-      console.log('table created');
-      await conn.execute('insert into netTest values (13)');
-      const results = await conn.execute('select * from system.nodes');
-      const rows = await results.getRows();
-      await results.close();
-      await conn.execute('drop table netTest');
+      TEProcData = await pollForTERunning(newTE.startId)
+    } catch (e) {
+      should.not.exist(e);
+    }
+
+    // create a connection to this TE
+    const conn = await driver.connect({
+      ...config,
+      LBQuery: `round_robin(start_id(${newTE.startId}))`,
+    });
+
+    const tcpKillCommand = `lsof -i tcp:${TEProcData.port} | awk '/node/ {print $9;}' | sed 's/.*:\\([0-9]\\+\\)->.*/\\1/p' -n | tail -n 1 | xargs tcpkill -i lo -9 port 2>/dev/null`;
+    await new Promise((res) => {
+      // the TCP command will open a continuous tcpkill process, which will kill the connection after it detects traffic
+      // this must be left running until the connection is killed
+      // save a reference to this process to kill it later
+      let childProcess;
+      childProcess = exec(tcpKillCommand,{setsid:true, timeout: 10000}, (err, stdout, stderr) => {
+        if(stderr)
+          console.log(stderr);
+      })
+      res(childProcess)
+    });
+
+    await sleep(5000);
+    try {
+      await conn.execute('create table if not exists netTest(F1 int)');
+      // kill traffic loop
+      for(let i = 0; i < 10; i++){
+        await conn.execute('insert into netTest values (13)');
+        results = await conn.execute('select * from system.nodes');
+        await results.getRows();
+        await results.close();
+        await sleep(500);
+      }
     } catch (e) {
       err = e;
       console.error(e);
     }
-    await netFast();
     should.exist(err);
-    
-  });
-//*/
 
+    // kill the TE
+    try {
+      await killTE(TEProcData.pid);
+    } catch (e) {
+      should.not.exist(e);
+    }
+  }).timeout(ERROR_HANDLING_TEST_TIMEOUT);
 });
