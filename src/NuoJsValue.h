@@ -19,6 +19,9 @@ public:
     std::string getName() const;
     void setName(std::string);
 
+    std::string getTable() const;
+    void setTable(std::string);
+
     int getSqlType() const;
     void setSqlType(int sqlType);
 
@@ -48,6 +51,7 @@ public:
 
 private:
     std::string name;
+    std::string table;
 
     int sqlType;
 

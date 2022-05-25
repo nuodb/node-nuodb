@@ -26,6 +26,15 @@ void SqlValue::setName(std::string s)
     name = s;
 }
 
+std::string SqlValue::getTable() const
+{
+    return table;
+}
+void SqlValue::setTable(std::string s)
+{
+    table = s;
+}
+
 int SqlValue::getSqlType() const
 {
     return sqlType;
