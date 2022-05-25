@@ -281,8 +281,7 @@ Local<Value> sqlToEsValue(SqlValue sqlValue)
         case ES_NULL:
             return scope.Escape(Nan::Null());
 
-        case ES_UNDEFINED: {
-            // check for types not directly supported in the ES type system...
+        case ES_DATE: {
             switch (sqlType) {
 
                 // See: https://stackoverflow.com/questions/34158318/are-there-some-v8-functions-to-create-a-c-v8date-object-from-a-string-like
@@ -296,7 +295,15 @@ Local<Value> sqlToEsValue(SqlValue sqlValue)
                 case NuoDB::NUOSQL_TIMESTAMP: {
                     return scope.Escape(NanDate::toDate(sqlValue.getString()));
                 }
+                default: 
+                    throw std::runtime_error("ES DATE type is unknown NUOSQL type");
+                    break;
+            }
+        }
 
+        case ES_UNDEFINED: {
+            // check for types not directly supported in the ES type system...
+            switch (sqlType) {
                 case NuoDB::NUOSQL_BIGINT: {
                     int64_t v = sqlValue.getLong();
                     if (MIN_SAFE_INTEGER <= v && v <= MAX_SAFE_INTEGER) {
@@ -389,7 +396,8 @@ void ResultSet::doGetRows(size_t count)
             int sqlType = metaData->getColumnType(column);
 
             SqlValue sqlValue;
-            sqlValue.setName(metaData->getColumnName(column));
+            sqlValue.setName(metaData->getColumnLabel(column));
+            sqlValue.setTable(metaData->getTableName(column));
             sqlValue.setSqlType(sqlType);
 
             switch (sqlType) {

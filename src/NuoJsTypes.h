@@ -30,6 +30,7 @@ enum EsType
     ES_STRING,
     ES_SYMBOL,
     ES_OBJECT,
+    ES_DATE,
     ES_FUNCTION,
     ES_EXTERNAL,
 };

@@ -24,6 +24,10 @@ int typeOf(Local<Value> v)
         // This test has to come before IsObject because IsExternal
         // implies IsObject
         return ES_EXTERNAL;
+    } else if (v->IsDate()) {
+        // This test has to come before IsObject because IsDate
+        // implies IsObject
+        return ES_DATE;
     } else if (v->IsObject()) {
         return ES_OBJECT;
     } else if (v->IsBoolean()) {
@@ -66,9 +70,12 @@ int Type::reduceSqlType(int type)
             return NUOSQL_VARCHAR;
             break;
 
-        // NUOSQL_DATE:
-        // NUOSQL_TIME:
-        // NUOSQL_TIMESTAMP:
+        case NUOSQL_DATE:
+        case NUOSQL_TIME:
+        case NUOSQL_TIMESTAMP:
+            return NUOSQL_DATE;
+            break;
+
         // NUOSQL_BLOB:
         // NUOSQL_CLOB:
         // NUOSQL_NUMERIC:
@@ -103,6 +110,10 @@ int Type::toEsType(int type)
             return EsType::ES_BOOLEAN;
             break;
 
+        case NUOSQL_DATE:
+            return EsType::ES_DATE;
+            break;
+
         default:
             return EsType::ES_UNDEFINED;
     }
@@ -125,6 +136,10 @@ int Type::fromEsType(int type)
 
         case EsType::ES_BOOLEAN:
             return NUOSQL_BOOLEAN;
+            break;
+
+        case EsType::ES_DATE:
+            return NUOSQL_DATE;
             break;
 
         default:

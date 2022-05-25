@@ -11,7 +11,6 @@
 #include "NuoJsResultSet.h"
 
 #include "NuoDB.h"
-
 namespace NuoJs
 {
 Nan::Persistent<Function> Connection::constructor;
@@ -440,6 +439,7 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
             // fundamental data types in ES. Within these types we need to
             // check if it will result in a safe conversion (e.g. Number).
             switch (sqlType) {
+                case NuoDB::NUOSQL_UNDEFINED:
                 case NuoDB::SqlType::NUOSQL_NULL:
                     statement->setNull(sqlIdx, NuoDB::NUOSQL_NULL);
                     break;
@@ -469,19 +469,29 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
                     statement->setString(sqlIdx, toString(value).c_str());
                     break;
                 }
+                case NuoDB::NUOSQL_DATE: {
+                    char buffer[80];
+                    time_t seconds = (time_t)(toInt64(value) / 1000);
+                    struct tm* timeinfo;
+                    timeinfo = localtime(&seconds);
+                    strftime(buffer, 80, "%F %T", timeinfo);
+                    // buffer = "YYYY-MM-DD HH:MM:SS" -- 19 characters long
+                    int ms = toInt64(value) % 1000;
+                    buffer[19] = '.';
+                    buffer[20] = '0' + ms / 100;
+                    ms %= 100;
+                    buffer[21] = '0' + ms / 10;
+                    ms %= 10;
+                    buffer[22] = '0' + ms;
 
-                case NuoDB::NUOSQL_UNDEFINED:
-                    if (isDate(value)) {
-                        char buffer[80];
-                        time_t seconds = (time_t)(toInt64(value) / 1000);
-                        struct tm* timeinfo;
-                        timeinfo = localtime(&seconds);
-                        strftime(buffer, 80, "%F %T", timeinfo);
-                        statement->setString(sqlIdx, buffer);
-                    } else {
-                        statement->setString(sqlIdx, toString(value).c_str());
-                    }
+                    statement->setString(sqlIdx, buffer);
                     break;
+                }
+
+                default:{
+                    statement->setString(sqlIdx, toString(value).c_str());
+                    break;
+                }
             }
         }
     } catch (NuoDB::SQLException& e) {

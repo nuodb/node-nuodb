@@ -99,6 +99,39 @@ const testCases = [
     }
   },
   {
+    type: 'STRING',
+    description: 'undefined does not convert to string "undefined"',
+    tableName: 'undefined_string',
+    data: [
+      undefined,
+      "",
+      "hello world",
+    ],
+    checkResults: (rows) => {
+      (rows).should.containEql({F1:"hello world"});
+      (rows).should.containEql({F1:""});
+      (rows).should.containEql({F1: null});
+      (rows).should.not.containEql({F1:'undefined'});
+      (rows).should.not.containEql({F1:'UNDEFINED'});
+    }
+  },
+  {
+    type: 'STRING',
+    tableName: 'undefined_string_default',
+    tableCreate: "create table if not exists undefined_string_default (F2 int, F1 STRING default 'default')",
+    tableInsert: "insert into undefined_string_default (F2) values (?)",
+    description: "undefined converts to default value",
+    data: [
+      [0],
+    ],
+    checkResults: (rows) => {
+      (rows).should.containEql({F1: "default"});
+      (rows).should.not.containEql({F1:null});
+      (rows).should.not.containEql({F1:'undefined'});
+      (rows).should.not.containEql({F1:'UNDEFINED'});
+    }
+  },
+  {
     type: 'BOOLEAN',
     data:[
       0,
@@ -198,8 +231,9 @@ const testCases = [
       new Date('1995-12-17T03:24:00'),
       new Date('2015-07-23 21:00:00'),
       new Date('2015-07-23 22:00:00'),
-      new Date('2015-07-23 23:00:00'),
-      new Date('2015-07-24 00:00:00'),
+      new Date('2015-07-23 23:00:00.789123'),
+      new Date('2015-07-24 00:00:00.456789'),
+      new Date('2015-07-23 12:34:56.123456'),
     ],
     checkResults: (rows) => {
       (rows).should.containEql({F1: new Date(-100000000)});
@@ -210,8 +244,9 @@ const testCases = [
       (rows).should.containEql({F1: new Date('1995-12-17T03:24:00')});
       (rows).should.containEql({F1: new Date('2015-07-23 21:00:00')});
       (rows).should.containEql({F1: new Date('2015-07-23 22:00:00')});
-      (rows).should.containEql({F1: new Date('2015-07-23 23:00:00')});
-      (rows).should.containEql({F1: new Date('2015-07-24 00:00:00')});
+      (rows).should.containEql({F1: new Date('2015-07-23 23:00:00.789123')});
+      (rows).should.containEql({F1: new Date('2015-07-24 00:00:00.456789')});
+      (rows).should.containEql({F1: new Date('2015-07-23 12:34:56.123456')});
     }
   },
   {
