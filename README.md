@@ -45,7 +45,7 @@ Arguments should be provided to the pool as an object. Please refer to the Usage
 
 ```
 const myPool = new Pool({
-    minAvailalbe: <arg>,
+    minAvailable: <arg>,
     connectionConfig: <connection config obj>,
     maxAge: <arg>,
     checkTime: <arg>,
