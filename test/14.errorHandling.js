@@ -257,7 +257,9 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
-    (err.message.includes('connection closed')).should.be.true();
+    (err.message.includes('Connection reset by peer')
+      || err.message.includes('connection closed')
+    ).should.be.true();
     try {
       await results.close();
       await directConnection.close();
@@ -297,7 +299,7 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
-    (err.message.includes('connection closed by ')).should.be.true();
+    (err.message.includes('failed to get more result set rows')).should.be.true();
     try {
       await results.close();
       await directConnection.close();
@@ -369,7 +371,9 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
-    (err.message.includes('Connection reset by peer')).should.be.true();
+    (err.message.includes('Connection reset by peer')
+      || err.message.includes('connection closed')
+    ).should.be.true();
     // kill the TE
     try {
       await killTE(TEProcData.pid);
