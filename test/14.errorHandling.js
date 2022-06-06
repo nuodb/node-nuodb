@@ -200,6 +200,7 @@ describe("14. Test errors", () => {
     }
 
     should.exist(err);
+    (err.message.includes('transaction deadlock')).should.be.true();
 
     // close the connections
     await c1.close();
@@ -216,6 +217,7 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
+    (err.message.includes('duplicate value in unique index')).should.be.true();
   });
 
   it("14.3 Can detect when a TE goes down before query execution", async () => {
@@ -255,7 +257,7 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
-
+    (err.message.includes('connection closed')).should.be.true();
     try {
       await results.close();
       await directConnection.close();
@@ -295,7 +297,7 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
-
+    (err.message.includes('connection closed by ')).should.be.true();
     try {
       await results.close();
       await directConnection.close();
@@ -318,6 +320,7 @@ describe("14. Test errors", () => {
     }
     await netUp();
     should.exist(err);
+    (err.message.includes('Connection timed out')).should.be.true();
   }).timeout(ERROR_HANDLING_TEST_TIMEOUT);
 
   it('14.6 Can detect a network timeout on an open connection', async () => {
@@ -366,7 +369,7 @@ describe("14. Test errors", () => {
       console.error(e);
     }
     should.exist(err);
-
+    (err.message.includes('Connection reset by peer')).should.be.true();
     // kill the TE
     try {
       await killTE(TEProcData.pid);
