@@ -9,6 +9,7 @@ const {exec} = require("child_process");
 const should = require("should");
 const config = require("./config");
 const http = require("http");
+const safeExecute = require('../examples/safeExecute');
 
 //15 minutes, a long time but a lot of these tests take time to alter network settings and wait for those changes to be realized.
 const ERROR_HANDLING_TEST_TIMEOUT = 900000;
@@ -381,4 +382,38 @@ describe("14. Test errors", () => {
       should.not.exist(e);
     }
   }).timeout(ERROR_HANDLING_TEST_TIMEOUT);
+
+  it("14.7 Can recover from an error", async () => {
+    let safeErr, mutErr, retVal;
+    const prework = async (mutables, err) => {
+      if(err){
+        // if there was an error increment the insert value, and keep a reference
+        mutables.insertValue++;
+        mutables.err = err;
+      }
+    }
+    const work = async (mutables) => {
+      // T3 has a uniqueness index, and will already have a value
+      await mutables.conn.execute(`insert into T3 values (${mutables.insertValue})`);
+      return mutables.insertValue;
+    }
+
+    // insert this value, to cause a recoverable error during safeExecute
+    const mutables = {insertValue:13, conn};
+    await conn.execute(`insert into T3 values (${mutables.insertValue})`);
+
+    const retryLimit = 5;
+    try {
+      retVal = await safeExecute(retryLimit,work,prework,mutables);
+    } catch (e) {
+      safeErr = e;
+    } finally {
+      mutErr = mutables.err;
+    }
+
+    should.not.exist(safeErr);
+    should.exist(mutErr);
+    (retVal).should.be.eql(14);
+
+  });
 });
