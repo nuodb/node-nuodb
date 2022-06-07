@@ -14,11 +14,12 @@ namespace NuoJs
 const uint32_t CONSISTENT_READ = 7;
 
 Options::Options()
-    : rowMode(ROWS_AS_OBJECT), fetchSize(0), isolationLevel(CONSISTENT_READ), autoCommit(true), readOnly(false)
+    // defaults for all statement options
+    : rowMode(ROWS_AS_OBJECT), fetchSize(0), isolationLevel(CONSISTENT_READ), autoCommit(true), readOnly(false), queryTimeout(0)
 {}
 
 Options::Options(const Options& options)
-    : rowMode(options.rowMode), fetchSize(options.fetchSize), autoCommit(options.autoCommit), readOnly(options.readOnly)
+    : rowMode(options.rowMode), fetchSize(options.fetchSize), autoCommit(options.autoCommit), readOnly(options.readOnly), queryTimeout(options.queryTimeout)
 {}
 
 Options& Options::operator=(const Options& options)
@@ -27,6 +28,7 @@ Options& Options::operator=(const Options& options)
     this->fetchSize = options.fetchSize;
     this->autoCommit = options.autoCommit;
     this->readOnly = options.readOnly;
+    this->queryTimeout = options.queryTimeout;
     return *this;
 }
 
