@@ -78,7 +78,7 @@ describe("14 test pooling", () => {
     );
   });
 
-  it("14.5 Allows users to request over soft limit of connections and closes excess connections upon return", async () => {
+  it("14.5 Allows users to request over soft limit of connections", async () => {
     connections = [];
     for (let i = 0; i < 11; i++) {
       connections.push(await pool.requestConnection());
@@ -94,7 +94,7 @@ describe("14 test pooling", () => {
     }
     should.equal(
       pool.free_connections.length,
-      10,
+      11,
       "pool should remain with 10 free connections when none are in use"
     );
   });
@@ -155,13 +155,13 @@ describe("14 test pooling", () => {
     const connection = await pool.requestConnection();
     should.equal(
       pool.free_connections.length,
-      9,
-      "pool should have 9 connections"
+      11,
+      "pool should have 11 connections"
     );
     await connection.close();
     should.equal(
       pool.free_connections.length,
-      10,
+      12,
       "calling close on the connection should return it to the pool"
     );
   });
