@@ -92,17 +92,23 @@ const randomInsertQueries = () => {
   return q;
 }
 
-
+const TEST_CASE_DURATION = 2 * minute;
 const testCase = (description, concurrency, time, getQuery) => ({description, concurrency,time, getQuery})
 const CS_TEST_CASES = [
-  testCase('random insert', 100, 5 * minute, longWorkingQuery),
-  testCase('random insert', 500, 5 * minute, longWorkingQuery),
-  // testCase('random read', 100, 5 * minute, randomReadQueriesWithWork),
-  // testCase('random read', 500, 5 * minute, randomReadQueriesWithWork),
+  testCase('select sys tables', 100, TEST_CASE_DURATION, selectSysTablesQuery),
+  testCase('select sys tables', 500, TEST_CASE_DURATION, selectSysTablesQuery),
+  testCase('random read', 100, TEST_CASE_DURATION, randomReadQueriesWithWork),
+  testCase('random read', 500, TEST_CASE_DURATION, randomReadQueriesWithWork),
+  testCase('random insert', 100, TEST_CASE_DURATION, randomInsertQueries),
+  testCase('random insert', 500, TEST_CASE_DURATION, randomInsertQueries),
+  testCase('long working', 100, TEST_CASE_DURATION, longWorkingQuery),
+  testCase('long working', 500, TEST_CASE_DURATION, longWorkingQuery),
+  testCase('msleep', 100, TEST_CASE_DURATION, msleep2500Query),
+  testCase('msleep', 500, TEST_CASE_DURATION, msleep2500Query),
 ]
 
-const STRESS_TEST_TIMEOUT_BUFFER = 2 * minute * CS_TEST_CASES.length;
-const STRESS_TEST_TIMEOUT = 5 * minute * CS_TEST_CASES.length + STRESS_TEST_TIMEOUT_BUFFER;
+const STRESS_TEST_TIMEOUT_BUFFER = TEST_CASE_DURATION / 2 * CS_TEST_CASES.length;
+const STRESS_TEST_TIMEOUT = TEST_CASE_DURATION * CS_TEST_CASES.length + STRESS_TEST_TIMEOUT_BUFFER;
 
 
 const promiseWhile = async (id, condition, action) => {
