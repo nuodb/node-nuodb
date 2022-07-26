@@ -9,11 +9,59 @@
 #include "NuoJsTypes.h"
 #include "NuoJsNan.h"
 #include "NuoJsResultSet.h"
+#include <iostream>
 
 #include "NuoDB.h"
 namespace NuoJs
 {
 Nan::Persistent<Function> Connection::constructor;
+
+// Create a unique bitmask for each Connection setting that we can allow the developer
+// using the driver can promise to use just the Conneciton API to set these properties
+// and not set them through SQL commands.  With this restriction, we can avoid expensive
+// calls on the NuoDB driver that involve network calls
+// 
+enum API_ID {
+	READONLY = (1u << 0),
+	AUTOCOMMIT = (1u << 1),
+	ISOLATIONLEVEL = (1u << 2),
+};
+
+// This routine is used to translate the textual name used for an ENUM setting and get
+// the actual bitmask value associated with it
+// 
+unsigned int str2int(const std::string& str) {
+  if (str == std::string("READONLY")) {
+    return(API_ID::READONLY);
+  } else if (str == std::string("AUTOCOMMIT")) {
+    return(API_ID::AUTOCOMMIT);
+  } else if (str == std::string("ISOLATIONLEVEL")) {
+    return(API_ID::ISOLATIONLEVEL);
+  } else {
+    std::string message = ErrMsg::get(ErrMsgType::errBadConfiguration, "Invalid Connection Only API Value");
+    throw std::runtime_error(message);
+  }
+}
+
+// This routine will take a string designed to use any number of textual bitmask names
+// separated by | and return the appropriate bitmask for the combined values
+//
+unsigned int Connection::Restricted_API(const std::string& s) {
+  std::string delimiter("|");
+  unsigned int retvalue = 0;
+  auto start = 0U;
+  auto end = s.find(delimiter);
+  while (end != std::string::npos)
+  {
+        retvalue |= str2int(s.substr(start, end - start));
+        start = end + delimiter.length();
+        end = s.find(delimiter, start);
+    }
+
+    retvalue |= str2int(s.substr(start, end));
+
+  return retvalue;
+}
 
 Connection::Connection()
     : Nan::ObjectWrap()
@@ -53,7 +101,24 @@ NAN_MODULE_INIT(Connection::init)
     constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(target, Nan::New<v8::String>("Connection").ToLocalChecked(),
              Nan::GetFunction(tpl).ToLocalChecked());
+
+    char* restrictedAPISetting;
+    restrictedAPISetting = getenv("NUODB_NODE_CONNECTION_API_ONLY");
+    if (restrictedAPISetting != NULL) {
+	    setRestrictedAPI(Restricted_API(std::string(restrictedAPISetting)));
+    }
 }
+
+unsigned int Connection::getRestrictedAPI() {
+	//return Connection::noReuseReset;
+	return Connection::restrictedAPI;
+};
+
+void Connection::setRestrictedAPI(unsigned int v) {
+	Connection::restrictedAPI = v;
+};
+
+unsigned int Connection::restrictedAPI = 0;
 
 /* static */
 NAN_METHOD(Connection::newInstance)
@@ -387,8 +452,19 @@ NAN_METHOD(Connection::execute)
     // query options (optional) that can be specified by the user
     Options options;
     try {
-      options.setAutoCommit(self->isAutoCommit());
-      options.setReadOnly(self->isReadOnly());
+      // Interogate the current connection to get its current properties that are in effect
+      // I am not sure why the current code only sets and checks AutoCommit and ReadOnly and
+      // not the Isolation Level
+      // The strategy seems to get the current connecton settings and overwrite them with
+      // any options that were passed in for execution.
+      // Once the set of options have been determined, there is specific code that 
+      // sets the resultant options for AutoCommit, IsolationLevel and ReadOnly
+      // It would obviously be best if we can avoid making these calls since they result in
+      // a newtork call
+//      if (!NuoJs::Connection::getNoReuseReset()) {
+//        options.setAutoCommit(self->isAutoCommit());
+//        options.setReadOnly(self->isReadOnly());
+//      }
       if (infoLen > infoIdx && !info[infoIdx]->IsFunction()) {
           try {
               getJsonOptions(info[infoIdx++].As<Object>(), options);
@@ -407,7 +483,9 @@ NAN_METHOD(Connection::execute)
     NuoDB::PreparedStatement* statement = nullptr;
     try {
         statement = self->createStatement(sql, binds);
+	if (options.getQueryTimeout() != 0) {
         statement->setQueryTimeout(options.getQueryTimeout());
+	}
     } catch (std::exception& e) {
         error = e.what();
     }
@@ -582,6 +660,7 @@ NAN_GETTER(Connection::getAutoCommit)
 // Set read-only mode synchronously.
 NAN_SETTER(Connection::setAutoCommit)
 {
+
     TRACE("Connection::SetAutoCommit");
     Nan::HandleScope scope;
     Isolate* isolate = Isolate::GetCurrent();
@@ -620,7 +699,10 @@ void Connection::setReadOnly(bool mode)
 {
     // guard!
     if (isConnected()) {
-        connection->setReadOnly(mode);
+	if (((Connection::getRestrictedAPI()&API_ID::READONLY) == 0) || (mode != _ReadOnly)) {
+          connection->setReadOnly(mode);
+	  _ReadOnly = mode;
+	}
     }
 }
 
@@ -634,7 +716,10 @@ void Connection::setAutoCommit(bool mode)
 {
     // guard!
     if (isConnected()) {
-        connection->setAutoCommit(mode);
+	if (((Connection::getRestrictedAPI()&API_ID::AUTOCOMMIT) == 0) || (mode != _AutoCommit)) {
+          connection->setAutoCommit(mode);
+	  _AutoCommit = mode;
+	}
     }
 }
 
@@ -642,7 +727,10 @@ void Connection::setIsolationLevel(uint32_t isolation)
 {
     // guard!
     if (isConnected()) {
-        connection->setTransactionIsolation((int)isolation);
+	if (((Connection::getRestrictedAPI()&API_ID::ISOLATIONLEVEL) == 0) || (isolation != _IsolationLevel)) {
+          connection->setTransactionIsolation((int)isolation);
+	  _IsolationLevel = isolation;
+	}
     }
 }
 }
