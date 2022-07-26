@@ -72,6 +72,9 @@ describe('13. Test Result Set', () => {
         (rows.length).should.be.eql(getChunkSize);
         (rows[getChunkSize-1]['F1']).should.be.eql(i);
       }
+      // try to get one more row than exists to test edge case
+      const nullRow = await results.getRows(1);
+      (nullRow.length).should.be.eql(0);
     } catch (e) {
       err = e;
     }
