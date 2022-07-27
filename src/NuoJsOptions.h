@@ -19,6 +19,8 @@ public:
     Options();
     Options(const Options& options);
     Options& operator=(const Options& options);
+    bool operator==(const Options& rhs) const;
+
 
     RowMode getRowMode() const;
     void setRowMode(RowMode);

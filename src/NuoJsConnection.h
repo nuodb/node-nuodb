@@ -24,8 +24,17 @@ public:
 
     static Nan::Persistent<Function> constructor;
 
+    static unsigned int getRestrictedAPI();
+    static void setRestrictedAPI(unsigned int);
+    static unsigned int Restricted_API(const std::string&);
+
+    bool _AutoCommit = true;
+    bool _ReadOnly = false;
+    uint32_t _IsolationLevel = 7;
+
 private:
 
+    static unsigned int restrictedAPI;
     static NAN_METHOD(execute);
     friend class ExecuteWorker;
     bool doExecute(NuoDB::PreparedStatement* statement);

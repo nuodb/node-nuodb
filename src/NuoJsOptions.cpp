@@ -8,6 +8,7 @@
 #include "NuoJsJson.h"
 
 #include <stdio.h>
+#include <iostream>
 
 namespace NuoJs
 {
@@ -30,6 +31,14 @@ Options& Options::operator=(const Options& options)
     this->readOnly = options.readOnly;
     this->queryTimeout = options.queryTimeout;
     return *this;
+}
+
+bool Options::operator==(const Options& rhs) const {
+	return (rowMode == rhs.rowMode) &&
+	       (fetchSize == rhs.fetchSize) &&
+	       (isolationLevel == rhs.isolationLevel) &&
+	       (autoCommit == rhs.autoCommit) &&
+	       (readOnly == rhs.readOnly);
 }
 
 RowMode Options::getRowMode() const
