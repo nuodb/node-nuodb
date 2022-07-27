@@ -34,6 +34,7 @@ describe('13. Test Result Set', () => {
 
   var driver = null;
   var connection = null;
+  let getRowsType = undefined;
 
   before('open connection, init tables', async () => {
     driver = new Driver();
@@ -54,6 +55,13 @@ describe('13. Test Result Set', () => {
       await connection.execute(getJoinableTableInsert('a',i,0));
       await connection.execute(getJoinableTableInsert('b',i,1));
     }
+
+    // for 13.4 we are assuming that NUONODE_GET_ROWS_TYPE is undefined, if not make it so
+    getRowsType = process.env['NUONODE_GET_ROWS_TYPE'];
+    if(getRowsType !== undefined){
+      console.warn(`NUONODE_GET_ROWS_TYPE is expected as undefined for test 13.4 but was ${getRowsType}, setting to undefined for this test`);
+      process.env['NUONODE_GET_ROWS_TYPE'] = undefined;
+    }
   });
 
   after('close connection', async () => {
@@ -61,6 +69,10 @@ describe('13. Test Result Set', () => {
     await connection.execute(dropJoinableTables('a'));
     await connection.execute(dropJoinableTables('b'));
     await connection.close();
+    if(getRowsType !== undefined){
+      console.warn(`NUONODE_GET_ROWS_TYPE was set to undefined for test 13.4, resetting to initial value ${getRowsType}`);
+      process.env['NUONODE_GET_ROWS_TYPE'] = getRowsType;
+    }
   });
 
   it('13.1 Can get results in chunks', async () => {
@@ -111,6 +123,26 @@ describe('13. Test Result Set', () => {
 
     should.not.exist(err);
 
+  });
+
+    it('13.4 Can swap between get rows styles', async () => {
+    let err = null;
+    try {
+      let results = await connection.execute(selectFromJoinableTables('a','b'));
+      // match resultset.js definition
+      (results.getRowsStyle).should.be.eql('MIN_BLOCKING');
+
+      process.env['NUONODE_GET_ROWS_TYPE']='BLOCKING';
+
+      results = await connection.execute(selectFromJoinableTables('a','b'));
+      // match resultset.js definition
+      (results.getRowsStyle).should.be.eql('BLOCKING');
+
+    } catch (e) {
+      err = e;
+    }
+
+    should.not.exist(err);
   });
 
 }).timeout(RESULT_SET_TEST_TIMEOUT);
