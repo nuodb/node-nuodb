@@ -65,7 +65,6 @@ const dropTmpTables = [
   'drop table if exists T4',
 ];
 
-
 const selectSysTablesQuery = () => "select * from system.tables order by tablename";
 const msleep2500Query = () => "select msleep(2500) from dual";
 const selectSysTablesQueryLimit1 = () => "select * from system.tables order by tablename limit 1";
@@ -121,7 +120,7 @@ const fakeWork = (numberOfOperations, operationalLoad) => new Promise( res => {
   setTimeout(() => res(), 0)
 })
 
-const TEST_CASE_DURATION = 2 * minute;
+const TEST_CASE_DURATION = 5 * minute;
 const CS_TEST_CASES = [
   {
     description: 'select sys tables',
