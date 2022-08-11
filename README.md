@@ -134,9 +134,11 @@ Any `try` `catch` block in which NuoDB resources are created must be followed by
 ### Good Example
 
 ```
+ let conn
+ let results
  try {
-    const conn = await pool.requestConnection();
-    const results = await conn.execute(query);
+    conn = await pool.requestConnection();
+    results = await conn.execute(query);
     const rows = await results?.getRows();
     rows?.should.be.ok();
   } catch (e) {
