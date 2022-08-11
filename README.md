@@ -8,7 +8,7 @@ Use node-nuodb to connect Node.js a to NuoDB Database.
 
 node-nuodb supports basic features of the NuoDB Database and NuoDB C++ client.
 
-## Requirements
+## Dependencies
 
 Node 16.16.0+
 
@@ -128,7 +128,7 @@ See branch [examples](https://github.com/nuodb/node-nuodb/tree/examples).
 
 ## Best Practices
 
-Any `try` `catch` block in which NuoDB resources are created must be followed by `finally` in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a try block can lead to NuoDB resources being created an never cleaned up.
+Any `try` `catch` block in which NuoDB resources are created must be followed by a `finally` block in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a `try` block can lead to NuoDB resources being created an never cleaned up.
 
 ### Good Example
 
@@ -152,8 +152,8 @@ Any `try` `catch` block in which NuoDB resources are created must be followed by
 ```
  try {
     const conn = await pool.requestConnection();
-    const results = await conn.execute(query);
-    const rows = await results?.getRows(); // if we get an error here we will never clean up our connection
+    const results = await conn.execute(query); // if we get an error here we will never clean up our connection
+    const rows = await results?.getRows();
     rows?.should.be.ok();
     await results?.close();
     await pool.releaseConnection(conn);
