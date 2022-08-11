@@ -25,11 +25,12 @@ If you have NuoDB installed locally, skip to step 4
 3. Set the NUODB_CLIENT_PACKAGE environment variable.
    export NUODB_CLIENT_PACKAGE=/path/to/nuodb-client-version.lin64
 
-4. Clone the pre-release nuodb node.js driver from the git repo.
+4. Clone the nuodb node.js driver from the git repo.
    git clone https://github.com/nuodb/node-nuodb
 
 5. Install the driver.
    cd node-nuodb && npm i
+
 6. Ensure the driver is working as intended (requires NuoDB database running named test with user dba and a password dba).
    npm test
 
