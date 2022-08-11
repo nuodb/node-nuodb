@@ -126,6 +126,43 @@ on a connection provided by the pool will have the same effect as calling:
 
 See branch [examples](https://github.com/nuodb/node-nuodb/tree/examples).
 
+## Best Practices
+
+Any `try` `catch` block in which NuoDB resources are created must be followed by `finally` in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a try block can lead to NuoDB resources being created an never cleaned up.
+
+### Good Example
+
+```
+ try {
+    const conn = await pool.requestConnection();
+    const results = await conn.execute(query);
+    const rows = await results?.getRows();
+    rows?.should.be.ok();
+  } catch (e) {
+    console.error(e);
+    should.not.exist(e);
+  } finally {
+      await results?.close();
+      await pool.releaseConnection(conn);
+  }
+```
+
+### Bad Example
+
+```
+ try {
+    const conn = await pool.requestConnection();
+    const results = await conn.execute(query);
+    const rows = await results?.getRows(); // if we get an error here we will never clean up our connection
+    rows?.should.be.ok();
+    await results?.close();
+    await pool.releaseConnection(conn);
+  } catch (e) {
+    console.error(e);
+    should.not.exist(e);
+  }
+```
+
 ## Help
 
 Issues and questions about node-nuodb can be posted on [GitHub][2].
