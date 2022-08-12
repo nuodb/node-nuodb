@@ -129,7 +129,7 @@ See branch [examples](https://github.com/nuodb/node-nuodb/tree/examples).
 
 ## Best Practices
 
-Any `try` `catch` block in which NuoDB resources are created must be followed by a `finally` block in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a `try` block can lead to NuoDB resources being created an never cleaned up.
+Any `try` `catch` block in which NuoDB resources are created must be followed by a `finally` block in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a `try` block can lead to NuoDB resources being created and never cleaned up.
 
 ### Good Example
 
