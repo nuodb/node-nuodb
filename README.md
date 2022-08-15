@@ -4,7 +4,7 @@ Node.js NAN C++ NuoDB Driver
 
 The node-nuodb add-on for Node.js powers high performance NuoDB Database applications.
 
-Use node-nuodb to connect Node.js a to NuoDB Database.
+Use node-nuodb to connect Node.js to a NuoDB Database.
 
 node-nuodb supports basic features of the NuoDB Database and NuoDB C++ client.
 
@@ -79,15 +79,15 @@ const myPool = new Pool({
 
 ### Methods
 
-After a pool is created the user must initiate it by using the init method:
+After a pool is created the user must initialize it using the init method:
 
 ```
 await Pool.init()
 ```
 
-This will populate the pool. The pool is unaivable until this completes.
+This will populate the pool. The pool is unavailable until this completes.
 
-Once the pool has been successfully initialized it is ready for use. The user uses:
+Once the pool has been successfully initialized it is ready for use. The user calls:
 
 ```
 const newConnection = await Pool.requestConnection()
@@ -102,15 +102,15 @@ await Pool.releaseConnection(<connection>)
 ```
 
 Connections that have been released back to the connection should not be used anymore.
-Connections that are somehow failing should be returned to the pool where they will dealt with and replaced.
+Connections that have failed in any way should be returned to the pool where they will dealt with and replaced.
 
-A pool can be shutdown with:
+A pool should be shutdown by calling:
 
 ```
 await Pool.closePool()
 ```
 
-This will close all of the pools connections regardless of weither or not they are in use.
+This will close all of the connections in the pool regardless of whether or not they are in use.
 
 Users cannot manually close connections provided by the pool, and calling:
 `connection.close()`
