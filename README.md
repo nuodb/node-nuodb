@@ -49,7 +49,7 @@ The NuoDB Node.js driver comes with a built in connection pool available.
 
 **connectionConfig:** the configuration that will be used to create the connection in the pool, required argument.
 
-**minAvailable:** initial size of the pool and the number of connection the pool will aim to maintain, default of 10 is used if no argument is provided.
+**minAvailable:** initial size of the pool and the number of connections the pool will aim to maintain, default of 10 is used if no argument is provided.
 
 **maxAge:** Amount of time from connection creation until it will age out, default of 300000ms (5 minutes) is used if no argument is provided.
 
@@ -101,7 +101,7 @@ Once the user has finished using a connection, it can be returned to the pool wi
 await Pool.releaseConnection(<connection>)
 ```
 
-Connections that have been released back to the connection should not be used anymore.
+Connections that have been released back to the connection pool should not be used anymore.
 Connections that have failed in any way should be returned to the pool where they will dealt with and replaced.
 
 A pool should be shutdown by calling:
