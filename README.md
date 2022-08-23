@@ -10,7 +10,7 @@ node-nuodb supports basic features of the NuoDB Database and NuoDB C++ client.
 
 ## Dependencies
 
-Node 16.16.0+
+Node 16.13.2
 
 ## Installation
 
