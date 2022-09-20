@@ -329,8 +329,8 @@ Local<Value> ResultSet::getRowsAsJsValue()
     size_t count = rows.size();
     Local<Array> array = Nan::New<Array>(count);
     for (size_t rowIdx = 0; rowIdx < count; rowIdx++) {
-        std::vector<SqlValue> sqlRow = rows.back();
-        rows.pop_back();
+        std::vector<SqlValue> sqlRow = rows.front();
+        rows.pop_front();
         if (options.getRowMode() == RowMode::ROWS_AS_OBJECT) {
             Local<Object> jsObject = Nan::New<Object>();
             for (size_t colIdx = 0; colIdx < sqlRow.size(); colIdx++) {
