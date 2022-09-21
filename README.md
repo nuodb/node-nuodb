@@ -4,16 +4,38 @@ Node.js NAN C++ NuoDB Driver
 
 The node-nuodb add-on for Node.js powers high performance NuoDB Database applications.
 
-Use node-nuodb to connect Node.js 8 and 10 to NuoDB Database.
+Use node-nuodb to connect Node.js to a NuoDB Database.
 
 node-nuodb supports basic features of the NuoDB Database and NuoDB C++ client.
 
+## Dependencies
+
+Node 16.13.2
+
 ## Installation
 
-The driver is distributed as Dockers; two variants exist, an ONBUILD
-variant, and a traditional variant. See the documentation for more
-information. We strongly recommend the ONBUILD variant to streamline
-build and deployment processes.
+If you have NuoDB installed locally, skip to step 4
+
+1. Download the nuodb client package.
+   The client package releases can be found here: https://github.com/nuodb/nuodb-client/releases
+
+2. Extract the client package.
+   tar -xzf nuodb-client-version.lin64.tar.gz
+
+3. Set the NUODB_CLIENT_PACKAGE environment variable.
+   export NUODB_CLIENT_PACKAGE=/path/to/nuodb-client-version.lin64
+
+4. Clone the nuodb node.js driver from the git repo.
+   git clone https://github.com/nuodb/node-nuodb
+
+5. Install the driver.
+   cd node-nuodb && npm i
+
+6. Ensure the driver is working as intended (requires NuoDB database running named test with user dba and a password dba).
+   npm test
+
+7. Import the driver into your node.js project.
+   var Driver = require('/path/to/driver/repo/node-nuodb');
 
 ## Documentation
 
@@ -27,7 +49,7 @@ The NuoDB Node.js driver comes with a built in connection pool available.
 
 **connectionConfig:** the configuration that will be used to create the connection in the pool, required argument.
 
-**minAvailable:** initial size of the pool and the number of connection the pool will aim to maintain, default of 10 is used if no argument is provided.
+**minAvailable:** initial size of the pool and the number of connections the pool will aim to maintain, default of 10 is used if no argument is provided.
 
 **maxAge:** Amount of time from connection creation until it will age out, default of 300000ms (5 minutes) is used if no argument is provided.
 
@@ -57,15 +79,15 @@ const myPool = new Pool({
 
 ### Methods
 
-After a pool is created the user must initiate it by using the init method:
+After a pool is created the user must initialize it using the init method:
 
 ```
 await Pool.init()
 ```
 
-This will populate the pool. The pool is unaivable until this completes.
+This will populate the pool. The pool is unavailable until this completes.
 
-Once the pool has been successfully initialized it is ready for use. The user uses:
+Once the pool has been successfully initialized it is ready for use. The user calls:
 
 ```
 const newConnection = await Pool.requestConnection()
@@ -79,16 +101,16 @@ Once the user has finished using a connection, it can be returned to the pool wi
 await Pool.releaseConnection(<connection>)
 ```
 
-Connections that have been released back to the connection should not be used anymore.
-Connections that are somehow failing should be returned to the pool where they will dealt with and replaced.
+Connections that have been released back to the connection pool should not be used anymore.
+Connections that have failed in any way should be returned to the pool where they will dealt with and replaced.
 
-A pool can be shutdown with:
+A pool should be shutdown by calling:
 
 ```
 await Pool.closePool()
 ```
 
-This will close all of the pools connections regardless of weither or not they are in use.
+This will close all of the connections in the pool regardless of whether or not they are in use.
 
 Users cannot manually close connections provided by the pool, and calling:
 `connection.close()`
@@ -97,6 +119,7 @@ on a connection provided by the pool will have the same effect as calling:
 
 ## Related Links
 
+- [NuoDB Multiplexer][5]
 - [NuoDB Node.js Driver Documentation][3]
 - [NuoDB Node.js Driver Docker Sample Express Application][4]
 
@@ -104,58 +127,48 @@ on a connection provided by the pool will have the same effect as calling:
 
 See branch [examples](https://github.com/nuodb/node-nuodb/tree/examples).
 
+## Best Practices
+
+Any `try` `catch` block in which NuoDB resources are created must be followed by a `finally` block in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a `try` block can lead to NuoDB resources being created and never cleaned up.
+
+### Good Example
+
+```
+ let conn
+ let results
+ try {
+    conn = await pool.requestConnection();
+    results = await conn.execute(query);
+    const rows = await results?.getRows();
+    rows?.should.be.ok();
+  } catch (e) {
+    console.error(e);
+    should.not.exist(e);
+  } finally {
+      await results?.close();
+      await pool.releaseConnection(conn);
+  }
+```
+
+### Bad Example
+
+```
+ try {
+    const conn = await pool.requestConnection();
+    const results = await conn.execute(query); // if we get an error here we will never clean up our connection
+    const rows = await results?.getRows();
+    rows?.should.be.ok();
+    await results?.close();
+    await pool.releaseConnection(conn);
+  } catch (e) {
+    console.error(e);
+    should.not.exist(e);
+  }
+```
+
 ## Help
 
 Issues and questions about node-nuodb can be posted on [GitHub][2].
-
-## Build and Test
-
-### Dependencies
-
-In order to build the driver you need the following:
-
-- Docker CE (latest)
-- GNU Make (to simplify builds)
-- JQ (to make sure all version numbers are consistent)
-- Git (to download the source)
-
-### Building
-
-GNU make is used to simplify the build process. The Makefile has
-comprehensive help built into it:
-
-```bash
-$ make help
-```
-
-We require a CentOS variant of the official Node JS Docker.
-To grab and build the Node JS Docker CentOS image:
-
-```bash
-git clone git@github.com:nuodb/docker-node.git
-cd docker-node/8/centos/ && docker build -t node:8.12.0-centos .
-```
-
-To build and test a `build` Docker image:
-
-```bash
-$ make up
-$ make status # repeat until the SMs and TEs are up!
-$ make test
-$ make dn
-```
-
-To build a release image for distribution:
-
-```bash
-$ make release
-```
-
-## Tests
-
-```bash
-$ make test
-```
 
 ## License
 
@@ -165,4 +178,5 @@ This module is released under the [BSD 3-Clause License][1].
 [2]: https://github.com/nuodb/node-nuodb/issues
 [3]: https://nuodb.github.io/node-nuodb/
 [4]: https://github.com/nuodb/node-nuodb-demo
+[5]: https://github.com/nuodb/node-multiplexer
 [44]: https://github.com/nodejs/abi-stable-node-addon-examples
