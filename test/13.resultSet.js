@@ -82,7 +82,7 @@ describe('13. Test Result Set', () => {
       for(let i = 0; i < numRowsChunk; i+=getChunkSize){
         const rows = await results.getRows(getChunkSize);
         (rows.length).should.be.eql(getChunkSize);
-        (rows[getChunkSize-1]['F1']).should.be.eql(i);
+	(rows[getChunkSize-1]['F1']).should.be.eql(i+(getChunkSize-1));
       }
       // try to get one more row than exists to test edge case
       const nullRow = await results.getRows(1);

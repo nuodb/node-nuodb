@@ -48,7 +48,7 @@ private:
     bool isResultOpen() const;
 
     Options options;
-    std::vector<std::vector<SqlValue> > rows;
+    std::deque<std::vector<SqlValue> > rows;
 };
 } // namespace NuoJs
 
