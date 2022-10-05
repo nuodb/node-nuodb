@@ -5,9 +5,7 @@
 
 var config = {};
 
-config.database = 'test';
-config.hostname = 'localhost';
-config.port = 48004;
+config.database = 'test@nuordcbig05:48004,test@nuordcbig02:48004';
 config.user = 'dba';
 config.password = 'dba';
 config.schema = 'USER';

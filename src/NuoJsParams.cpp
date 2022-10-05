@@ -64,10 +64,11 @@ std::string getConnectionString(Params& params)
 {
     try {
         checkParam(params, "database");
-        checkParam(params, "hostname");
-        checkParam(params, "port");
+        //checkParam(params, "hostname");
+        //checkParam(params, "port");
         std::ostringstream connection_string;
-        connection_string << params["database"] << "@" << params["hostname"] << ":" << params["port"];
+        //connection_string << params["database"] << "@" << params["hostname"] << ":" << params["port"];
+        connection_string << params["database"];
         return connection_string.str();
     } catch (NuoDB::SQLException& e) {
         throw std::runtime_error(e.getText());
