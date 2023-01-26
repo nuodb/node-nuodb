@@ -2,7 +2,7 @@
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
-/*eslint-disable */
+
 'use strict';
 
 
@@ -28,20 +28,21 @@ const randString = (length) => {
     s += charset.charAt(rand(charset.length-1,0))
   return s
 }
-const sleep = (ms) => new Promise((res) => {
-  setTimeout(() => res(),ms)
-} );
+//!
+// const sleep = (ms) => new Promise((res) => {
+//   setTimeout(() => res(),ms)
+// } );
 
 const mean = (numbers) => numbers.reduce((acc,val)=>(acc+val/numbers.length),0);
 const median = (numbers) => {
-    const sorted = Array.from(numbers).sort((a, b) => a - b);
-    const middle = Math.floor(sorted.length / 2);
+  const sorted = Array.from(numbers).sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
 
-    if (sorted.length % 2 === 0) {
-        return (sorted[middle - 1] + sorted[middle]) / 2;
-    }
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
 
-    return sorted[middle];
+  return sorted[middle];
 }
 const stddev = (numbers, knownMean=undefined) => {
   const meanVal = knownMean ?? mean(numbers);
@@ -68,21 +69,21 @@ const dropTmpTables = [
 //const selectSysTablesQuery = () => "select * from system.tables order by tablename";
 const selectSysTablesQuery = () => "select * from system.tables order by tablename";
 const msleep2500Query = () => "select msleep(2500) from dual";
-const selectSysTablesQueryLimit1 = () => "select * from system.tables order by tablename limit 1";
-const selectSysTablesQueryNoRows = () => "select * from system.tables where tablename = 'XXX' order by tablename ";
+// const selectSysTablesQueryLimit1 = () => "select * from system.tables order by tablename limit 1";
+// const selectSysTablesQueryNoRows = () => "select * from system.tables where tablename = 'XXX' order by tablename ";
 const longWorkingQuery = () => "select * from system.fields as a inner join system.fields as b on a.field = b.field inner join system.tables on a.schema = tables.schema order by tables.schema limit 100"
 
 const assortedReadQueries = [
-    'select * from system.nodes',
-    'select * from system.connections',
-    'select * from system.fields',
-    'select * from system.functions',
-    'select * from system.indexes',
-    'select * from system.localatoms',
-    'select * from system.tables',
-    'select * from system.properties',
-    'select * from system.querystats',
-  ];
+  'select * from system.nodes',
+  'select * from system.connections',
+  'select * from system.fields',
+  'select * from system.functions',
+  'select * from system.indexes',
+  'select * from system.localatoms',
+  'select * from system.tables',
+  'select * from system.properties',
+  'select * from system.querystats',
+];
 
 const randomReadQueriesWithWork = () => assortedReadQueries[rand(assortedReadQueries.length-1,0)]
 
@@ -90,21 +91,21 @@ const randomInsertQueries = () => {
   const tableIndex = rand(createTmpTables.length,1);
   let q = null;
   switch(tableIndex) {
-    case 1: // int type
-      q = `insert into T1 (F1) values (${rand(1000,-1000)})`
-      break;
-    case 2: // string type
-      q = `insert into T2 (F1) values ('${randString(10,2)}')`
-      break;
-    case 3: // bool 
-      q = `insert into T2 (F1) values (${rand(1,0)})`
-      break;
-    case 4: // double
-      q = `insert into T2 (F1) values (${rand(100,0)}.${rand(100,0)})`
-      break;
-    default:
-      console.error('Should not get default for random insert query.');
-      break;
+  case 1: // int type
+    q = `insert into T1 (F1) values (${rand(1000,-1000)})`
+    break;
+  case 2: // string type
+    q = `insert into T2 (F1) values ('${randString(10,2)}')`
+    break;
+  case 3: // bool
+    q = `insert into T2 (F1) values (${rand(1,0)})`
+    break;
+  case 4: // double
+    q = `insert into T2 (F1) values (${rand(100,0)}.${rand(100,0)})`
+    break;
+  default:
+    console.error('Should not get default for random insert query.');
+    break;
   }
   return q;
 }
@@ -333,9 +334,9 @@ const CSDriver = async (pool, numCS, timeToRun, getQuery, fakeWorkLoad=0, fakeWo
 describe('15. Test Performance Under Load', async () => {
   /**
    * to get stats run:
-   *  cd /u/users/ecs8/stress-test-mon-logs 
+   *  cd /u/users/ecs8/stress-test-mon-logs
    *  nuocmd get stats > $LOG_NAME
-   * 
+   *
    * to upload stats:
    *  nuopython /support/support-utilities/nuodb-dashboards-influx/image/stats_influx.py -o http://nuosup04:8086 $LOG_NAME
    */
@@ -371,28 +372,28 @@ describe('15. Test Performance Under Load', async () => {
   });
 
 
-function getMax(arr) {
+  function getMax(arr) {
     let len = arr.length;
     let max = Number.MIN_SAFE_INTEGER;
 
     while (len--) {
-        max = arr[len] > max ? arr[len] : max;
+      max = arr[len] > max ? arr[len] : max;
     }
     return max;
-}
+  }
 
-function getMin(arr) {
+  function getMin(arr) {
     let len = arr.length;
     let min = Number.MAX_SAFE_INTEGER;
 
     while (len--) {
-        min = arr[len] < min ? arr[len] : min;
+      min = arr[len] < min ? arr[len] : min;
     }
     return min;
-}
+  }
 
   await async.series(CS_TEST_CASES.map((curr, index) => new Promise((res) => {
-    const {description, concurrency, time, getQuery,expectedResults, fakeWorkLoad, fakeWorkComplexity} = curr;
+    const {description, concurrency, time, getQuery,/* expectedResults,*/ fakeWorkLoad, fakeWorkComplexity} = curr;
     const title = `15.${index} Testing ${concurrency} concurrent ${description} requests for ${time/minute} minutes with ${threadCount} threads`;
     describe(title, async () => {
       it(title, async () => {
@@ -414,12 +415,12 @@ function getMin(arr) {
         const numLowerOutliers = elapsedTimes.reduce((acc,curr) => acc + (curr < avgExecTime - 2 * stddevExecTime ? 1 : 0), 0);
 
         // Unfortunately the min and max functions in the Math modules would blow the stack because of the size of the elapsedTimes array
-	// So these functions were replaced with code to get the same values
+        // So these functions were replaced with code to get the same values
         // const minExecTime = Math.min(...elapsedTimes);
         // const maxExecTime = Math.max(...elapsedTimes);
         const minExecTime = getMin(elapsedTimes);
         const maxExecTime = getMax(elapsedTimes);
-	     
+
         resultsSummary.push({
           title,
           totalExecutes,
