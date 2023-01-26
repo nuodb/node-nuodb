@@ -2,7 +2,7 @@
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
-
+/*eslint-disable */
 'use strict';
 
 

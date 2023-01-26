@@ -93,7 +93,7 @@ describe('12. Test Connection to multiple TEs', () => {
           let err = null;
           try {
             const nodeConfig = {... config
-              , port: n.PORT
+              , database: `test@localhost:${n.PORT}`
               , direct: "true"};
             const nodeConnection = await driver.connect(nodeConfig);
             nodeConnection.should.be.ok();

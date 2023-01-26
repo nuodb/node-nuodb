@@ -3,7 +3,7 @@
   "author": "NuoDB, Inc.",
   "description": "The official NuoDB driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "Apache-2.0",
-  "version": "3.4",
+  "version": "3.4.1",
   "main": "index.js",
   "keywords": [
     "nuodb",
@@ -39,7 +39,7 @@
     "build": "node-gyp rebuild -d",
     "lint": "eslint index.js lib/*.js test/*.js",
     "this-test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --check-leaks -g '22. typeInteger.js'",
-    "test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --timeout 10000 --check-leaks test/",
+    "test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks test/",
     "valgrind": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log $(which node) valgrind.js",
     "valgrind-test": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log mocha --reporter spec --bail --check-leaks test/"
   }
