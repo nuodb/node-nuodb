@@ -15,6 +15,16 @@ namespace NuoJs
 class Options
 {
 public:
+
+    enum Option {
+	    rowmode = 1,
+	    fetchsize = 2,
+	    isolationlevel = 3,
+	    autocommit = 4,
+	    readonly = 5,
+	    querytimeout = 6
+    };
+
     // Options constructor sets reasonable defaults.
     Options();
     Options(const Options& options);
@@ -39,6 +49,11 @@ public:
 
     uint32_t getQueryTimeout() const;
     void setQueryTimeout(uint32_t);
+
+    void setNonDefault(Option);
+    void unsetNonDefault(Option);
+    bool isNonDefault(Option);
+
 private:
     RowMode rowMode;
     uint32_t fetchSize;
@@ -46,10 +61,12 @@ private:
     bool autoCommit;
     bool readOnly;
     uint32_t queryTimeout;
+    int defaults = 0;
 };
 
 // getJsonOptions returns the JSON query options provided by the user
 void getJsonOptions(Local<Object> object, Options& options);
+
 }
 
 #endif

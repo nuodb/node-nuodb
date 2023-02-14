@@ -61,6 +61,10 @@ The NuoDB Node.js driver comes with a built in connection pool available.
 
 **id:** optional argument to give the pool an id. As default the pool will be provided the “new Date().getTime()” at the time of its creation as its id.
 
+**skipCheckLivelinessOnRelease:** turns off liveliness checks on connections when they are released back to the pool, which is different than the checkTime that is used for aging purposes.  The default is false, meaning we will perform a liveliness check when a connection is returned to the pool.
+
+**livelinessCheck:** indicates the type of liveliness check to be performed.  By default, the value is set to query, which means a query to test the connection.  If set to any other value other than query, it will only look to see if the NuoDB API isConnected returns true and we have not trapped a connection related exception previously.
+
 Arguments should be provided to the pool as an object. Please refer to the Usage section for an example.
 
 ### Usage
