@@ -73,7 +73,9 @@ const myPool = new Pool({
     checkTime: <arg>,
     maxLimit: <arg>,
     connectionRetryLimit: <arg>,
-    id: <arg>
+    id: <arg>,
+    skipCheckLivelinessOnRelease: false|true,
+    livelinessCheck: query|<arg>
 })
 ```
 
