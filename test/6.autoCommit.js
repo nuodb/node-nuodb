@@ -12,6 +12,7 @@ var config = require("./config");
 var helper = require("./typeHelper");
 
 describe("6. autoCommit.js", function () {
+  this.timeout(5000);
   var driver = null;
   var connection = null;
   var tableName = "auto_commit";

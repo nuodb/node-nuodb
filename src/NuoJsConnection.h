@@ -7,12 +7,19 @@
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
 
 #include "NuoJsAddon.h"
+#include "NuoDB.h"
+#include <string>
 
 namespace NuoJs
 {
 class Connection : public Nan::ObjectWrap
 {
 public:
+
+    static bool Default_AutoCommit;
+    static bool Default_ReadOnly;
+    static uint32_t Default_IsolationLevel;
+
     Connection();
     virtual ~Connection();
 
@@ -28,9 +35,14 @@ public:
     static void setRestrictedAPI(unsigned int);
     static unsigned int Restricted_API(const std::string&);
 
-    bool _AutoCommit = true;
-    bool _ReadOnly = false;
-    uint32_t _IsolationLevel = 7;
+    bool _AutoCommit;
+    bool _ReadOnly;
+    uint32_t _IsolationLevel;
+
+    void markForFailure(NuoDB::SQLException& e);
+
+    static NAN_METHOD(hasFailed);
+    bool isFailed() const;
 
 private:
 
@@ -64,9 +76,15 @@ private:
     static NAN_SETTER(setAutoCommit);
     void setAutoCommit(bool mode);
 
+
+    static NAN_METHOD(isConnected);
+    bool isConnected() const;
+
+    //SQLException failure;
+    std::string failureText;
+
     friend class Driver;
 
-    bool isConnected() const;
     void setIsolationLevel(uint32_t isolation);
 
     class NuoDB::Connection* connection;
