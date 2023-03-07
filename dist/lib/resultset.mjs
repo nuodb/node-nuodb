@@ -18,37 +18,40 @@ const GET_ROWS_TYPE_BLOCKING = 'BLOCKING';
 const GET_ROWS_TYPE_MIN_BLOCKING = 'MIN_BLOCKING';
 import util from 'util';
 import loopDefer from './loopDefer.mjs';
+function getRows(...args) {
+    let cbIdx = 0;
+    while (cbIdx < args.length) {
+        if (typeof args[cbIdx] === 'function') {
+            break;
+        }
+        cbIdx++;
+    }
+    const callback = args[cbIdx];
+    const extension = (err, instance) => {
+        if (err) {
+            callback(err);
+        }
+        // add future caching support here... (streams)
+        callback(null, instance);
+    };
+    args[cbIdx] = extension;
+    //@ts-ignore as "this" binds to the ResultSet object
+    return this._getRows(...args);
+}
 // @ts-ignore as we guarantee that all the props are added, but not on initial definition
 const ResultSet = {
     close(callback) {
-        this._close((err) => {
+        return this._close((err) => {
             !!callback && callback(err);
         });
     },
-    // getRows(number?: number, callback?: Function): any/*Promise<unknown>*/ {
-    getRows(...args) {
-        let cbIdx = 0;
-        while (cbIdx < args.length) {
-            if (typeof args[cbIdx] === 'function') {
-                break;
-            }
-            cbIdx++;
-        }
-        const callback = args[cbIdx];
-        const extension = (err, instance /*Rows*/) => {
-            if (err) {
-                callback(err);
-            }
-            // add future caching support here... (streams)
-            callback(null, instance);
-        };
-        args[cbIdx] = extension;
-        this._getRows(...args);
-    }
+    getRows: getRows
 };
 ResultSet.closePromisified = util.promisify(ResultSet.close);
+//@ts-ignore
 ResultSet.getRowsPromisified = util.promisify(ResultSet.getRows);
-ResultSet.nonBlockingGetRows = function (...args) {
+function nonBlockingGetRows(...args) {
+    //@ts-ignore as "this" will bind to the ResultSet object
     const resultset = this;
     let numRows = null;
     let batchSize = null;
@@ -59,7 +62,7 @@ ResultSet.nonBlockingGetRows = function (...args) {
             numRows = args[i];
         }
         else if (typeof args[i] === 'number' && batchSize === null) {
-            batchSize = args[i];
+            batchSize = args[i]; //! Is this supposed to be another integer paramater? Would have to add another overload
         }
         else if (typeof args[i] === 'function') {
             callback = args[i];
@@ -89,9 +92,9 @@ ResultSet.nonBlockingGetRows = function (...args) {
                     || totalRows === numRows);
                 return getMoreRows;
             });
-        } }, (!!callback) && { closure: callback } //(props?: any[] | undefined) => void,
-    ));
-};
+        } }, (!!callback) && { closure: callback }));
+}
+ResultSet.nonBlockingGetRows = nonBlockingGetRows;
 ResultSet.extend = (resultset, connection, driver) => {
     var _a;
     Object.defineProperties(resultset, {

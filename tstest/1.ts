@@ -33,12 +33,12 @@ function testConnection() {
         //     })
         // .catch((err: Error) => { console.error('ERRORRRRR', err)});
 
-        driver.connect(config, (err: Error, conn: Connection) => {
+        driver.connect(config, (err: unknown, conn: Connection) => {
             console.debug('THE CONNECTION =>', conn);
             // conn.execute('test', {queryTimeout: 1});
             conn.execute('SHOW SCHEMAS;', (err, res) => {
                 console.debug('result =>', res);
-                res.getRows((err: Error, rows: any) => {
+                res.getRows((err: unknown, rows: any) => {
                     console.debug('rows =>', rows);
                     conn.close();
                 })

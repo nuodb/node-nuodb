@@ -26,7 +26,8 @@ export interface Configuration {
   allowSRPFallback?: 'false'|'true'  
 }
 
-type Connect<T=undefined> = (config: Configuration, callback?: (err: Error, connection: Connection) => void) => T extends 'Promise' ? Promise<Connection> : Connection;
+type ConnectionCallback = (err: unknown, connection: Connection) => void;
+type Connect = (config: Configuration, callback?: ConnectionCallback) => Promise<Connection>;
 
 
 class Driver {
@@ -38,18 +39,18 @@ class Driver {
   }
 
   private _connect: Connect; 
-  public connect: Connect<'Promise'>
+  public connect: Connect;
   
-  private _driver: { connect: (config: Configuration, callback?: Function) => Connection };
+  private _driver: { connect: (config: Configuration, callback?: ConnectionCallback) => Promise<Connection> };
 
   constructor () {
     this._driver = new addon.Driver();
 
-    this._connect = function (config: Configuration, callback?: (Function)): Connection {
+    this._connect = function (config: Configuration, callback?: (Function)): Promise<Connection> {
       
       config = this.merge(config);
       
-      const extension = (err: Error, connection: Connection) => {
+      const extension = (err: unknown, connection: Connection) => {
         if (!!err) {
           callback!(err);
           return;

@@ -174,7 +174,7 @@ export default class Pool {
             const results = yield connection.execute("SELECT GETCONNECTIONID() FROM DUAL");
             const connId = yield results.getRows();
             Object.defineProperty(connection, 'id', {
-                value: connId[0]["[GETCONNECTIONID]"]
+                value: (connId[0])["[GETCONNECTIONID]"]
             });
             const thisPool = this;
             connection._defaultClose = connection.close;

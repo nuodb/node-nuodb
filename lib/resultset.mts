@@ -16,67 +16,84 @@ import Driver from './driver.mjs';
 import loopDefer from './loopDefer.mjs';
 
 
+type CloseCallback = (err: unknown) => void;
 
 interface ResultSet {
-  close: (callback?: Function) => void,
+  close: (callback?: CloseCallback) => Promise<void>,
   _close: ResultSet["close"],
-  closePromisified: any,
-  getRows: any,//(number?: number, callback?: Function) => Promise<unknown[]>,
+  closePromisified: ResultSet["close"],
+  getRows: typeof getRows,
   _getRows: ResultSet["getRows"],
-  getRowsPromisified: any,
-  nonBlockingGetRows: () => Promise<any[]>, //!
+  getRowsPromisified: ResultSet["getRows"],
+  nonBlockingGetRows: ResultSet["getRows"], 
   extend: (resultset: ResultSet, connection: Connection, driver: Driver) => void
 }
+
+export type Rows = {
+  [prop: string]: string|number
+}[];
+
+type RowsCallback = (err: unknown, rows?: Rows) => void;
+
+function getRows(callback?: RowsCallback): Promise<Rows>;
+function getRows(size: number, callback?: RowsCallback): Promise<Rows>;
+function getRows(...args: Array<number|RowsCallback|undefined>): Promise<Rows> {
+  let cbIdx = 0; 
+  while (cbIdx < args.length) {
+    if (typeof args[cbIdx] === 'function') {
+      break;
+    } cbIdx++;
+  }
+  const callback = args[cbIdx] as RowsCallback;
+
+  const extension = (err: unknown, instance?: Rows) => {
+    if (err) { callback(err); }
+    // add future caching support here... (streams)
+    callback(null, instance);
+  };
+  args[cbIdx] = extension;
+  //@ts-ignore as "this" binds to the ResultSet object
+  return this._getRows(...args); 
+}
+
+
+
 
 // @ts-ignore as we guarantee that all the props are added, but not on initial definition
 const ResultSet: ResultSet = {
 
-  close(callback?: Function) {
-    this._close((err: Error) => {
+  close(callback?: CloseCallback): Promise<void> {
+    return this._close((err: unknown) => {
       !!callback && callback(err);
     });
   },
-  
-  // getRows(number?: number, callback?: Function): any/*Promise<unknown>*/ {
-  getRows(...args: any[]): any {
-    let cbIdx = 0; 
-    while (cbIdx < args.length) {
-      if (typeof args[cbIdx] === 'function') {
-        break;
-      } cbIdx++;
-    }
-    const callback = args[cbIdx];
 
-    const extension = (err: Error, instance: any/*Rows*/) => {
-      if (err) { callback(err); }
-      // add future caching support here... (streams)
-      callback(null, instance);
-    };
-    args[cbIdx] = extension;
-    
-    this._getRows(...args); 
-  }
-
+  getRows: getRows
 }
 
 ResultSet.closePromisified = util.promisify(ResultSet.close);
+//@ts-ignore
 ResultSet.getRowsPromisified = util.promisify(ResultSet.getRows);
 
-ResultSet.nonBlockingGetRows = function (...args: any[]): Promise<any[]> {
+
+function nonBlockingGetRows(callback?: RowsCallback): Promise<Rows>;
+function nonBlockingGetRows(size: number, callback?: RowsCallback): Promise<Rows>;
+function nonBlockingGetRows(...args: Array<number|RowsCallback|undefined>): Promise<Rows> {
+  //@ts-ignore as "this" will bind to the ResultSet object
   const resultset = this;
   let numRows: null|number = null;
   let batchSize: null|number = null satisfies null;
-  let callback: null|((err: unknown, val?: any) => void) = null;
+  let callback: null|RowsCallback = null;
   
 
   // parse the args, and maintain callback support
   for(let i = 0; i < args.length; i++) {
     if (typeof args[i] === 'number' && numRows === null) {
-      numRows = args[i];
+      numRows = args[i] as number;
     } else if (typeof args[i] === 'number' && batchSize === null) {
-      batchSize = args[i];
+      batchSize = args[i] as number;  //! Is this supposed to be another integer paramater? Would have to add another overload
     } else if (typeof args[i] === 'function') {
-      callback = args[i];
+      callback = args[i] as RowsCallback;
     } else {
       console.error(`unrecognized argument ${args[i]} of type ${typeof args[i]}`)
     }
@@ -89,13 +106,13 @@ ResultSet.nonBlockingGetRows = function (...args: any[]): Promise<any[]> {
     props: [],
     // setup: (p) => {console.log('setup exec'); return p},
     // because we modify the props rather than reconstructing and returning, we only really need the loop condition
-    loopCondition: async function (rows: any[]): Promise<boolean> {
+    loopCondition: async function (rows: Rows): Promise<boolean> {
       // calculate number of rows to get, avoid getting more rows than we are asked to get
       const rowsNeeded: number = numRows === 0 ? batchSize as number : (numRows as number) - rows.length;
       const rowsToGet: number = Math.min(rowsNeeded, batchSize as number)
 
       // get the rows and add them to props.rows.
-      const nextBatch: unknown[] = await ResultSet.getRowsPromisified.call(resultset, rowsToGet);
+      const nextBatch: Rows = await ResultSet.getRowsPromisified.call(resultset, rowsToGet);
       const totalRows = rows.push(...nextBatch);
 
       const getMoreRows = !( // stop only if
@@ -106,9 +123,11 @@ ResultSet.nonBlockingGetRows = function (...args: any[]): Promise<any[]> {
       )
       return getMoreRows
     },
-    ...(!!callback) && {closure: callback}//(props?: any[] | undefined) => void,
+    ...(!!callback) && {closure: callback}
   });
 }
+
+ResultSet.nonBlockingGetRows = nonBlockingGetRows;
 
 
 ResultSet.extend = (resultset: ResultSet, connection: Connection, driver: Driver): void => {

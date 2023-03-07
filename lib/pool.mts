@@ -209,7 +209,7 @@ export default class Pool {
     const connId = await results.getRows();
 
     Object.defineProperty(connection, 'id', {
-      value: (connId[0] as any)["[GETCONNECTIONID]"]
+      value: (connId[0])["[GETCONNECTIONID]"]
     })
     const thisPool = this;
 

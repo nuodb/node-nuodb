@@ -81,7 +81,7 @@ function execute(...args: Array<string|Data|Options|ResultsCallback|undefined>) 
   args[cbIdx] = extension;
   
   //@ts-ignore as "this" will bind to the Connection object
-  return this._execute(...args as [args: any]);  
+  return this._execute(...args);  
 }
 
 

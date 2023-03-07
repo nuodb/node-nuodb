@@ -9,11 +9,12 @@ export interface Configuration {
     verifyHostname?: 'false' | 'true';
     allowSRPFallback?: 'false' | 'true';
 }
-type Connect<T = undefined> = (config: Configuration, callback?: (err: Error, connection: Connection) => void) => T extends 'Promise' ? Promise<Connection> : Connection;
+type ConnectionCallback = (err: unknown, connection: Connection) => void;
+type Connect = (config: Configuration, callback?: ConnectionCallback) => Promise<Connection>;
 declare class Driver {
     private defaults;
     private _connect;
-    connect: Connect<'Promise'>;
+    connect: Connect;
     private _driver;
     constructor();
     private merge;
