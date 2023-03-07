@@ -1,15 +1,12 @@
 
-// This was initially written in typescript, all typescript related fields have been commented out but left for posterity
-
-// export interface LoopDeferProps<CHUNKPROPS> {
-//   props: CHUNKPROPS;
-//   loopCondition: (props?: CHUNKPROPS) => Promise<boolean>;
-//   body?: (props?: CHUNKPROPS) => Promise<void>;
-//   setup?: (props?: CHUNKPROPS) => CHUNKPROPS;
-//   increment?: (props?: CHUNKPROPS) => Promise<CHUNKPROPS>;
-//   closure?: (props?: CHUNKPROPS) => void;
-//   that?: any;
-// }
+export interface LoopDeferProps<CHUNKPROPS> {
+  props: CHUNKPROPS;
+  loopCondition: (props: CHUNKPROPS) => Promise<boolean>;
+  body?: (props?: CHUNKPROPS) => Promise<void>;
+  setup?: (props?: CHUNKPROPS) => CHUNKPROPS;
+  increment?: (props?: CHUNKPROPS) => Promise<CHUNKPROPS>;
+  closure?: (err: unknown, props?: CHUNKPROPS) => void;
+}
 
 /**
  *
@@ -19,10 +16,10 @@
  * @param increment Causes some change and returns props to pass in to the next loop
  * @param closure Call back function for when the loopCondition returns false
  * @param props properties to be passed in to the first run, will be replaced by setup before first loop, and increment after each loop (if setup/increment exists)
- * @param that optional reference to the this keyword in passed functions
- */
-function loopDefer/*<CHUNKPROPS>*/(loop/*: LoopDeferProps<CHUNKPROPS>*/) {
-  return new Promise/*<CHUNKPROPS>*/((resolveLoopDefer, rejectLoopDefer) => {
+*/
+export default function loopDefer<CHUNKPROPS>(loop: LoopDeferProps<CHUNKPROPS>) {
+  return new Promise<CHUNKPROPS>((resolveLoopDefer, rejectLoopDefer) => {
+    
     const {
       loopCondition,
       body,
@@ -30,32 +27,31 @@ function loopDefer/*<CHUNKPROPS>*/(loop/*: LoopDeferProps<CHUNKPROPS>*/) {
       increment,
       closure,
       props,
-      that,
     } = loop;
-    const p = setup?.call(that, props) ?? props;
-    (async function defer(propDefer/*: CHUNKPROPS*/) {
+
+    const p = !!setup ? setup(props) : props;
+
+    (async function defer(propDefer: CHUNKPROPS) {
       try {
         // loop condition
         if (await loopCondition(propDefer)) {
           // loop body
-          await body?.call(that, propDefer);
+          !!body && await body(propDefer);
           //loop, but give control back to main thread
-          let tmp/*: any;*/
+          let tmp: CHUNKPROPS;
           if (increment === undefined) tmp = propDefer;
-          else tmp = await increment.call(that, propDefer);
+          else tmp = await increment(propDefer);
           setImmediate(() => defer(tmp));
           // setTimeout(() => loop(props, prior, run), 0);
         } else {
-          closure?.call(that, null, propDefer);
+          !!closure && closure(null, propDefer);
           resolveLoopDefer(propDefer);
         }
       } catch (err) {
-        closure?.call(that,err,propDefer);
+        !!closure && closure(err, propDefer);
         rejectLoopDefer(err);
       }
 
-    })(p/* as any*/);
+    })(p);
   });
 }
-
-module.exports = loopDefer

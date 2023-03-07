@@ -5,10 +5,9 @@
 
 'use strict';
 
-var { Driver } = require('..');
-
-var should = require('should');
-var config = require('./config');
+import { Driver } from '../dist/index.js';
+import should from 'should';
+import config from './config.js';
 
 describe('3. testing promises', function () {
 

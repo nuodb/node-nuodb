@@ -5,10 +5,9 @@
 
 'use strict';
 
-var { Driver } = require('..');
-
-var should = require('should');
-var config = require('./config.js');
+import { Driver } from '../dist/index.js';
+import should from 'should';
+import config from './config.js';
 
 const sprocCreate = `
   CREATE OR REPLACE PROCEDURE DUMMY_PROCEDURE (in_number INT)

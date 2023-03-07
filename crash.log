@@ -1,0 +1,9 @@
+PID 4042661 received SIGSEGV for address: 0x7f4fe7430a08
+/home/users/prg1/marcoStayOutPlease/node-nuodb/node_modules/segfault-handler/build/Release/segfault-handler.node(+0x2f46)[0x7f4fe0ef8f46]
+/lib64/libpthread.so.0(+0x12c20)[0x7f4ff2e21c20]
+/home/users/prg1/marcoStayOutPlease/node-nuodb/build/Debug/nuodb.node(_ZN5NuoJs9ResultSet9doGetRowsEm+0xb2)[0x7f4fe1de5052]
+/home/users/prg1/marcoStayOutPlease/node-nuodb/build/Debug/nuodb.node(_ZN5NuoJs13GetRowsWorker7ExecuteEv+0x2e)[0x7f4fe1de5bbe]
+/home/users/prg1/marcoStayOutPlease/node-nuodb/build/Debug/nuodb.node(_ZN3Nan12AsyncExecuteEP9uv_work_s+0x2e)[0x7f4fe1dd6109]
+node[0x1560704]
+/lib64/libpthread.so.0(+0x817a)[0x7f4ff2e1717a]
+/lib64/libc.so.6(clone+0x43)[0x7f4ff2b46dc3]

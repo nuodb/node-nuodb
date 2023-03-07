@@ -27,6 +27,10 @@ enum API_ID {
 	ISOLATIONLEVEL = (1u << 2),
 };
 
+bool Connection::Default_AutoCommit = true;
+bool Connection::Default_ReadOnly = false;
+uint32_t Connection::Default_IsolationLevel = 7;
+
 // This routine is used to translate the textual name used for an ENUM setting and get
 // the actual bitmask value associated with it
 // 
@@ -67,6 +71,9 @@ Connection::Connection()
     : Nan::ObjectWrap()
 {
     TRACE("Connection::Connection");
+    _AutoCommit = Default_AutoCommit;
+    _ReadOnly = Default_ReadOnly;
+    _IsolationLevel = Default_IsolationLevel;
 }
 
 /* virtual */
@@ -91,6 +98,7 @@ NAN_MODULE_INIT(Connection::init)
     Nan::SetPrototypeMethod(tpl, "commit", commit);
     Nan::SetPrototypeMethod(tpl, "execute", execute),
     Nan::SetPrototypeMethod(tpl, "rollback", rollback);
+    Nan::SetPrototypeMethod(tpl, "hasFailed", hasFailed);
 
     // See: https://medium.com/netscape/tutorial-building-native-c-modules-for-node-js-using-nan-part-1-755b07389c7c
     Nan::SetAccessor(tpl->InstanceTemplate(), Nan::New("autoCommit").ToLocalChecked(),
@@ -473,9 +481,12 @@ NAN_METHOD(Connection::execute)
               return;
           }
       }
-      self->setIsolationLevel(options.getIsolationLevel());
-      self->setAutoCommit(options.getAutoCommit());
-      self->setReadOnly(options.getReadOnly());
+      if ((options.isNonDefault(Options::Option::isolationlevel)) && (self->_IsolationLevel != options.getIsolationLevel())) self->setIsolationLevel(options.getIsolationLevel());
+      if ((options.isNonDefault(Options::Option::autocommit)) && (self->_AutoCommit != options.getAutoCommit())) self->setAutoCommit(options.getAutoCommit());
+      if ((options.isNonDefault(Options::Option::readonly)) && (self->_ReadOnly != options.getReadOnly())) self->setReadOnly(options.getReadOnly());
+//      self->setIsolationLevel(options.getIsolationLevel());
+//      self->setAutoCommit(options.getAutoCommit());
+//      self->setReadOnly(options.getReadOnly());
     } catch (std::exception& e) {
         error = e.what();
     }
@@ -491,7 +502,6 @@ NAN_METHOD(Connection::execute)
     }
 
     Nan::Callback* callback = new Nan::Callback(info[infoIdx].As<Function>());
-
     ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options, error);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
@@ -583,6 +593,19 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
     return statement;
 }
 
+// Look for any error message that should indicate the connection is no longer useable
+// If we find a problem, then save the error message so the Connection is not reused
+void Connection::markForFailure(NuoDB::SQLException& e) {
+	const int code = e.getSqlcode();
+	//const char *ptr1 = strstr(errorText,"Connection reset by peer");
+	//const char *ptr2 = strstr(errorText,"connection closed");
+	if ((code == -7) || 
+	    (code == -10) ||
+            (code == -50)) {
+		failureText = e.getText();
+	}
+}
+
 bool Connection::doExecute(NuoDB::PreparedStatement* statement)
 {
     if (!isConnected()) {
@@ -593,8 +616,36 @@ bool Connection::doExecute(NuoDB::PreparedStatement* statement)
     try {
         return statement->execute();
     } catch (NuoDB::SQLException& e) {
+	// Execution has failed, see if the failure should consider the connection dead
+	markForFailure(e);
         throw std::runtime_error(e.getText());
     }
+}
+
+bool Connection::isFailed() const
+{
+    return !(isConnected() && failureText.empty());
+}
+
+NAN_METHOD(Connection::hasFailed)
+{
+    TRACE("Connection::hasFailed");
+    Nan::HandleScope scope;
+
+    Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());
+
+    info.GetReturnValue().Set(Nan::New<Boolean>(self->isFailed()));
+}
+
+NAN_METHOD(Connection::isConnected)
+{
+    TRACE("Connection::isConnected");
+    std::cout << "NAN_METHOD Connection::isConnected" << std::endl;
+    Nan::HandleScope scope;
+
+    Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());
+
+    info.GetReturnValue().Set(Nan::New<Boolean>(self->isConnected()));
 }
 
 // Get read-only mode synchronously.
@@ -640,7 +691,7 @@ NAN_SETTER(Connection::setReadOnly)
     }
 }
 
-// Get read-only mode synchronously.
+// Get AutoCommit  mode synchronously.
 NAN_GETTER(Connection::getAutoCommit)
 {
     TRACE("Connection::GetAutoCommit");
@@ -657,7 +708,7 @@ NAN_GETTER(Connection::getAutoCommit)
     info.GetReturnValue().Set(Nan::New<Boolean>(self->isAutoCommit()));
 }
 
-// Set read-only mode synchronously.
+// Set AutoCommit mode synchronously.
 NAN_SETTER(Connection::setAutoCommit)
 {
 
@@ -686,7 +737,7 @@ NAN_SETTER(Connection::setAutoCommit)
 
 bool Connection::isConnected() const
 {
-    return connection != nullptr && connection->isConnected();
+    return ((connection != nullptr) && (connection->isConnected()));
 }
 
 bool Connection::isReadOnly() const
@@ -719,7 +770,9 @@ void Connection::setAutoCommit(bool mode)
 	if (((Connection::getRestrictedAPI()&API_ID::AUTOCOMMIT) == 0) || (mode != _AutoCommit)) {
           connection->setAutoCommit(mode);
 	  _AutoCommit = mode;
+	} else {
 	}
+
     }
 }
 

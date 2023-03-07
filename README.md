@@ -53,13 +53,18 @@ The NuoDB Node.js driver comes with a built in connection pool available.
 
 **maxAge:** Amount of time from connection creation until it will age out, default of 300000ms (5 minutes) is used if no argument is provided.
 
-**checkTime:** how often the pool will run an internal liveliness check on free connections, default of 120000ms(2 minutes) is used if no argument is provided.
+**checkTime:** how often the pool will run an internal liveliness check on free connections, default of 120000ms(2 minutes) is used if no argument is provided. If 0 is provided, the liveliness check will be disabled.
 
 **maxLimit:** hard cap on the amount of live connection the pool can maintain, default of 200 is used if no argument is provided. If 0, the pool will have no hard cap.
 
 **connectionRetryLimit:** amount of times a pool will attempt to create a connection, default of 5 is used if no argument is provided.
 
 **id:** optional argument to give the pool an id. As default the pool will be provided the “new Date().getTime()” at the time of its creation as its id.
+
+**skipCheckLivelinessOnRelease:** turns off liveliness checks on connections when they are released back to the pool, which is different than the checkTime that is used for aging purposes. The default is false, meaning we will perform a liveliness check when a connection is returned to the pool.
+
+**livelinessCheck:** indicates the type of liveliness check to be performed. By default, the value is set to 'query', which means a query to test the connection. If set to any value (quoted string) other than 'query', it will only look to see if the NuoDB API isConnected returns true and we have not trapped a connection related exception previously.
+
 
 Arguments should be provided to the pool as an object. Please refer to the Usage section for an example.
 
@@ -73,7 +78,9 @@ const myPool = new Pool({
     checkTime: <arg>,
     maxLimit: <arg>,
     connectionRetryLimit: <arg>,
-    id: <arg>
+    id: <arg>,
+    skipCheckLivelinessOnRelease: false|true,
+    livelinessCheck: query|<arg>
 })
 ```
 
@@ -180,3 +187,9 @@ This module is released under the [BSD 3-Clause License][1].
 [4]: https://github.com/nuodb/node-nuodb-demo
 [5]: https://github.com/nuodb/node-multiplexer
 [44]: https://github.com/nodejs/abi-stable-node-addon-examples
+
+
+node --trace-warnings --loader ts-node/esm ./index.ts
+node --experimental-modules --es-module-specifier-resolution=node dist/index.js
+
+--check-leaks

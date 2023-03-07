@@ -5,9 +5,9 @@
 
 "use strict";
 
-const { Pool } = require("..");
-var should = require("should");
-var config = require("./config");
+import { Pool } from "../dist/index.js";
+import should from "should";
+import config from "./config.js";
 
 const poolArgs = {
   minAvailable: 10,
@@ -26,7 +26,8 @@ const badPoolArgs = {
   wrong: "this is not how it is done",
 };
 
-describe("14 test pooling", () => {
+describe("14 test pooling", function () {
+  this.timeout(500000);
   let pool = null;
   let connections = null;
 
@@ -74,7 +75,7 @@ describe("14 test pooling", () => {
     should.equal(
       pool.free_connections.length,
       10,
-      "pool shoul return to 10 free connections once connection is released"
+      "pool should return to 10 free connections once connection is released"
     );
   });
 

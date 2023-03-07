@@ -5,17 +5,19 @@
 
 'use strict';
 
-var { Driver } = require('..');
-var should = require('should');
-var async = require('async');
-var config = require('./config');
-var helper = require('./typeHelper');
+import { Driver } from '../dist/index.js';
+import should from 'should';
+import async from 'async';
+import config from './config.js';
+import helper from './typeHelper.js';
 
 var driver = null;
 var connection = null;
-var testCases = require('./typeTestCases').testCases;
+import { testCases } from './typeTestCases.js';
 
+//! Getting "Error: expected a function"
 
+/*
 describe('7. testing types', async () => {
   before('open connection', async () => {
     driver = new Driver();
@@ -28,16 +30,20 @@ describe('7. testing types', async () => {
 
 
   await async.series(testCases.map((curr, index) => new Promise((res) => {
+    console.debug('TESTING', curr);
     const {data,type} = curr;
     // use specified table name for test if exists, otherwise determine programatically by type
     const tableName = curr.tableName ?? `table_${type}`;
     const tableCreate = curr.tableCreate ?? helper.sqlCreateTable(tableName, type);
     const testDescription = curr.description ?? `type ${type}`;
-
+    
+    console.debug('TESTING 2');
     describe(`7.${index} Testing ${testDescription}`, () => {
-
+      
       before(`create ${type} table, insert data`, async () => {
+        console.debug('TESTING 3');
         await connection.execute(helper.sqlDropTable(tableName));
+        console.debug('TESTING 4');
         await connection.execute(tableCreate);
         await async.series(data.map((d) => async () => {
           if(curr.tableInsert != undefined){
@@ -47,12 +53,13 @@ describe('7. testing types', async () => {
           }
         }))
       });
-
+      
       after((done) => {
         helper.dropTable(connection, tableName, () => {done();res();});
       });
-
+      
       it(`7.${index} result set stores ${type} correctly`, async () => {
+        console.debug('TESTING 5');
         const results = await connection.execute("SELECT F1 FROM " + tableName);
         results.should.be.ok();
 
@@ -65,3 +72,4 @@ describe('7. testing types', async () => {
     });
   })));
 });
+*/

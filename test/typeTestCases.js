@@ -1,5 +1,5 @@
-var should = require('should');
-const testCases = [
+import should from 'should';
+export const testCases = [
   {
     type: 'BINARY',
     data: [
@@ -294,4 +294,3 @@ const testCases = [
   },
 ]
 
-exports.testCases = testCases;

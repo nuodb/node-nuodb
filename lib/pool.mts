@@ -3,21 +3,52 @@
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
 
-"use strict";
-
-var Driver = require("./driver");
+import Connection from "./connection.mjs";
+import { Configuration } from "./driver.mjs";
+import Driver from "./driver.mjs";
 
 const REQUIRED_INITIAL_ARGUMENTS = ["connectionConfig"];
 
-class Pool {
+export interface PoolConfiguration {
+  minAvailable: number,
+  connectionConfig: Configuration,
+  maxAge: number,
+  checkTime: number,
+  maxLimit: number,
+  connectionRetryLimit: number,
+  skipCheckLivelinessOnRelease: boolean,
+  livelinessCheck: 'query'|string
+}
+
+interface AllConnections {
+  [connection: string]: {
+    connection?: Connection,
+    inUse: boolean,
+    ageOutID: null|NodeJS.Timeout,//undefined|null|number,
+    ageStatus: boolean
+  }
+}
+
+type FreeConnections = Connection[]
+
+export default class Pool {
   static STATE_INITIALIZING = "initializing";
   static STATE_RUNNING = "running";
   static STATE_CLOSING = "closing";
   static STATE_CLOSED = "closed";
   static LIVELINESS_RUNNING = "liveliness running";
   static LIVELINESS_NOT_RUNNING = "liveliness not running";
+  
+  private config: PoolConfiguration;
+  private all_connections: AllConnections;
+  private free_connections: FreeConnections;
+  private state: string;
+  private livelinessStatus: string;
+  private livelinessInterval: null|NodeJS.Timer;
 
-  constructor(args) {
+
+
+  constructor(args: PoolConfiguration) {
     REQUIRED_INITIAL_ARGUMENTS.forEach((arg) => {
       if (!(arg in args)) {
         throw new Error(
@@ -29,11 +60,13 @@ class Pool {
       minAvailable: args.minAvailable || 10,
       connectionConfig: args.connectionConfig,
       maxAge: args.maxAge || 300000,
-      checkTime: args.checkTime || 120000, // how often to run the livliness check
+      checkTime: args.checkTime ?? 120000, // how often to run the livliness check, will not run when set to 0
       maxLimit: args.maxLimit ?? 200,
       connectionRetryLimit: args.connectionRetryLimit || 5,
+      skipCheckLivelinessOnRelease : args.skipCheckLivelinessOnRelease ?? false,
+      livelinessCheck: args.livelinessCheck ?? 'query'
     };
-    this.poolId = args.id || new Date().getTime();
+    //? this.poolId = args.id || new Date().getTime();
 
     this.all_connections = {};
 
@@ -44,10 +77,12 @@ class Pool {
     this.livelinessStatus = Pool.LIVELINESS_NOT_RUNNING;
 
     //start liveliness check
-    this.livelinessInterval = setInterval(
-      () => this._livelinessCheck(),
-      this.config.checkTime
-    );
+    if (this.config.checkTime != 0) {
+      this.livelinessInterval = setInterval(
+        () => this._livelinessCheck(),
+        this.config.checkTime
+      );
+    } else this.livelinessInterval = null;
   }
   // populate the pool and prepare for use
   async init() {
@@ -58,7 +93,7 @@ class Pool {
     this.state = Pool.STATE_RUNNING;
   }
   //verify that connection belongs in this pool
-  _connectionBelongs(connection) {
+  _connectionBelongs(connection: Connection): boolean {
     if (this.all_connections[connection._id] === undefined) {
       return false;
     }
@@ -67,14 +102,31 @@ class Pool {
     }
     return connection === this.all_connections[connection._id].connection;
   }
-  //check connection is alive
-  async _checkConnection(connection) {
-    try {
-      await connection.execute("SELECT 1 AS VALUE FROM DUAL");
-    } catch (e) {
-      return false;
+  // check connection is alive
+  // First check if a liveliness check is desired and if so
+  // check at least the connection believed to be connenected
+  // and if indicated to full check by running a query
+  // if any of the desired checks show a problem return false,
+  // indicating the connection is a problem, otherwise return true
+  async _checkConnection(connection: Connection): Promise<null|boolean> {
+    let retvalue = true;
+    if (this.config.skipCheckLivelinessOnRelease === false) {
+      if (connection.hasFailed() === false) {
+        if (this.config.livelinessCheck.toLowerCase() === 'query') {
+          try {
+            const result = await connection.execute("SELECT 1 AS VALUE FROM DUAL");
+            await result.close();
+          } catch (e) {
+            retvalue = false;
+          }
+        }
+      } else {
+        retvalue = false;
+      }
     }
-    return true;
+    // if we get here it means either we want all connections put back in the pool or any of liveliness check
+    // performed, either a connection check or a full query all passed
+    return retvalue;  
   }
   //connection will be checked when releaseConnection is called on it.
   async _livelinessCheck() {
@@ -85,9 +137,9 @@ class Pool {
       return;
     }
     this.livelinessStatus = Pool.LIVELINESS_RUNNING;
-    const checked = {};
+    const checked: {[_id: number]: true} = {};
     while (this.free_connections.length > 0) {
-      let toCheck = this.free_connections.shift();
+      let toCheck = this.free_connections.shift() as Connection;
       this.all_connections[toCheck._id].inUse = true;
       if (checked[toCheck._id] === true) {
         await this.releaseConnection(toCheck);
@@ -99,7 +151,7 @@ class Pool {
     this.livelinessStatus = Pool.LIVELINESS_NOT_RUNNING;
   }
 
-  _checkFreeAndRemove(_id) {
+  _checkFreeAndRemove(_id: number) {
     for (let i = 0; i < this.free_connections.length; i++) {
       if (this.free_connections[i]._id === _id) {
         this.free_connections.splice(i, 1);
@@ -109,13 +161,13 @@ class Pool {
     return false;
   }
 
-  async _checkAllAndRemove(_id) {
+  async _checkAllAndRemove(_id: number) {
     try {
-      await this.all_connections[_id].connection._defaultClose();
+      await this.all_connections[_id].connection?._defaultClose();
     } catch (e) {
       // continue regardless of error
     }
-    clearTimeout(this.all_connections[_id].ageOutID);
+    clearTimeout(this.all_connections[_id].ageOutID ?? undefined);
     delete this.all_connections[_id];
   }
 
@@ -129,7 +181,7 @@ class Pool {
     }
   }
 
-  async _closeConnection(_id) {
+  async _closeConnection(_id: number) {
     if (this.state === Pool.STATE_CLOSING || this.state === Pool.STATE_CLOSED) {
       return;
     }
@@ -150,14 +202,19 @@ class Pool {
 
   async _makeConnection() {
     const driver = new Driver();
-    let connection = await driver.connect(this.config.connectionConfig);
+    let connection: Connection = await driver.connect(this.config.connectionConfig);
     const results = await connection.execute(
       "SELECT GETCONNECTIONID() FROM DUAL"
     );
     const connId = await results.getRows();
-    connection.id = connId[0]["[GETCONNECTIONID]"];
+
+    Object.defineProperty(connection, 'id', {
+      value: (connId[0] as any)["[GETCONNECTIONID]"]
+    })
     const thisPool = this;
+
     connection._defaultClose = connection.close;
+
     connection.close = async () => {
       await thisPool.releaseConnection(connection);
     };
@@ -165,7 +222,12 @@ class Pool {
     while (this.all_connections[_id] != undefined) {
       _id++;
     }
-    connection._id = _id;
+    // Object.defineProperty(connection, "_id",  {
+    //   value: _id
+    // })
+
+    connection._id = _id
+
     this.all_connections[_id] = {
       connection: connection,
       ageStatus: false,
@@ -176,20 +238,20 @@ class Pool {
     this.all_connections[_id].ageOutID = setTimeout(
       () => this._closeConnection(_id),
       this.config.maxAge,
-      _id
+      // _id
     );
     return connection;
   }
 
-  async _createConnection() {
-    let error;
-    let connectionMade;
+  async _createConnection(): Promise<Connection> {
+    let error: unknown;
+    let connectionMade: Connection|undefined;
     let tries = 0;
     const maxTries = this.config.connectionRetryLimit;
     while (tries < maxTries && connectionMade === undefined) {
       try {
-        connectionMade = await this._makeConnection();
-      } catch (err) {
+        connectionMade = await this._makeConnection() as Connection;
+      } catch (err: unknown) {
         tries++;
         error = err;
       }
@@ -197,7 +259,7 @@ class Pool {
     if (tries >= maxTries) {
       throw error;
     }
-    return connectionMade;
+    return connectionMade as Connection;
   }
 
   async requestConnection() {
@@ -220,7 +282,7 @@ class Pool {
     // if a connection is available, use free connection
     if (this.free_connections.length > 0) {
       const connectionToUse = this.free_connections.shift();
-      this.all_connections[connectionToUse._id].inUse = true;
+      this.all_connections[connectionToUse!._id].inUse = true;
       return connectionToUse;
     }
     // if no available connections, make one
@@ -231,7 +293,7 @@ class Pool {
     }
   }
 
-  async releaseConnection(connection) {
+  async releaseConnection(connection: Connection) {
     if (this.state !== Pool.STATE_RUNNING) {
       throw new Error(
         `cannot release connections to a pool that is not running, current state: ${this.state}`
@@ -247,7 +309,7 @@ class Pool {
     }
     // if aged out connection is returned to the pool, close it
     if (this.all_connections[connection._id].ageStatus === true) {
-      clearTimeout(this.all_connections[connection._id].ageOutID);
+      clearTimeout(this.all_connections[connection._id].ageOutID ?? undefined);
       delete this.all_connections[connection._id];
       try {
         await connection._defaultClose();
@@ -260,7 +322,8 @@ class Pool {
       }
       return;
     }
-    // if returned connection will bring us over our desired # of connections, close it REMOVED
+    // Determine if the connection has any problem to avoid keeping and returning a bad
+    // connection to the pool
     const connectionAlive = await this._checkConnection(connection); //returns boolean
     if (connectionAlive) {
       this.all_connections[connection._id].inUse = false;
@@ -275,8 +338,8 @@ class Pool {
     await Promise.all(
       Object.keys(this.all_connections).map(async (key) => {
         try {
-          await this.all_connections[key].connection._defaultClose();
-          clearTimeout(this.all_connections[key].ageOutID);
+          await this.all_connections[key].connection?._defaultClose();
+          clearTimeout(this.all_connections[key].ageOutID ?? undefined);
         } catch (e) {
           // continue regardless of error
         }
@@ -284,9 +347,10 @@ class Pool {
     );
     this.all_connections = {};
     this.free_connections = [];
-    clearInterval(this.livelinessInterval);
+    if (this.config.checkTime != 0) {
+      clearInterval(this.livelinessInterval!);
+    }
     this.state = Pool.STATE_CLOSED;
   }
 }
 
-module.exports = Pool;

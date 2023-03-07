@@ -5,12 +5,12 @@
 
 'use strict';
 
-var { Driver } = require('..');
+import { Driver } from '../dist/index.js';
 
-var should = require('should');
-var config = require('./config');
-var helper = require('./typeHelper');
-var async = require('async');
+import should from 'should';
+import config from './config.js';
+import helper from './typeHelper.js';
+import async from 'async';
 
 const data = [
   'hello world',

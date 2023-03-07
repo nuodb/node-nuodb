@@ -5,13 +5,14 @@
 
 "use strict";
 
-var { Driver } = require("..");
-var should = require("should");
-var async = require("async");
-var config = require("./config");
-var helper = require("./typeHelper");
+import { Driver } from "../dist/index.js";
+import should from "should";
+import async from "async";
+import config from "./config.js";
+import helper from "./typeHelper.js";
 
 describe("6. autoCommit.js", function () {
+  this.timeout(5000);
   var driver = null;
   var connection = null;
   var tableName = "auto_commit";

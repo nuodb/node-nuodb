@@ -5,7 +5,7 @@
 
 'use strict';
 
-const { Driver } = require('..');
+const { Driver } = require('../index.js');
 const config = require('../test/config');
 
 var driver = new Driver();

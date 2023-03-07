@@ -64,7 +64,7 @@ An important point mentioned earlier, Node.js is single-threaded -- well, sort o
 
 - all interaction with JS objects, the runtime, etc MUST be made from the main event loop thread; all methods in the C++ code that are declared as a **NAN_METHOD** are methods that can be dispatched to from JS (provided they are first registered with the runtime (see **NAN_MODULE_INIT**). These methods may interact with V8.
 - worker threads can handle async work, and work is scheduled using the AsyncWorker API; doing so will place work onto a `libuv` queue. The `execute` function for `libuv` is the async (database) logic and MUST NOT call any V8 API or NAN wrapper API. The associated `after-execute` method can interact with V8 and is used to dispatch results back to the user through the provided callback (if any). The basic model is as follows:
-  - the NAN_METHOD parses any inputs, translating them into non V8 objects (pure C++ objects), and creates an AsyncWorker object, and queues the work
+  - the NAN_METHOD parses any inputs, translating them into non V8 objects (pure C++ objects), and createss an AsyncWorker object, and queues the work
   - the execute method executes against the database, and sets up return values (pure C++ objects)
   - the after-execute method is called automatically, and the results are translated into V8 objects (String, Number, Date, etc), and the given callback is called, passing the results as its second argument
   - if an error occurs during the execute call, a different `after-*` method is called, allowing you to raise a Javascript exception with some meaningful error message

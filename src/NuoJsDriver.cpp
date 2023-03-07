@@ -9,9 +9,10 @@
 #include "NuoJsErrMsg.h"
 
 #include "NuoDB.h"
-
 #include <functional>
 #include <memory>
+
+
 
 namespace NuoJs
 {
@@ -148,6 +149,7 @@ NAN_METHOD(Driver::connect)
         callback, Nan::ObjectWrap::Unwrap<Driver>(info.This()), params);
     worker->SaveToPersistent("nuodb:Driver", info.This());
     Nan::AsyncQueueWorker(worker);
+
 }
 
 struct NuoPropertiesDeleter

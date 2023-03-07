@@ -5,10 +5,9 @@
 
 'use strict';
 
-var { Driver } = require('..');
-
-var should = require('should');
-var config = require('./config.js');
+import { Driver } from '../dist/index.js';
+import should from 'should';
+import config from './config.js';
 
 describe('1. testing callback', () => {
 
@@ -20,6 +19,7 @@ describe('1. testing callback', () => {
 
   it('1.1 open and close connections using callbacks', function (done) {
     driver.connect(config, (err, conn) => {
+      console.debug('WORKING!!!')
       should.not.exist(err);
       const connection = conn;
       connection.should.be.ok();

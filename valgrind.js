@@ -5,9 +5,9 @@
 
 'use strict';
 
-const { Driver } = require('.');
-const config = require('./test/config.js');
-const http = require('http');
+import { Driver } from './index.js';
+import config from './test/config.js';
+import http from 'http';
 
 var driver = new Driver();
 const port = 3000;

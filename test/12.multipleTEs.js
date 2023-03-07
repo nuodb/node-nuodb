@@ -5,11 +5,11 @@
 
 'use strict';
 
-var { Driver } = require('..');
+import { Driver } from '../dist/index.js';
 
-var should = require('should');
-var config = require('./config');
-var async = require('async');
+import should from 'should';
+import config from './config.js';
+import async from 'async';
 
 const getNodeIdQuery = 'SELECT GETNODEID() FROM SYSTEM.DUAL';
 const getNodesQuery = 'SELECT * FROM SYSTEM.NODES';
@@ -92,9 +92,11 @@ describe('12. Test Connection to multiple TEs', () => {
           // connect to each unique TE directly
           let err = null;
           try {
-            const nodeConfig = {... config
-              , port: n.PORT
-              , direct: "true"};
+            const nodeConfig = {... 
+              config, 
+              database: `test@localhost:${n.PORT}`, 
+              direct: "true"
+            };
             const nodeConnection = await driver.connect(nodeConfig);
             nodeConnection.should.be.ok();
             const results = await nodeConnection.execute(getNodeIdQuery);

@@ -5,10 +5,10 @@
 
 'use strict';
 
-var { Driver } = require('..');
+import { Driver } from '../dist/index.js';
 
-var should = require('should');
-var config = require('./config.js');
+import should from 'should';
+import config from './config.js';
 
 const sleep = (ms) => new Promise((res) => {
   setTimeout(() => res(),ms)

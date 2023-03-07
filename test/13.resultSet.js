@@ -7,11 +7,10 @@
 
 const RESULT_SET_TEST_TIMEOUT = 50000;
 
-var { Driver } = require('..');
-
-var should = require('should');
-var config = require('./config');
-var helper = require('./typeHelper');
+import { Driver } from '../dist/index.js';
+import should from 'should';
+import config from './config.js';
+import helper from './typeHelper.js';
 
 // constants for 13.1
 const tableNameChunk = 'TEST_RESULTSET';
@@ -82,7 +81,7 @@ describe('13. Test Result Set', () => {
       for(let i = 0; i < numRowsChunk; i+=getChunkSize){
         const rows = await results.getRows(getChunkSize);
         (rows.length).should.be.eql(getChunkSize);
-	(rows[getChunkSize-1]['F1']).should.be.eql(i+(getChunkSize-1));
+        (rows[getChunkSize-1]['F1']).should.be.eql(i+(getChunkSize-1));
       }
       // try to get one more row than exists to test edge case
       const nullRow = await results.getRows(1);
@@ -125,8 +124,7 @@ describe('13. Test Result Set', () => {
 
   });
 
-    it('13.4 Can swap between get rows styles', async () => {
-    let err = null;
+  it('13.4 Can swap between get rows styles', async () => {    let err = null;
     try {
       let results = await connection.execute(selectFromJoinableTables('a','b'));
       // match resultset.js definition

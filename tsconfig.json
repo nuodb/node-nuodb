@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "outDir": "dist/",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "module": "ES6",
+    "target": "ES6",
+    "lib": ["ES6"],
+    "esModuleInterop": true,
+    // "allowJs": true,
+    "rootDir": ".",
+    "declaration": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+  },
+  "include": ["./lib/**/*", "**/*.ts", "./*.ts", "index.ts"],
+  "exclude": ["./node_modules", "./build", "./dist", "./tstest"]
+}

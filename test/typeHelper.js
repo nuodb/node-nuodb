@@ -5,10 +5,11 @@
 
 'use strict';
 
-var async = require('async');
-var should = require('should');
+import async from 'async';
+import should from 'should';
 
-var helper = exports;
+
+const helper = {};
 
 helper.sqlCreateTable = function (tableName, dataType) {
   var createTable = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' \
@@ -106,8 +107,10 @@ helper.insertRandomRows = function (connection, tableName, generator, done) {
 };
 
 helper.yieldRandomRows = function* (count, length) {
-  var crypto = require("crypto");
+  const crypto = import("crypto");
   for (var i = 0; i < count; i++) {
     yield [i, crypto.randomBytes(length).toString('hex')];
   }
 }
+
+export default helper;
