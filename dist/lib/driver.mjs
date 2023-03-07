@@ -21,7 +21,7 @@ class Driver {
             config = this.merge(config);
             const extension = (err, connection) => {
                 if (!!err) {
-                    callback(err);
+                    callback(err, connection);
                     return;
                 }
                 if (!!connection) { // neither undefined nor null

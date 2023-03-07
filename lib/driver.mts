@@ -27,7 +27,7 @@ export interface Configuration {
 }
 
 type ConnectionCallback = (err: unknown, connection: Connection) => void;
-type Connect = (config: Configuration, callback?: ConnectionCallback) => Promise<Connection>;
+type Connect = (config: Configuration, callback?: ConnectionCallback) => Promise<Pick<Connection, 'execute'|'close'|'commit'|'rollback'>>;  // only exposing execute, close, commit, and rollback methods
 
 
 class Driver {
@@ -46,13 +46,13 @@ class Driver {
   constructor () {
     this._driver = new addon.Driver();
 
-    this._connect = function (config: Configuration, callback?: (Function)): Promise<Connection> {
+    this._connect = function (config: Configuration, callback?: ConnectionCallback): Promise<Connection> {
       
       config = this.merge(config);
       
       const extension = (err: unknown, connection: Connection) => {
         if (!!err) {
-          callback!(err);
+          callback!(err, connection);
           return;
         }
         if (!!connection) { // neither undefined nor null

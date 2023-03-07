@@ -15,6 +15,7 @@ import type Conn from './lib/connection.mjs';
 import type Res from './lib/resultset.mjs';
 import type { Rows } from './lib/resultset.mjs';
 
+// Adjusted Connection and ResultSet to only expose the necessary methods publicly
 
 interface Connection {
     execute: Conn["execute"],

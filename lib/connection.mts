@@ -23,9 +23,9 @@ interface Options {
   fetchSize?: number,
   isolationLevel?: number
 };
-type ResultsCallback = (err: Error, results: ResultSet) => void;
+type ResultsCallback = (err: unknown, results: ResultSet) => void;
 
-type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<ResultSet>;
+type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<Pick<ResultSet, 'close'|'getRows'>>;  // only exposing close and getRows methods
 
 interface Connection {
   _id: number,
@@ -35,13 +35,13 @@ interface Connection {
   close: (callback?: CloseCallback) => void,
   _close: Connection["close"],
   _defaultClose: Connection["close"]; // set for pool connection
-  closePromisified: (close: (callback?: Function) => void) => Promise<unknown>,
-  commit: (callback: Function) => void,
+  closePromisified: (close: (callback?: ResultsCallback) => void) => Promise<unknown>,
+  commit: (callback: ResultsCallback) => void,
   _commit: Connection["commit"],
-  commitPromisified: (commit: (callback: Function) => Function) => Promise<unknown>,
-  rollback: (callback: Function) => void,
+  commitPromisified: (commit: (callback: ResultsCallback) => Function) => Promise<unknown>,
+  rollback: (callback: ResultsCallback) => void,
   _rollback: Connection["rollback"],
-  rollbackPromisified: (rollback: (callback: Function) => void) => Promise<unknown>,
+  rollbackPromisified: (rollback: (callback: ResultsCallback) => void) => Promise<unknown>,
   extend: (connection: Connection, driver: Driver) => void,
   _driver: Driver,
   hasFailed: () => boolean  // added in C++ addon binding
@@ -67,7 +67,7 @@ function execute(...args: Array<string|Data|Options|ResultsCallback|undefined>) 
   assert(typeof args[cbIdx] === 'function');
   const callback = args[cbIdx] as Function;
 
-  const extension = function (err: Error, resultSet: ResultSet) {
+  const extension = function (err: unknown, resultSet: ResultSet) {
     if (!!err) {
       callback(err);
       return;
@@ -97,13 +97,13 @@ const Connection: Connection = {
   },
 
   commit(callback: Function) {
-    this._commit(function (err: Error) {
+    this._commit(function (err: unknown) {
       callback(err);
     });
   },
 
   rollback(callback: Function) {
-    this._rollback(function (err: Error) {
+    this._rollback(function (err: unknown) {
       callback(err);
     });
   }

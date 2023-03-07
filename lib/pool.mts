@@ -202,7 +202,7 @@ export default class Pool {
 
   async _makeConnection() {
     const driver = new Driver();
-    let connection: Connection = await driver.connect(this.config.connectionConfig);
+    let connection = await driver.connect(this.config.connectionConfig) as Connection;
     const results = await connection.execute(
       "SELECT GETCONNECTIONID() FROM DUAL"
     );

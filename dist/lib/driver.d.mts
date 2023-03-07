@@ -10,7 +10,7 @@ export interface Configuration {
     allowSRPFallback?: 'false' | 'true';
 }
 type ConnectionCallback = (err: unknown, connection: Connection) => void;
-type Connect = (config: Configuration, callback?: ConnectionCallback) => Promise<Connection>;
+type Connect = (config: Configuration, callback?: ConnectionCallback) => Promise<Pick<Connection, 'execute' | 'close' | 'commit' | 'rollback'>>;
 declare class Driver {
     private defaults;
     private _connect;

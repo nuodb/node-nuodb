@@ -9,8 +9,8 @@ interface Options {
     fetchSize?: number;
     isolationLevel?: number;
 }
-type ResultsCallback = (err: Error, results: ResultSet) => void;
-type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<ResultSet>;
+type ResultsCallback = (err: unknown, results: ResultSet) => void;
+type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<Pick<ResultSet, 'close' | 'getRows'>>;
 interface Connection {
     _id: number;
     execute: typeof execute;
@@ -19,13 +19,13 @@ interface Connection {
     close: (callback?: CloseCallback) => void;
     _close: Connection["close"];
     _defaultClose: Connection["close"];
-    closePromisified: (close: (callback?: Function) => void) => Promise<unknown>;
-    commit: (callback: Function) => void;
+    closePromisified: (close: (callback?: ResultsCallback) => void) => Promise<unknown>;
+    commit: (callback: ResultsCallback) => void;
     _commit: Connection["commit"];
-    commitPromisified: (commit: (callback: Function) => Function) => Promise<unknown>;
-    rollback: (callback: Function) => void;
+    commitPromisified: (commit: (callback: ResultsCallback) => Function) => Promise<unknown>;
+    rollback: (callback: ResultsCallback) => void;
     _rollback: Connection["rollback"];
-    rollbackPromisified: (rollback: (callback: Function) => void) => Promise<unknown>;
+    rollbackPromisified: (rollback: (callback: ResultsCallback) => void) => Promise<unknown>;
     extend: (connection: Connection, driver: Driver) => void;
     _driver: Driver;
     hasFailed: () => boolean;
