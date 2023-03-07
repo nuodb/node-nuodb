@@ -54,7 +54,6 @@ function testConnection() {
             // const results = await connection.execute('SELECT * FROM SYSTEM.NODES;');
             //@ts-ignore
             const results = await connection.execute('SELECT * FROM SYSTEM.NODES;');
-
             console.debug('EXPECTING RESULT =>', results);
             //@ts-ignore
             const rows = await results.getRows();

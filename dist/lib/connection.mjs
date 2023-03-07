@@ -99,6 +99,6 @@ Connection.extend = (connection, driver) => {
         }
     });
 };
-export const { extend } = Connection;
+// export const { extend }: Connection = Connection;
 export default Connection;
 //# sourceMappingURL=connection.mjs.map

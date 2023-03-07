@@ -1,6 +1,6 @@
 import Connection from './connection.mjs';
 import Driver from './driver.mjs';
-type CloseCallback = (err: unknown) => void;
+export type CloseCallback = (err: unknown) => void;
 interface ResultSet {
     close: (callback?: CloseCallback) => Promise<void>;
     _close: ResultSet["close"];
@@ -18,5 +18,4 @@ type RowsCallback = (err: unknown, rows?: Rows) => void;
 declare function getRows(callback?: RowsCallback): Promise<Rows>;
 declare function getRows(size: number, callback?: RowsCallback): Promise<Rows>;
 declare const ResultSet: ResultSet;
-export declare const extend: (resultset: ResultSet, connection: Connection, driver: Driver) => void;
 export default ResultSet;

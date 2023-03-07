@@ -6,7 +6,7 @@
 'use strict';
 
 
-import ResultSet from './resultset.mjs';
+import ResultSet, { CloseCallback } from './resultset.mjs';
 import assert from 'assert';
 import util from 'util';
 
@@ -32,7 +32,7 @@ interface Connection {
   execute: typeof execute,
   _execute: Execute,
   executePromisified: Execute,
-  close: (callback?: Function) => void,
+  close: (callback?: CloseCallback) => void,
   _close: Connection["close"],
   _defaultClose: Connection["close"]; // set for pool connection
   closePromisified: (close: (callback?: Function) => void) => Promise<unknown>,
@@ -45,7 +45,6 @@ interface Connection {
   extend: (connection: Connection, driver: Driver) => void,
   _driver: Driver,
   hasFailed: () => boolean  // added in C++ addon binding
-
 }
 
 function execute(sql: string, callback?: ResultsCallback): Promise<ResultSet>;
@@ -92,7 +91,7 @@ const Connection: Connection = {
   _id: 0,
   execute: execute,
   close(callback?: Function) {
-    this._close(function (err: Error) {
+    this._close(function (err: unknown) {
       !!callback && callback(err);
     });
   },
@@ -161,5 +160,5 @@ Connection.extend = (connection: Connection, driver: Driver) => {
 }
 
 
-export const { extend }: Connection = Connection;
+// export const { extend }: Connection = Connection;
 export default Connection;

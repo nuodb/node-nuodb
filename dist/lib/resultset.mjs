@@ -126,6 +126,6 @@ ResultSet.extend = (resultset, connection, driver) => {
         }
     });
 };
-export const { extend } = ResultSet;
+// export const { extend } = ResultSet;
 export default ResultSet;
 //# sourceMappingURL=resultset.mjs.map

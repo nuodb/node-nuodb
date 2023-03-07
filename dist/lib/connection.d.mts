@@ -1,4 +1,4 @@
-import ResultSet from './resultset.mjs';
+import ResultSet, { CloseCallback } from './resultset.mjs';
 import type Driver from './driver.mjs';
 type Data = Array<string | number | null>;
 interface Options {
@@ -16,7 +16,7 @@ interface Connection {
     execute: typeof execute;
     _execute: Execute;
     executePromisified: Execute;
-    close: (callback?: Function) => void;
+    close: (callback?: CloseCallback) => void;
     _close: Connection["close"];
     _defaultClose: Connection["close"];
     closePromisified: (close: (callback?: Function) => void) => Promise<unknown>;
@@ -35,5 +35,4 @@ declare function execute(sql: string, data: Data, callback?: ResultsCallback): P
 declare function execute(sql: string, options: Options, callback?: ResultsCallback): Promise<ResultSet>;
 declare function execute(sql: string, data: Data, options: Options, callback: ResultsCallback): Promise<ResultSet>;
 declare const Connection: Connection;
-export declare const extend: (connection: Connection, driver: Driver) => void;
 export default Connection;

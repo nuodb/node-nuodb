@@ -16,7 +16,7 @@ import Driver from './driver.mjs';
 import loopDefer from './loopDefer.mjs';
 
 
-type CloseCallback = (err: unknown) => void;
+export type CloseCallback = (err: unknown) => void;
 
 interface ResultSet {
   close: (callback?: CloseCallback) => Promise<void>,
@@ -163,5 +163,5 @@ ResultSet.extend = (resultset: ResultSet, connection: Connection, driver: Driver
   );
 }
 
-export const { extend } = ResultSet;
+// export const { extend } = ResultSet;
 export default ResultSet;
