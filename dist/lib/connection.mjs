@@ -40,7 +40,7 @@ const Connection = {
     _id: 0,
     execute: execute,
     close(callback) {
-        this._close(function (err) {
+        return this._close(function (err) {
             !!callback && callback(err);
         });
     },
@@ -99,6 +99,5 @@ Connection.extend = (connection, driver) => {
         }
     });
 };
-// export const { extend }: Connection = Connection;
 export default Connection;
 //# sourceMappingURL=connection.mjs.map

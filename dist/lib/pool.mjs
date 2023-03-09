@@ -13,9 +13,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import Driver from "./driver.mjs";
 const REQUIRED_INITIAL_ARGUMENTS = ["connectionConfig"];
+;
+;
 export default class Pool {
     constructor(args) {
         var _a, _b, _c, _d;
+        this.livelinessInterval = undefined; //!
         REQUIRED_INITIAL_ARGUMENTS.forEach((arg) => {
             if (!(arg in args)) {
                 throw new Error(`cannot find required argument ${arg} in constructor arguments`);
@@ -31,7 +34,8 @@ export default class Pool {
             skipCheckLivelinessOnRelease: (_c = args.skipCheckLivelinessOnRelease) !== null && _c !== void 0 ? _c : false,
             livelinessCheck: (_d = args.livelinessCheck) !== null && _d !== void 0 ? _d : 'query'
         };
-        //? this.poolId = args.id || new Date().getTime();
+        // below not to be in use
+        // this.poolId = args.id || new Date().getTime();
         this.all_connections = {};
         this.free_connections = [];
         this.state = Pool.STATE_INITIALIZING;
@@ -40,8 +44,6 @@ export default class Pool {
         if (this.config.checkTime != 0) {
             this.livelinessInterval = setInterval(() => this._livelinessCheck(), this.config.checkTime);
         }
-        else
-            this.livelinessInterval = null;
     }
     // populate the pool and prepare for use
     init() {
@@ -70,11 +72,12 @@ export default class Pool {
     // if any of the desired checks show a problem return false,
     // indicating the connection is a problem, otherwise return true
     _checkConnection(connection) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             let retvalue = true;
             if (this.config.skipCheckLivelinessOnRelease === false) {
                 if (connection.hasFailed() === false) {
-                    if (this.config.livelinessCheck.toLowerCase() === 'query') {
+                    if (((_a = this.config.livelinessCheck) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'query') {
                         try {
                             const result = yield connection.execute("SELECT 1 AS VALUE FROM DUAL");
                             yield result.close();
@@ -174,7 +177,7 @@ export default class Pool {
             const results = yield connection.execute("SELECT GETCONNECTIONID() FROM DUAL");
             const connId = yield results.getRows();
             Object.defineProperty(connection, 'id', {
-                value: (connId[0])["[GETCONNECTIONID]"]
+                value: connId[0]["[GETCONNECTIONID]"]
             });
             const thisPool = this;
             connection._defaultClose = connection.close;
@@ -195,7 +198,9 @@ export default class Pool {
                 ageOutID: null,
                 inUse: false,
             };
-            this.all_connections[_id].ageOutID = setTimeout(() => this._closeConnection(_id), this.config.maxAge);
+            this.all_connections[_id].ageOutID = setTimeout(() => this._closeConnection(_id), this.config.maxAge, 
+            //@ts-ignore`//!!!
+            _id);
             return connection;
         });
     }
@@ -220,6 +225,7 @@ export default class Pool {
             return connectionMade;
         });
     }
+    // async requestConnection(): Promise<Pick<Connection, "close"|"commit"|"execute"|"rollback">|undefined>;  // overload added to represent the publicly accessible Connection that only exposes these methods
     requestConnection() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.state === Pool.STATE_INITIALIZING) {

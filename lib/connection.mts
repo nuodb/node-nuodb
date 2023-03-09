@@ -25,14 +25,14 @@ interface Options {
 };
 type ResultsCallback = (err: unknown, results: ResultSet) => void;
 
-type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<Pick<ResultSet, 'close'|'getRows'>>;  // only exposing close and getRows methods
+type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<Pick<ResultSet, 'close'|'getRows'>|undefined>;  // only exposing close and getRows methods
 
 interface Connection {
   _id: number,
   execute: typeof execute,
   _execute: Execute,
   executePromisified: Execute,
-  close: (callback?: CloseCallback) => void,
+  close: (callback?: CloseCallback) => Promise<void>,
   _close: Connection["close"],
   _defaultClose: Connection["close"]; // set for pool connection
   closePromisified: (close: (callback?: ResultsCallback) => void) => Promise<unknown>,
@@ -47,10 +47,14 @@ interface Connection {
   hasFailed: () => boolean  // added in C++ addon binding
 }
 
-function execute(sql: string, callback?: ResultsCallback): Promise<ResultSet>;
-function execute(sql: string, data: Data, callback?: ResultsCallback): Promise<ResultSet>;
-function execute(sql: string, options: Options, callback?: ResultsCallback): Promise<ResultSet>;
-function execute(sql: string, data: Data, options: Options, callback: ResultsCallback): Promise<ResultSet>;
+// interface Connection {
+
+// }
+
+function execute(sql: string, callback?: ResultsCallback): Promise<ResultSet|undefined>;
+function execute(sql: string, data: Data, callback?: ResultsCallback): Promise<ResultSet|undefined>;
+function execute(sql: string, options: Options, callback?: ResultsCallback): Promise<ResultSet|undefined>;
+function execute(sql: string, data: Data, options: Options, callback: ResultsCallback): Promise<ResultSet|undefined>;
 function execute(...args: Array<string|Data|Options|ResultsCallback|undefined>) {
   //@ts-ignore as "this" will bind to the Connection object
   const conn = this;
@@ -91,7 +95,7 @@ const Connection: Connection = {
   _id: 0,
   execute: execute,
   close(callback?: Function) {
-    this._close(function (err: unknown) {
+    return this._close(function (err: unknown) {
       !!callback && callback(err);
     });
   },
@@ -160,5 +164,4 @@ Connection.extend = (connection: Connection, driver: Driver) => {
 }
 
 
-// export const { extend }: Connection = Connection;
 export default Connection;

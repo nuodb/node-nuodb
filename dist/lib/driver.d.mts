@@ -2,10 +2,10 @@ import Connection from './connection.mjs';
 export interface Configuration {
     hostname?: string;
     port?: string;
-    database?: string;
+    database: string;
     schema?: string;
-    user?: string;
-    password?: string;
+    user: string;
+    password: string;
     verifyHostname?: 'false' | 'true';
     allowSRPFallback?: 'false' | 'true';
 }

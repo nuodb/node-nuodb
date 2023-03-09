@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import Connection from "./connection.mjs";
 import { Configuration } from "./driver.mjs";
 export interface PoolConfiguration {
@@ -7,9 +8,18 @@ export interface PoolConfiguration {
     checkTime: number;
     maxLimit: number;
     connectionRetryLimit: number;
-    skipCheckLivelinessOnRelease: boolean;
-    livelinessCheck: 'query' | string;
+    skipCheckLivelinessOnRelease?: boolean;
+    livelinessCheck?: 'query' | string;
 }
+interface AllConnections {
+    [connection: string]: {
+        connection?: Connection;
+        inUse: boolean;
+        ageOutID: null | NodeJS.Timeout;
+        ageStatus: boolean;
+    };
+}
+type FreeConnections = Connection[];
 export default class Pool {
     static STATE_INITIALIZING: string;
     static STATE_RUNNING: string;
@@ -17,12 +27,12 @@ export default class Pool {
     static STATE_CLOSED: string;
     static LIVELINESS_RUNNING: string;
     static LIVELINESS_NOT_RUNNING: string;
-    private config;
-    private all_connections;
-    private free_connections;
-    private state;
-    private livelinessStatus;
-    private livelinessInterval;
+    config: PoolConfiguration;
+    all_connections: AllConnections;
+    free_connections: FreeConnections;
+    state: string;
+    livelinessStatus: string;
+    livelinessInterval: undefined | NodeJS.Timer;
     constructor(args: PoolConfiguration);
     init(): Promise<void>;
     _connectionBelongs(connection: Connection): boolean;
@@ -35,6 +45,7 @@ export default class Pool {
     _makeConnection(): Promise<Connection>;
     _createConnection(): Promise<Connection>;
     requestConnection(): Promise<Connection | undefined>;
-    releaseConnection(connection: Connection): Promise<void>;
+    releaseConnection(connection: Partial<Connection>): Promise<void>;
     closePool(): Promise<void>;
 }
+export {};

@@ -18,10 +18,10 @@ SegfaultHandler.registerHandler("crash.log"); // With no argument, SegfaultHandl
 export interface Configuration {
   hostname?: string,
   port?: string,
-  database?: string,
+  database: string,
   schema?: string,
-  user?: string,
-  password?: string,
+  user: string,
+  password: string,
   verifyHostname?: 'false'|'true',
   allowSRPFallback?: 'false'|'true'  
 }
@@ -35,7 +35,10 @@ class Driver {
   private defaults: Configuration = {
     hostname: 'localhost',
     port: '48004',
-    schema: 'USER'
+    schema: 'USER',
+    user: 'dba',
+    database: 'test@localhost',
+    password: 'dba'
   }
 
   private _connect: Connect; 
@@ -77,9 +80,13 @@ class Driver {
 
   private merge(config: Configuration): Configuration {
     const _driver = this;
-    config ||= {};
+    config ||= {
+      database: '',
+      user: '',
+      password: ''
+    };
 
-    function resolve(config: Configuration, key: keyof Configuration, override?: string) {
+    function resolve(config: Configuration, key: keyof Configuration, override?: string): string {
       let value: string|undefined;
       if (override === undefined) {
         value = process.env['NUODB_' + key.toUpperCase()];
@@ -87,7 +94,7 @@ class Driver {
       else {
         value = process.env[override];
       }
-      return config[key] || value || _driver.defaults[key];
+      return config[key] || value || _driver.defaults[key]!;
     }
 
     config.hostname = resolve(config, 'hostname');

@@ -14,6 +14,6 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
   },
-  "include": ["./lib/**/*", "**/*.ts", "./*.ts", "index.ts"],
-  "exclude": ["./node_modules", "./build", "./dist", "./tstest"]
+  "include": ["./lib/**/*", "**/*.ts", "./*.ts", "index.ts", "test/15.stress.js"],
+  "exclude": ["node_modules", "build", "dist", "tstest"]
 }

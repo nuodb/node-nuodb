@@ -16,9 +16,9 @@ export interface PoolConfiguration {
   checkTime: number,
   maxLimit: number,
   connectionRetryLimit: number,
-  skipCheckLivelinessOnRelease: boolean,
-  livelinessCheck: 'query'|string
-}
+  skipCheckLivelinessOnRelease?: boolean,
+  livelinessCheck?: 'query'|string
+};
 
 interface AllConnections {
   [connection: string]: {
@@ -27,9 +27,9 @@ interface AllConnections {
     ageOutID: null|NodeJS.Timeout,//undefined|null|number,
     ageStatus: boolean
   }
-}
+};
 
-type FreeConnections = Connection[]
+type FreeConnections = Connection[];
 
 export default class Pool {
   static STATE_INITIALIZING = "initializing";
@@ -39,12 +39,12 @@ export default class Pool {
   static LIVELINESS_RUNNING = "liveliness running";
   static LIVELINESS_NOT_RUNNING = "liveliness not running";
   
-  private config: PoolConfiguration;
-  private all_connections: AllConnections;
-  private free_connections: FreeConnections;
-  private state: string;
-  private livelinessStatus: string;
-  private livelinessInterval: null|NodeJS.Timer;
+  public config: PoolConfiguration;
+  public all_connections: AllConnections;
+  public free_connections: FreeConnections;
+  public state: string;
+  public livelinessStatus: string;
+  public livelinessInterval: undefined|NodeJS.Timer = undefined; //!
 
 
 
@@ -66,7 +66,8 @@ export default class Pool {
       skipCheckLivelinessOnRelease : args.skipCheckLivelinessOnRelease ?? false,
       livelinessCheck: args.livelinessCheck ?? 'query'
     };
-    //? this.poolId = args.id || new Date().getTime();
+    // below not to be in use
+    // this.poolId = args.id || new Date().getTime();
 
     this.all_connections = {};
 
@@ -82,7 +83,7 @@ export default class Pool {
         () => this._livelinessCheck(),
         this.config.checkTime
       );
-    } else this.livelinessInterval = null;
+    }
   }
   // populate the pool and prepare for use
   async init() {
@@ -112,10 +113,10 @@ export default class Pool {
     let retvalue = true;
     if (this.config.skipCheckLivelinessOnRelease === false) {
       if (connection.hasFailed() === false) {
-        if (this.config.livelinessCheck.toLowerCase() === 'query') {
+        if (this.config.livelinessCheck?.toLowerCase() === 'query') {
           try {
             const result = await connection.execute("SELECT 1 AS VALUE FROM DUAL");
-            await result.close();
+            await result!.close();
           } catch (e) {
             retvalue = false;
           }
@@ -206,15 +207,13 @@ export default class Pool {
     const results = await connection.execute(
       "SELECT GETCONNECTIONID() FROM DUAL"
     );
-    const connId = await results.getRows();
+    const connId = await results!.getRows();
 
     Object.defineProperty(connection, 'id', {
-      value: (connId[0])["[GETCONNECTIONID]"]
+      value: connId[0]["[GETCONNECTIONID]"]
     })
     const thisPool = this;
-
     connection._defaultClose = connection.close;
-
     connection.close = async () => {
       await thisPool.releaseConnection(connection);
     };
@@ -238,7 +237,8 @@ export default class Pool {
     this.all_connections[_id].ageOutID = setTimeout(
       () => this._closeConnection(_id),
       this.config.maxAge,
-      // _id
+      //@ts-ignore`//!!!
+      _id
     );
     return connection;
   }
@@ -262,7 +262,8 @@ export default class Pool {
     return connectionMade as Connection;
   }
 
-  async requestConnection() {
+  // async requestConnection(): Promise<Pick<Connection, "close"|"commit"|"execute"|"rollback">|undefined>;  // overload added to represent the publicly accessible Connection that only exposes these methods
+  async requestConnection(): Promise<Connection|undefined> {
     if (this.state === Pool.STATE_INITIALIZING) {
       throw new Error(
         "must initialize the pool before requesting a connection"
@@ -293,7 +294,8 @@ export default class Pool {
     }
   }
 
-  async releaseConnection(connection: Connection) {
+  async releaseConnection(connection: Partial<Connection>): Promise<void>;  // As the connection publicly exposed is only partially available, this prevent any problems with such connection in TypeScript
+  async releaseConnection(connection: Connection): Promise<void> {
     if (this.state !== Pool.STATE_RUNNING) {
       throw new Error(
         `cannot release connections to a pool that is not running, current state: ${this.state}`

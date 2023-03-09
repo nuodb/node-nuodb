@@ -8,7 +8,6 @@
 import { Driver } from '../dist/index.js';
 import should from 'should';
 import config from './config.js';
-
 describe('1. testing callback', () => {
 
   var driver = null;

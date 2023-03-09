@@ -1,9 +1,8 @@
 import type { Configuration } from '../dist/lib/driver.mjs';
 //@ts-ignore
 // import { Driver } from '../../../../marcoStayOutPlease/node-nuodb/index.js';
-import { Driver } from '../dist/index.js';
-import Connection from '../dist/lib/connection.mjs';
-import ResultSet from '../dist/lib/resultset.mjs';
+import { Driver, Connection, ResultSet } from '../dist/index.js';
+import { Rows } from '../dist/lib/resultset.mjs';
 
 
 // const config: Configuration = {
@@ -13,12 +12,46 @@ import ResultSet from '../dist/lib/resultset.mjs';
 //     // schema: 'SYSTEM',
 // };
 
-const config: Configuration = {
+const config = {
     database: `test@nuosup02`,
     password: 'dba',
     user: 'dba',
 };
 
+// import { Driver } from 'node-nuodb';
+// import type { Connection, ResultSet, Rows } from 'node-nuodb';
+
+(() => {
+    const driver = new Driver();
+    (async () => {
+        const conn: Connection = await driver.connect({
+            database: 'test',
+            user: 'dba',
+            password: 'dba'
+        });
+        const results: ResultSet|undefined = await conn.execute('SELECT * FROM SYSTEM.NODES;');
+        const rows: Rows|undefined = await results?.getRows();
+        console.log('This is the result of the query =>', rows);
+    })()
+})()
+
+function otherTest() {
+    (async () => {
+        const driver = new Driver();
+        const nuodb = await driver.connect({
+            database: 'test',
+            user: 'dba',
+            password: 'dba'
+        });
+        const results = await nuodb.execute(`use system;`);
+        if (!!results) {
+            const rows = await results.getRows();
+            console.debug('ROWS =>', rows);
+            await nuodb.close();
+        }
+    })()
+}
+// otherTest();
 
 function testConnection() {
     async function test() {
@@ -45,24 +78,19 @@ function testConnection() {
             })
         })
 
-        // driver = 
         const connection = await driver.connect(config);
         console.debug('initializing connection');
 
         try {
             console.debug('checking exe =>', typeof connection.execute)
-            // const results = await connection.execute('SELECT * FROM SYSTEM.NODES;');
-            //@ts-ignore
             const results = await connection.execute('SELECT * FROM SYSTEM.NODES;');
             console.debug('EXPECTING RESULT =>', results);
-            //@ts-ignore
-            const rows = await results.getRows();
+            const rows = await results?.getRows();
             console.debug(rows)
             // result.getRows((err: any, rows: any) => {
             //     console.debug(rows);
 
             // });
-            //@ts-ignore
             await connection.close();
 
             // });
@@ -81,4 +109,4 @@ function testConnection() {
     test();
 }
 
-testConnection();
+// testConnection();

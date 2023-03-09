@@ -10,13 +10,13 @@ interface Options {
     isolationLevel?: number;
 }
 type ResultsCallback = (err: unknown, results: ResultSet) => void;
-type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<Pick<ResultSet, 'close' | 'getRows'>>;
+type Execute = (sql: string, data?: Data, options?: Options, callback?: ResultsCallback) => Promise<Pick<ResultSet, 'close' | 'getRows'> | undefined>;
 interface Connection {
     _id: number;
     execute: typeof execute;
     _execute: Execute;
     executePromisified: Execute;
-    close: (callback?: CloseCallback) => void;
+    close: (callback?: CloseCallback) => Promise<void>;
     _close: Connection["close"];
     _defaultClose: Connection["close"];
     closePromisified: (close: (callback?: ResultsCallback) => void) => Promise<unknown>;
@@ -30,9 +30,9 @@ interface Connection {
     _driver: Driver;
     hasFailed: () => boolean;
 }
-declare function execute(sql: string, callback?: ResultsCallback): Promise<ResultSet>;
-declare function execute(sql: string, data: Data, callback?: ResultsCallback): Promise<ResultSet>;
-declare function execute(sql: string, options: Options, callback?: ResultsCallback): Promise<ResultSet>;
-declare function execute(sql: string, data: Data, options: Options, callback: ResultsCallback): Promise<ResultSet>;
+declare function execute(sql: string, callback?: ResultsCallback): Promise<ResultSet | undefined>;
+declare function execute(sql: string, data: Data, callback?: ResultsCallback): Promise<ResultSet | undefined>;
+declare function execute(sql: string, options: Options, callback?: ResultsCallback): Promise<ResultSet | undefined>;
+declare function execute(sql: string, data: Data, options: Options, callback: ResultsCallback): Promise<ResultSet | undefined>;
 declare const Connection: Connection;
 export default Connection;

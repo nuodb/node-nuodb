@@ -6,10 +6,10 @@
 'use strict';
 
 
-import { Pool } from '../dist/index.js';
-import async from 'async';
-import should from 'should';
-import config from './config.js';
+const { Pool } = require('..');
+var async = require('async');
+const should = require('should');
+const config = require('../test/config');
 
 const poolArgs = {
   minAvailable: 10,
@@ -37,6 +37,7 @@ const mean = (numbers) => numbers.reduce((acc,val)=>(acc+val/numbers.length),0);
 const median = (numbers) => {
   const sorted = Array.from(numbers).sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
+
   if (sorted.length % 2 === 0) {
     return (sorted[middle - 1] + sorted[middle]) / 2;
   }
@@ -90,21 +91,21 @@ const randomInsertQueries = () => {
   const tableIndex = rand(createTmpTables.length,1);
   let q = null;
   switch(tableIndex) {
-    case 1: // int type
-      q = `insert into T1 (F1) values (${rand(1000,-1000)})`
-      break;
-    case 2: // string type
-      q = `insert into T2 (F1) values ('${randString(10,2)}')`
-      break;
-    case 3: // bool 
-      q = `insert into T2 (F1) values (${rand(1,0)})`
-      break;
-    case 4: // double
-      q = `insert into T2 (F1) values (${rand(100,0)}.${rand(100,0)})`
-      break;
-    default:
-      console.error('Should not get default for random insert query.');
-      break;
+  case 1: // int type
+    q = `insert into T1 (F1) values (${rand(1000,-1000)})`
+    break;
+  case 2: // string type
+    q = `insert into T2 (F1) values ('${randString(10,2)}')`
+    break;
+  case 3: // bool
+    q = `insert into T2 (F1) values (${rand(1,0)})`
+    break;
+  case 4: // double
+    q = `insert into T2 (F1) values (${rand(100,0)}.${rand(100,0)})`
+    break;
+  default:
+    console.error('Should not get default for random insert query.');
+    break;
   }
   return q;
 }
@@ -330,16 +331,15 @@ const CSDriver = async (pool, numCS, timeToRun, getQuery, fakeWorkLoad=0, fakeWo
   return elapsedTimes;
 }
 
-//! Getting "Error: expected a function"
 describe('15. Test Performance Under Load', async () => {
-  
-    // to get stats run:
-    // cd /u/users/ecs8/stress-test-mon-logs 
-    // nuocmd get stats > $LOG_NAME
-    
-    // to upload stats:
-    // nuopython /support/support-utilities/nuodb-dashboards-influx/image/stats_influx.py -o http://nuosup04:8086 $LOG_NAME
-   
+  /**
+   * to get stats run:
+   *  cd /u/users/ecs8/stress-test-mon-logs
+   *  nuocmd get stats > $LOG_NAME
+   *
+   * to upload stats:
+   *  nuopython /support/support-utilities/nuodb-dashboards-influx/image/stats_influx.py -o http://nuosup04:8086 $LOG_NAME
+   */
   let pool = null;
   let threadCount = process.env.UV_THREADPOOL_SIZE;
   const resultsSummary = [];
@@ -372,87 +372,81 @@ describe('15. Test Performance Under Load', async () => {
   });
 
 
-function getMax(arr) {
+  function getMax(arr) {
     let len = arr.length;
     let max = Number.MIN_SAFE_INTEGER;
 
     while (len--) {
-        max = arr[len] > max ? arr[len] : max;
+      max = arr[len] > max ? arr[len] : max;
     }
     return max;
-}
+  }
 
-function getMin(arr) {
+  function getMin(arr) {
     let len = arr.length;
     let min = Number.MAX_SAFE_INTEGER;
 
     while (len--) {
-        min = arr[len] < min ? arr[len] : min;
+      min = arr[len] < min ? arr[len] : min;
     }
     return min;
-}
-  try {
-  let t = 0;
+  }
+
   await async.series(CS_TEST_CASES.map((curr, index) => new Promise((res) => {
-    t++;
-    const {description, concurrency, time, getQuery,
-      //expectedResults,
-      fakeWorkLoad, fakeWorkComplexity} = curr;
+    const {description, concurrency, time, getQuery,/* expectedResults,*/ fakeWorkLoad, fakeWorkComplexity} = curr;
     const title = `15.${index} Testing ${concurrency} concurrent ${description} requests for ${time/minute} minutes with ${threadCount} threads`;
     describe(title, async () => {
-        
-        it(title, async () => {
-          let err = null;
-          let elapsedTimes = null;
-          try {
-            // elapsedTimes in ms
-            elapsedTimes = await CSDriver(pool, concurrency, time, getQuery, fakeWorkLoad, fakeWorkComplexity);
-          } catch (e) {
-            err = e;
-          }
-          should.not.exist(err);
-  
-          const totalExecutes = elapsedTimes.length;
-          const avgExecTime = mean(elapsedTimes);
-          const medianExecTime = median(elapsedTimes);
-          const stddevExecTime = stddev(elapsedTimes, avgExecTime);
-          const numUpperOutliers = elapsedTimes.reduce((acc,curr) => acc + (curr > avgExecTime + 2 * stddevExecTime ? 1 : 0), 0);
-          const numLowerOutliers = elapsedTimes.reduce((acc,curr) => acc + (curr < avgExecTime - 2 * stddevExecTime ? 1 : 0), 0);
-  
-          // Unfortunately the min and max functions in the Math modules would blow the stack because of the size of the elapsedTimes array
-          // So these functions were replaced with code to get the same values
-          // const minExecTime = Math.min(...elapsedTimes);
-          // const maxExecTime = Math.max(...elapsedTimes);
-          const minExecTime = getMin(elapsedTimes);
-          const maxExecTime = getMax(elapsedTimes);
-         
-          resultsSummary.push({
-            title,
-            totalExecutes,
-            avgExecTime,
-            medianExecTime,
-            stddevExecTime,
-            numLowerOutliers,
-            numUpperOutliers,
-            minExecTime,
-            maxExecTime
-          });
-  
-          // compare to historical data
-          //(totalExecutes).should.be.aboveOrEqual(expectedResults.totalExpected - expectedResults.totalDelta);
-          //(avgExecTime).should.be.belowOrEqual(expectedResults.meanExpected + 2 * expectedResults.stdDevExpected);
-  
-          // we should not have a skewed exec time
-          //(medianExecTime).should.be.approximately(avgExecTime, stddevExecTime*2);
-  
-          // in a normal distribution, 95% of results should fall within 2 stddevs of norm
-          //(numUpperOutliers).should.be.belowOrEqual(totalExecutes * 0.25);
-          //(numLowerOutliers).should.be.belowOrEqual(totalExecutes * 0.25);
-  
-          res();
-        }).timeout(TEST_CASE_DURATION + STRESS_TEST_TIMEOUT_BUFFER);
-      });
-    })));
-  } catch (err) {/*console.error('ERROR =>', err)*/}  //? This catches async.series 'expected a function' error
+      it(title, async () => {
+        let err = null;
+        let elapsedTimes = null;
+        try {
+          // elapsedTimes in ms
+          elapsedTimes = await CSDriver(pool, concurrency, time, getQuery, fakeWorkLoad, fakeWorkComplexity);
+        } catch (e) {
+          err = e;
+        }
+        should.not.exist(err);
+
+        const totalExecutes = elapsedTimes.length;
+        const avgExecTime = mean(elapsedTimes);
+        const medianExecTime = median(elapsedTimes);
+        const stddevExecTime = stddev(elapsedTimes, avgExecTime);
+        const numUpperOutliers = elapsedTimes.reduce((acc,curr) => acc + (curr > avgExecTime + 2 * stddevExecTime ? 1 : 0), 0);
+        const numLowerOutliers = elapsedTimes.reduce((acc,curr) => acc + (curr < avgExecTime - 2 * stddevExecTime ? 1 : 0), 0);
+
+        // Unfortunately the min and max functions in the Math modules would blow the stack because of the size of the elapsedTimes array
+        // So these functions were replaced with code to get the same values
+        // const minExecTime = Math.min(...elapsedTimes);
+        // const maxExecTime = Math.max(...elapsedTimes);
+        const minExecTime = getMin(elapsedTimes);
+        const maxExecTime = getMax(elapsedTimes);
+
+        resultsSummary.push({
+          title,
+          totalExecutes,
+          avgExecTime,
+          medianExecTime,
+          stddevExecTime,
+          numLowerOutliers,
+          numUpperOutliers,
+          minExecTime,
+          maxExecTime
+        });
+
+        // compare to historical data
+        //(totalExecutes).should.be.aboveOrEqual(expectedResults.totalExpected - expectedResults.totalDelta);
+        //(avgExecTime).should.be.belowOrEqual(expectedResults.meanExpected + 2 * expectedResults.stdDevExpected);
+
+        // we should not have a skewed exec time
+        //(medianExecTime).should.be.approximately(avgExecTime, stddevExecTime*2);
+
+        // in a normal distribution, 95% of results should fall within 2 stddevs of norm
+        //(numUpperOutliers).should.be.belowOrEqual(totalExecutes * 0.25);
+        //(numLowerOutliers).should.be.belowOrEqual(totalExecutes * 0.25);
+
+        res();
+      }).timeout(TEST_CASE_DURATION + STRESS_TEST_TIMEOUT_BUFFER);
+    });
+  })));
 
 }).timeout(STRESS_TEST_TIMEOUT);

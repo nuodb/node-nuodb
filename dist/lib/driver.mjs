@@ -14,7 +14,10 @@ class Driver {
         this.defaults = {
             hostname: 'localhost',
             port: '48004',
-            schema: 'USER'
+            schema: 'USER',
+            user: 'dba',
+            database: 'test@localhost',
+            password: 'dba'
         };
         this._driver = new addon.Driver();
         this._connect = function (config, callback) {
@@ -42,7 +45,11 @@ class Driver {
     }
     merge(config) {
         const _driver = this;
-        config || (config = {});
+        config || (config = {
+            database: '',
+            user: '',
+            password: ''
+        });
         function resolve(config, key, override) {
             let value;
             if (override === undefined) {

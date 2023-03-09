@@ -31,11 +31,11 @@ function getRows(...args) {
         if (err) {
             callback(err);
         }
-        // add future caching support here... (streams)
+        //? add future caching support here... (streams)
         callback(null, instance);
     };
     args[cbIdx] = extension;
-    //@ts-ignore as "this" binds to the ResultSet object
+    // @ts-ignore as "this" binds to the ResultSet object
     return this._getRows(...args);
 }
 // @ts-ignore as we guarantee that all the props are added, but not on initial definition
@@ -48,10 +48,10 @@ const ResultSet = {
     getRows: getRows
 };
 ResultSet.closePromisified = util.promisify(ResultSet.close);
-//@ts-ignore
+// @ts-ignore 
 ResultSet.getRowsPromisified = util.promisify(ResultSet.getRows);
 function nonBlockingGetRows(...args) {
-    //@ts-ignore as "this" will bind to the ResultSet object
+    // @ts-ignore as "this" will bind to the ResultSet object
     const resultset = this;
     let numRows = null;
     let batchSize = null;
@@ -126,6 +126,5 @@ ResultSet.extend = (resultset, connection, driver) => {
         }
     });
 };
-// export const { extend } = ResultSet;
 export default ResultSet;
 //# sourceMappingURL=resultset.mjs.map

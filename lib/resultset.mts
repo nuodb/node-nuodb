@@ -48,11 +48,11 @@ function getRows(...args: Array<number|RowsCallback|undefined>): Promise<Rows> {
 
   const extension = (err: unknown, instance?: Rows) => {
     if (err) { callback(err); }
-    // add future caching support here... (streams)
+    //? add future caching support here... (streams)
     callback(null, instance);
   };
   args[cbIdx] = extension;
-  //@ts-ignore as "this" binds to the ResultSet object
+  // @ts-ignore as "this" binds to the ResultSet object
   return this._getRows(...args); 
 }
 
@@ -72,14 +72,14 @@ const ResultSet: ResultSet = {
 }
 
 ResultSet.closePromisified = util.promisify(ResultSet.close);
-//@ts-ignore
-ResultSet.getRowsPromisified = util.promisify(ResultSet.getRows);
+// @ts-ignore 
+ResultSet.getRowsPromisified = util.promisify<>(ResultSet.getRows);
 
 
 function nonBlockingGetRows(callback?: RowsCallback): Promise<Rows>;
 function nonBlockingGetRows(size: number, callback?: RowsCallback): Promise<Rows>;
 function nonBlockingGetRows(...args: Array<number|RowsCallback|undefined>): Promise<Rows> {
-  //@ts-ignore as "this" will bind to the ResultSet object
+  // @ts-ignore as "this" will bind to the ResultSet object
   const resultset = this;
   let numRows: null|number = null;
   let batchSize: null|number = null satisfies null;
@@ -163,5 +163,4 @@ ResultSet.extend = (resultset: ResultSet, connection: Connection, driver: Driver
   );
 }
 
-// export const { extend } = ResultSet;
 export default ResultSet;
