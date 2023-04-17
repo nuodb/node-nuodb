@@ -1,12 +1,12 @@
-import Driver from './lib/driver.mjs';
-import type { Configuration } from './lib/driver.mjs';
-import Isolation from './lib/isolation.mjs';
-import RowMode from './lib/rowmode.mjs';
-import Pool from './lib/pool.mjs';
-import type { PoolConfiguration } from './lib/pool.mjs';
-import type Conn from './lib/connection.mjs';
-import type Res from './lib/resultset.mjs';
-import type { Rows } from './lib/resultset.mjs';
+import Driver from './lib/driver';
+import type { Configuration } from './lib/driver';
+import Isolation from './lib/isolation';
+import RowMode from './lib/rowmode';
+import Pool from './lib/pool';
+import type { PoolConfiguration } from './lib/pool';
+import type Conn from './lib/connection';
+import type Res from './lib/resultset';
+import type { Rows } from './lib/resultset';
 interface Connection {
     execute: Conn["execute"];
     close: Conn["close"];

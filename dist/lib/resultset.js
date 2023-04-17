@@ -12,12 +12,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // for environment variable swapping
 const GET_ROWS_ENV_VAR = 'NUONODE_GET_ROWS_TYPE';
 const GET_ROWS_TYPE_BLOCKING = 'BLOCKING';
 const GET_ROWS_TYPE_MIN_BLOCKING = 'MIN_BLOCKING';
-import util from 'util';
-import loopDefer from './loopDefer.mjs';
+const util_1 = __importDefault(require("util"));
+const loopDefer_1 = __importDefault(require("./loopDefer"));
 function getRows(...args) {
     let cbIdx = 0;
     while (cbIdx < args.length) {
@@ -47,9 +51,9 @@ const ResultSet = {
     },
     getRows: getRows
 };
-ResultSet.closePromisified = util.promisify(ResultSet.close);
+ResultSet.closePromisified = util_1.default.promisify(ResultSet.close);
 // @ts-ignore 
-ResultSet.getRowsPromisified = util.promisify(ResultSet.getRows);
+ResultSet.getRowsPromisified = util_1.default.promisify(ResultSet.getRows);
 function nonBlockingGetRows(...args) {
     // @ts-ignore as "this" will bind to the ResultSet object
     const resultset = this;
@@ -74,7 +78,7 @@ function nonBlockingGetRows(...args) {
     // default values
     numRows !== null && numRows !== void 0 ? numRows : (numRows = 0);
     batchSize !== null && batchSize !== void 0 ? batchSize : (batchSize = 1000);
-    return loopDefer(Object.assign({ props: [], 
+    return (0, loopDefer_1.default)(Object.assign({ props: [], 
         // setup: (p) => {console.log('setup exec'); return p},
         // because we modify the props rather than reconstructing and returning, we only really need the loop condition
         loopCondition: function (rows) {
@@ -126,5 +130,5 @@ ResultSet.extend = (resultset, connection, driver) => {
         }
     });
 };
-export default ResultSet;
-//# sourceMappingURL=resultset.mjs.map
+exports.default = ResultSet;
+//# sourceMappingURL=resultset.js.map

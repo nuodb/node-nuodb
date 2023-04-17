@@ -11,7 +11,7 @@ import async from "async";
 import config from "./config.js";
 import helper from "./typeHelper.js";
 
-describe("6. autoCommit.js", function () {
+describe("6. autoCommit", function () {
   this.timeout(5000);
   var driver = null;
   var connection = null;

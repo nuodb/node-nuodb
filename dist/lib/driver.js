@@ -3,12 +3,16 @@
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
 'use strict';
-import bindings from 'bindings';
-const addon = bindings('nuodb.node');
-import Connection from './connection.mjs';
-import util from 'util';
-import SegfaultHandler from 'segfault-handler';
-SegfaultHandler.registerHandler("crash.log"); // With no argument, SegfaultHandler will generate a generic log file name
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const bindings_1 = __importDefault(require("bindings"));
+const addon = (0, bindings_1.default)('nuodb.node');
+const connection_js_1 = __importDefault(require("./connection.js"));
+const util_1 = __importDefault(require("util"));
+const segfault_handler_1 = __importDefault(require("segfault-handler"));
+segfault_handler_1.default.registerHandler("crash.log"); // With no argument, SegfaultHandler will generate a generic log file name
 class Driver {
     constructor() {
         this.defaults = {
@@ -28,7 +32,7 @@ class Driver {
                     return;
                 }
                 if (!!connection) { // neither undefined nor null
-                    Connection.extend(connection, this);
+                    connection_js_1.default.extend(connection, this);
                 }
                 callback(null, connection);
             };
@@ -41,7 +45,7 @@ class Driver {
         //
         // Promise-based:   [ {}, Function ]
         // Async-based:     [ {}, Function, Function ]
-        this.connect = util.promisify(this._connect);
+        this.connect = util_1.default.promisify(this._connect);
     }
     merge(config) {
         const _driver = this;
@@ -69,5 +73,5 @@ class Driver {
         return config;
     }
 }
-export default Driver;
-//# sourceMappingURL=driver.mjs.map
+exports.default = Driver;
+//# sourceMappingURL=driver.js.map

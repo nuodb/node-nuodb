@@ -11,9 +11,9 @@ const GET_ROWS_TYPE_BLOCKING = 'BLOCKING'
 const GET_ROWS_TYPE_MIN_BLOCKING = 'MIN_BLOCKING'
 
 import util from 'util';
-import Connection from './connection.mjs';
-import Driver from './driver.mjs';
-import loopDefer from './loopDefer.mjs';
+import Connection from './connection';
+import Driver from './driver';
+import loopDefer from './loopDefer';
 
 
 export type CloseCallback = (err: unknown) => void;
@@ -30,7 +30,7 @@ interface ResultSet {
 }
 
 export type Rows = {
-  [prop: string]: string|number
+  [prop: string|'']: string|number
 }[];
 
 type RowsCallback = (err: unknown, rows?: Rows) => void;

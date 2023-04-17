@@ -1,5 +1,5 @@
-import ResultSet, { CloseCallback } from './resultset.mjs';
-import type Driver from './driver.mjs';
+import ResultSet, { CloseCallback } from './resultset.js';
+import type Driver from './driver.js';
 type Data = Array<string | number | null>;
 interface Options {
     autocommit?: boolean;

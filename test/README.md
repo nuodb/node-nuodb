@@ -31,7 +31,7 @@ make run-build
 Then run the test:
 
 ```
-node_modules/.bin/mocha -g '26. typeTimestamp.js'
+node_modules/.bin/mocha -g '26. typeTimestamp'
 ```
 
 3. Add tests

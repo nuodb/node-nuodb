@@ -3,14 +3,18 @@
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
 'use strict';
-import ResultSet from './resultset.mjs';
-import assert from 'assert';
-import util from 'util';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const resultset_js_1 = __importDefault(require("./resultset.js"));
+const assert_1 = __importDefault(require("assert"));
+const util_1 = __importDefault(require("util"));
 ;
 function execute(...args) {
     //@ts-ignore as "this" will bind to the Connection object
     const conn = this;
-    assert(args.length > 0);
+    (0, assert_1.default)(args.length > 0);
     // n.b. the original callback is always the first form provided
     let cbIdx = 0;
     while (cbIdx < args.length) {
@@ -19,7 +23,7 @@ function execute(...args) {
         }
         cbIdx++;
     }
-    assert(typeof args[cbIdx] === 'function');
+    (0, assert_1.default)(typeof args[cbIdx] === 'function');
     const callback = args[cbIdx];
     const extension = function (err, resultSet) {
         if (!!err) {
@@ -27,7 +31,7 @@ function execute(...args) {
             return;
         }
         if (!!resultSet) {
-            ResultSet.extend(resultSet, conn, conn._driver);
+            resultset_js_1.default.extend(resultSet, conn, conn._driver);
         }
         callback(null, resultSet);
     };
@@ -55,11 +59,11 @@ const Connection = {
         });
     }
 };
-Connection.executePromisified = util.promisify(Connection.execute);
-Connection.closePromisified = util.promisify(Connection.close);
+Connection.executePromisified = util_1.default.promisify(Connection.execute);
+Connection.closePromisified = util_1.default.promisify(Connection.close);
 Connection._defaultClose = Connection.close;
-Connection.commitPromisified = util.promisify(Connection.commit);
-Connection.rollbackPromisified = util.promisify(Connection.rollback);
+Connection.commitPromisified = util_1.default.promisify(Connection.commit);
+Connection.rollbackPromisified = util_1.default.promisify(Connection.rollback);
 Connection.extend = (connection, driver) => {
     Object.defineProperties(connection, {
         _driver: {
@@ -99,5 +103,5 @@ Connection.extend = (connection, driver) => {
         }
     });
 };
-export default Connection;
-//# sourceMappingURL=connection.mjs.map
+exports.default = Connection;
+//# sourceMappingURL=connection.js.map

@@ -8,7 +8,7 @@
 import bindings from 'bindings';
 const addon = bindings('nuodb.node');
 
-import Connection from './connection.mjs';
+import Connection from './connection.js';
 import util from 'util';
 
 import SegfaultHandler from 'segfault-handler';

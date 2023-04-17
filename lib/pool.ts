@@ -3,9 +3,9 @@
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
 
-import Connection from "./connection.mjs";
-import { Configuration } from "./driver.mjs";
-import Driver from "./driver.mjs";
+import Connection from "./connection.js";
+import { Configuration } from "./driver.js";
+import Driver from "./driver.js";
 
 const REQUIRED_INITIAL_ARGUMENTS = ["connectionConfig"];
 
@@ -24,7 +24,7 @@ interface AllConnections {
   [connection: string]: {
     connection?: Connection,
     inUse: boolean,
-    ageOutID: null|NodeJS.Timeout,//undefined|null|number,
+    ageOutID: null|NodeJS.Timeout|number,//undefined|null|number,
     ageStatus: boolean
   }
 };

@@ -1,4 +1,4 @@
-import Connection from './connection.mjs';
+import Connection from './connection.js';
 export interface Configuration {
     hostname?: string;
     port?: string;

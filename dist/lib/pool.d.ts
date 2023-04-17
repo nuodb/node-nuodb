@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import Connection from "./connection.mjs";
-import { Configuration } from "./driver.mjs";
+import Connection from "./connection.js";
+import { Configuration } from "./driver.js";
 export interface PoolConfiguration {
     minAvailable: number;
     connectionConfig: Configuration;
@@ -15,7 +15,7 @@ interface AllConnections {
     [connection: string]: {
         connection?: Connection;
         inUse: boolean;
-        ageOutID: null | NodeJS.Timeout;
+        ageOutID: null | NodeJS.Timeout | number;
         ageStatus: boolean;
     };
 }

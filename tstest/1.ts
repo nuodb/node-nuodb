@@ -1,8 +1,8 @@
-import type { Configuration } from '../dist/lib/driver.mjs';
+import type { Configuration } from '../dist/lib/driver';
 //@ts-ignore
 // import { Driver } from '../../../../marcoStayOutPlease/node-nuodb/index.js';
-import { Driver, Connection, ResultSet } from '../dist/index.js';
-import { Rows } from '../dist/lib/resultset.mjs';
+import { Driver, Connection, ResultSet } from '../dist/';
+import { Rows } from '../dist/lib/resultset';
 
 
 // const config: Configuration = {
@@ -13,7 +13,7 @@ import { Rows } from '../dist/lib/resultset.mjs';
 // };
 
 const config = {
-    database: `test@nuosup02`,
+    database: `test1@nuosup02`,
     password: 'dba',
     user: 'dba',
 };
@@ -24,11 +24,7 @@ const config = {
 (() => {
     const driver = new Driver();
     (async () => {
-        const conn: Connection = await driver.connect({
-            database: 'test',
-            user: 'dba',
-            password: 'dba'
-        });
+        const conn: Connection = await driver.connect(config);
         const results: ResultSet|undefined = await conn.execute('SELECT * FROM SYSTEM.NODES;');
         const rows: Rows|undefined = await results?.getRows();
         console.log('This is the result of the query =>', rows);
@@ -69,7 +65,7 @@ function testConnection() {
         driver.connect(config, (err: unknown, conn: Connection) => {
             console.debug('THE CONNECTION =>', conn);
             // conn.execute('test', {queryTimeout: 1});
-            conn.execute('SHOW SCHEMAS;', (err, res) => {
+            conn.execute('SHOW SCHEMAS;', (err: unknown, res: any) => {
                 console.debug('result =>', res);
                 res.getRows((err: unknown, rows: any) => {
                     console.debug('rows =>', rows);

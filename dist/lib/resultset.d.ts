@@ -1,5 +1,5 @@
-import Connection from './connection.mjs';
-import Driver from './driver.mjs';
+import Connection from './connection';
+import Driver from './driver';
 export type CloseCallback = (err: unknown) => void;
 interface ResultSet {
     close: (callback?: CloseCallback) => Promise<void>;
@@ -12,7 +12,7 @@ interface ResultSet {
     extend: (resultset: ResultSet, connection: Connection, driver: Driver) => void;
 }
 export type Rows = {
-    [prop: string]: string | number;
+    [prop: string | '']: string | number;
 }[];
 type RowsCallback = (err: unknown, rows?: Rows) => void;
 declare function getRows(callback?: RowsCallback): Promise<Rows>;

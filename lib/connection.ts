@@ -6,11 +6,11 @@
 'use strict';
 
 
-import ResultSet, { CloseCallback } from './resultset.mjs';
+import ResultSet, { CloseCallback } from './resultset.js';
 import assert from 'assert';
 import util from 'util';
 
-import type Driver from './driver.mjs';
+import type Driver from './driver.js';
 
 
 

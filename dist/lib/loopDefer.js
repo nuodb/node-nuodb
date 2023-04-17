@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -7,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  *
  * @param loopCondition Returns a boolean and controls when the loop stops (runs with the value returned by setup before the first run begins, with value returned by increment all other times)
@@ -16,7 +18,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
  * @param closure Call back function for when the loopCondition returns false
  * @param props properties to be passed in to the first run, will be replaced by setup before first loop, and increment after each loop (if setup/increment exists)
 */
-export default function loopDefer(loop) {
+function loopDefer(loop) {
     return new Promise((resolveLoopDefer, rejectLoopDefer) => {
         const { loopCondition, body, setup, increment, closure, props, } = loop;
         const p = !!setup ? setup(props) : props;
@@ -49,4 +51,5 @@ export default function loopDefer(loop) {
         })(p);
     });
 }
-//# sourceMappingURL=loopDefer.mjs.map
+exports.default = loopDefer;
+//# sourceMappingURL=loopDefer.js.map

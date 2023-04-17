@@ -1,3 +1,4 @@
+"use strict";
 // Copyright (c) 2018-2022, NuoDB, Inc.
 // All rights reserved.
 //
@@ -11,11 +12,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import Driver from "./driver.mjs";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const driver_js_1 = __importDefault(require("./driver.js"));
 const REQUIRED_INITIAL_ARGUMENTS = ["connectionConfig"];
 ;
 ;
-export default class Pool {
+class Pool {
     constructor(args) {
         var _a, _b, _c, _d;
         this.livelinessInterval = undefined; //!
@@ -172,7 +177,7 @@ export default class Pool {
     }
     _makeConnection() {
         return __awaiter(this, void 0, void 0, function* () {
-            const driver = new Driver();
+            const driver = new driver_js_1.default();
             let connection = yield driver.connect(this.config.connectionConfig);
             const results = yield connection.execute("SELECT GETCONNECTIONID() FROM DUAL");
             const connId = yield results.getRows();
@@ -316,10 +321,11 @@ export default class Pool {
         });
     }
 }
+exports.default = Pool;
 Pool.STATE_INITIALIZING = "initializing";
 Pool.STATE_RUNNING = "running";
 Pool.STATE_CLOSING = "closing";
 Pool.STATE_CLOSED = "closed";
 Pool.LIVELINESS_RUNNING = "liveliness running";
 Pool.LIVELINESS_NOT_RUNNING = "liveliness not running";
-//# sourceMappingURL=pool.mjs.map
+//# sourceMappingURL=pool.js.map

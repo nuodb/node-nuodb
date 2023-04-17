@@ -127,13 +127,13 @@ describe('13. Test Result Set', () => {
   it('13.4 Can swap between get rows styles', async () => {    let err = null;
     try {
       let results = await connection.execute(selectFromJoinableTables('a','b'));
-      // match resultset.js definition
+      // match resultset definition
       (results.getRowsStyle).should.be.eql('MIN_BLOCKING');
 
       process.env['NUONODE_GET_ROWS_TYPE']='BLOCKING';
 
       results = await connection.execute(selectFromJoinableTables('a','b'));
-      // match resultset.js definition
+      // match resultset definition
       (results.getRowsStyle).should.be.eql('BLOCKING');
 
     } catch (e) {
