@@ -1,5 +1,5 @@
 {
-  "name": "node-nuodb",
+  "name": "nuodb-client",
   "author": "NuoDB, Inc.",
   "description": "The official NuoDB driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "Apache-2.0",
@@ -8,14 +8,19 @@
   "keywords": [
     "nuodb",
     "driver",
-    "official"
+    "official",
+    "sql",
+    "nuosql",
+    "client"
   ],
+  "homepage": "https://github.com/nuodb/node-nuodb",
   "repository": {
     "type": "git",
     "url": "git://github.com/nuodb/node-nuodb.git"
   },
   "bugs": {
-    "url": "git://github.com/nuodb/node-nuodb/issues"
+    "url": "git://github.com/nuodb/node-nuodb/issues",
+    "email": "support@nuodb.zendesk.com"
   },
   "engines": {
     "node": ">=8"
