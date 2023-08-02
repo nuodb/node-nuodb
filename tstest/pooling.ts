@@ -8,7 +8,7 @@
 import { Connection, Pool } from "../dist/index.js";
 import should from "should";
 import config from "../test/config.js";
-import { PoolConfiguration } from "../dist/lib/pool.mjs";
+import { PoolConfiguration } from "../dist/lib/pool.js";
 import { assert } from "console";
 
 const poolArgs: PoolConfiguration = {
@@ -57,6 +57,7 @@ describe("14 test pooling", function () {
 
   it("14.3 Pool can open", async () => {
     await pool.init();
+    //@ts-ignore
     pool.should.be.ok();
     should.equal(
       pool.free_connections.length,
@@ -68,6 +69,7 @@ describe("14 test pooling", function () {
 
   it("14.4 Allows user to request and return connections", async () => {
     let connection = await pool.requestConnection();
+    //@ts-ignore
     connection?.should.be.ok();
     should.equal(
       pool.free_connections.length,

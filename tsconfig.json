@@ -5,15 +5,34 @@
     "sourceMap": true,
     "module": "CommonJS",
     "target": "ES6",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "esModuleInterop": true,
     // "allowJs": true,
     "rootDir": ".",
     "declaration": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "strict": true,
+    "types": [
+      "jest",
+      "node"
+    ]
   },
-  "include": ["./lib/**/*", "**/*.ts", "./*.ts", "index.ts", "test/15.stress.js"],
-  "exclude": ["node_modules", "build", "dist", "tstest"]
+  "include": [
+    "./lib/**/*",
+    "**/*.ts",
+    "./*.ts",
+    "index.ts",
+    "test/15.stress.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "tstest"
+  ]
 }
