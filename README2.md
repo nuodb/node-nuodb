@@ -2,7 +2,7 @@
 
 The `node-nuodb` add-on for **Node.js** powers high performance **NuoDB** database applications. Use `node-nuodb` to connect **Node.js** to a **NuoDB** database. It supports basic features of the **NuoDB** database and **NuoDB C++** client.
 
- Utilizing the **NuoDB** **Node.js** driver, developers can harness NuoDB's distributed architecture and dynamic scaling, while benefiting from **Node.js**' ease. This guide will help you set up, configure, and use the driver to connect seamlessly to a **NuoDB** database, empowering your applications to integrate smoothly with its advanced database technology.
+Uilizing the **NuoDB** **Node.js** driver allows developers to harness NuoDB's distributed architecture and dynamic scaling, while benefiting from **Node.js**' ease. This guide will help you set up, configure, and use the driver to connect seamlessly to a **NuoDB** database, empowering your applications to integrate smoothly with its advanced database technology.
 
 
 ## Dependencies
@@ -43,7 +43,7 @@ The `node-nuodb` add-on for **Node.js** powers high performance **NuoDB** databa
 ## Documentation
 
 <!-- Check out the Getting Started page for a quick overview. -->
-`node-nuodb` driver enables the capability of connection to a **NuoDB** database via a single connection or a connection pool. For further details refer to the best practices section.
+`node-nuodb` driver enables the capability of connection to a **NuoDB** database via a single connection or a connection pool. For further details refer to the [best practices section](./BEST_PRACTICES.md).
 
 - [Single Connection](SINGLE_CONNECTION.md)
 - [Connection Pool](CONNECTION_POOL.md)

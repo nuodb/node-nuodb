@@ -9,3 +9,5 @@ vol2/
 
 build/
 node_modules/
+
+test/t.js

@@ -1,15 +1,20 @@
 
-# Single connection
+# Single Connection
+
+`node-nuodb` exposes `driver.connect()` to directly create a singular connection against a **NuoDB** database. 
+\
+Be aware of the scenarios where a single connection is preferable over a connection pool - [Single Connection vs Connection Pool](./BEST_PRACTICES.md#single-connection-vs-connection-pool).
+
+## Overview
 
 The lifecycle of a single connection of the `node-nuodb` driver to a **NuoDB** database entails:
-- Initialization of the `node-nuodb` driver
+
+- Initialization of the `Driver`
 - Connection to a **NuoDB** database using configuration object
 - Execution of desired `SQL`
 - Getting the rows from the result set
 - Releasing memory
 - Closure of the connection
-
-## Overview
 
 The `node-nuodb` driver supports `try/catch`, `callback`, and `Promise` semantics. The following is a general example  implementing the driver. It exemplifies its safe usage via `try/catch` clauses.
 
@@ -30,24 +35,33 @@ const config = {
 
 async function () {
    const driver = new Driver();
+   let connection = null;
+   let results = null;
 
    try {
-      const connection = await driver.connect(config);
-      const results = await connection.execute("SELECT * FROM SYSTEM.NODES;");
+      connection = await driver.connect(config);
+      results = await connection.execute("SELECT * FROM SYSTEM.NODES;");
       const rows = await results.getRows();
       // use rows
 
-      await rows.close();
+      await results.close();
 
    } catch (err) {/* handle error */}
 
    finally {
-      await connection.close();
+      try { 
+         if (connection != null) {
+            await connection.close(); 
+         }
+         if (results != null) {
+            await results.close();
+         }
+      } catch (err) {/* handle error */}
    }
 }
 ```
 
-### Connect
+## Connect
 
 To connect to a **NuoDB** database you must provide a configuration object which includes the connection properties. Find the available connection properties in the [NuoDB documentation](https://doc.nuodb.com/nuodb/latest/reference-information/connection-properties/#nav-container-toggle). Provide each of the connection property values as a `string`.
 
@@ -67,7 +81,7 @@ const driver = new Driver();
 const connection = await driver.connect(config);
 ```
 
-### Execute SQL
+## Execute SQL
 With a connection obtained, `execute()` a `SQL` statement against the database. If the default schema was defined in the configuration map, it is not required to specify which schema the statement is intended to target. `getRows()` to obtain the rows from the result set.
 
 ```js
@@ -75,14 +89,14 @@ const results = await connection.execute("SELECT * FROM SYSTEM.NODES;");
 const rows = await results.getRows();
 ```
 
-### Cleanup Memory
+## Cleanup Memory
 
 Close a results set anytime you are done using any fetch or cursor. This will release memory structures associated with those constructs.  
 ```js
-await rows.close();
+await results.close();
 ```
 
-### Close Connection
+## Close Connection
 
 Finally, `close()` the database connection. 
 
@@ -91,7 +105,7 @@ await connection.close();
 ```
 
 
-### Using callbacks 
+## Using callbacks 
 
 The following is an example of creating a single connection against a **NuoDB** database using `callback` semantics. 
 
@@ -110,6 +124,10 @@ driver.connect(config, (err, connection) => {
 
          // use rows
       });
+
+      results.close(err => {
+         if (err) {/* handle result set closure error */}
+      })
    });
    
    connection.close((err) => {
@@ -118,7 +136,7 @@ driver.connect(config, (err, connection) => {
 });
 ```
 
-### Using Promises 
+## Using Promises 
 
 The following is an example of creating a single connection against a **NuoDB** database using `Promise` semantics. 
 

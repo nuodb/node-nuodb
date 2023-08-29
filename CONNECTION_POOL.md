@@ -8,72 +8,131 @@ Unlike establishing an individual connection for each database interaction, a co
 With a connection pool in place, the **NuoDB** driver can intelligently manage the lifecycle of connections, offering seamless access to the **NuoDB** database while effectively mitigating the potential for connection bottlenecks and latency. This allows developers to optimize their application's responsiveness and scalability while ensuring an efficient and streamlined interaction with the database.
 
 
-## Usage
+## Overview
+
+The lifecycle of a connection pool of the `node-nuodb` driver to a **NuoDB** database entails:
+
+- Initialization of the connection `Pool`
+- Request connections on the `pool`
+- Use the connections
+- Release each connection
+- Close the `pool`
+
+For simplicity the examples to follow will use `try/catch` semantics, although you `Promise` semantics is also permitted. 
+
+The following is a general example requesting 2 connections on the connection pool. You would in turn manage each connection as a [single connection](./SINGLE_CONNECTION.md#execute-sql).
 
 ```js
-async function () {
-    const myPool = new Pool({
-        minAvailable: <arg>,
-        connectionConfig: <connection config obj>,
-        maxAge: <arg>,
-        checkTime: <arg>,
-        maxLimit: <arg>,
-        connectionRetryLimit: <arg>,
-        id: <arg>,
-        skipCheckLivelinessOnRelease: false|true,
-        livelinessCheck: query|<arg>
-    });
+const connectionConfig = {
+    database: `test`,
+    password: "dba",
+    user: "dba",
+    port: "48004",
+    schema: "USER"
+};
 
-    await Pool.init()
-    const newConnection = await Pool.requestConnection()
-    await Pool.releaseConnection(<connection>)
-    await Pool.closePool()
+const poolConfig = {
+    minAvailable: 10,
+    connectionConfig,
+    maxAge: 2000,
+    checkTime: 10000,
+    maxLimit: 12,
+    connectionRetryLimit: 5,
+};
+
+async function() {
+    let pool = null;
+
+    try {
+        pool = new Pool(poolConfig);
+        const conn1 = await pool.requestConnection();
+        const conn2 = await pool.requestConnection();
+        // use each connection
+
+        await pool.releaseConnection(conn1);        
+        await pool.releaseConnection(conn2);        
+
+    } catch (err) {/* handle error */}
+
+    finally {
+        try {
+            if (pool != null) {
+                await pool.closePool()
+            }
+        } catch (err) {/* handle error */}
+    }
 }
-
 ```
 
-## Methods
 
-After a pool is created the user must initialize it using the init method:
+## Initialize Connection Pool
+
+To initialize a connection pool, you must provide a pool configuration. Please review the shape of the [pool configuration](#pool-configuration) to customize for specific needs. Note, you must specify the [connection configuration](./SINGLE_CONNECTION.md#connection-properties) as for a single connection. After a pool is created the user must initialize it using the `init()` method. This will populate the pool. The pool is unavailable until this completes.
 
 ```js
-await Pool.init()
+const poolConfig = {
+    minAvailable: 10,
+    connectionConfig,
+    maxAge: 2000,
+    checkTime: 10000,
+    maxLimit: 12,
+    connectionRetryLimit: 5,
+};
+
+async function() {
+    const pool = new Pool(poolConfig);
+    await pool.init()
+}
 ```
 
-This will populate the pool. The pool is unavailable until this completes.
+## Request Connections
 
-Once the pool has been successfully initialized it is ready for use. The user calls:
+Once the pool has been successfully initialized it is ready for use. There are now free connections that can be requested for use. You can see the pool connections via `pool.all_connections` and `pool.free_connections`.
 
 ```js
-const newConnection = await Pool.requestConnection()
+const conn1 = await Pool.requestConnection();
 ```
 
-to get a connection, this method will return a connection ready for use.
+You can request multiple connections this way. Each connection can then be used as a [single connection](./SINGLE_CONNECTION.md#execute-sql) would.
 
-Once the user has finished using a connection, it can be returned to the pool with:
+## Release Connections
+
+Once the user has finished using a connection, it can be returned to the pool. You must pass each connection in turn desired to release. Don't forget to manage each single connection's lifecycle properly prior to requesting its release.
 
 ```js
-await Pool.releaseConnection(<connection>)
+await pool.releaseConnection(conn1)
 ```
 
-Connections that have been released back to the connection pool should not be used anymore.
-Connections that have failed in any way should be returned to the pool where they will dealt with and replaced.
+Connections that have been released back to the connection pool should not be used anymore. Connections that have failed in any way should be returned to the pool where they will dealt with and replaced.
 
-A pool should be shutdown by calling:
+## Pool Closure
+
+Once the pool has been finished being used, it should be shutdown.
 
 ```js
-await Pool.closePool()
+await pool.closePool()
 ```
 
 This will close all of the connections in the pool regardless of whether or not they are in use.
 
-Users cannot manually close connections provided by the pool, and calling:
-`connection.close()`
-on a connection provided by the pool will have the same effect as calling:
-`Pool.releaseConnection(connection)`
+Users cannot manually close connections provided by the pool, and calling `connection.close()` on a connection provided by the pool will have the same effect as calling `Pool.releaseConnection(connection)`.
 
 
-## Configuration
+## Pool Configuration
+
+```js
+{
+    minAvailable: number,
+    connectionConfig: ConnectionConfig,
+    maxAge: number,
+    checkTime: number,
+    maxLimit: number,
+    connectionRetryLimit: number,
+    id: number,
+    skipCheckLivelinessOnRelease: boolean,
+    livelinessCheck: "query"|string
+};
+```
 
 Key | Value
 --- | ---
@@ -88,4 +147,3 @@ Key | Value
 **livelinessCheck** | indicates the type of liveliness check to be performed. By default, the value is set to "query", which means a query to test the connection. If set to any value (quoted string) other than "query", it will only look to see if the NuoDB API isConnected returns true and we have not trapped a connection related exception previously.
 
 
-Arguments should be provided to the pool as an object. Please refer to the Usage section for an example.
