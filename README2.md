@@ -43,28 +43,20 @@ Uilizing the **NuoDB** **Node.js** driver allows developers to harness NuoDB's d
 ## Documentation
 
 <!-- Check out the Getting Started page for a quick overview. -->
-`node-nuodb` driver enables the capability of connection to a **NuoDB** database via a single connection or a connection pool. For further details refer to the [best practices section](./BEST_PRACTICES.md).
+`node-nuodb` driver enables the capability of connection to a **NuoDB** database via a single connection or a connection pool. For further details refer to the best practices section.
 
 - [Single Connection](SINGLE_CONNECTION.md)
 - [Connection Pool](CONNECTION_POOL.md)
 - [Best Practices](BEST_PRACTICES.md)
 
-For information on using NuoDB, refer to the [documentation website][1].
-
-## Related Links
-
-- [NuoDB Documentation][1]
-<!-- - [NuoDB Multiplexer][5] -->
+For information on using NuoDB, refer to the [documentation website](https://doc.nuodb.com/nuodb/latest/introduction-to-nuodb/).
 
 ## Help
 
-Issues and questions about node-nuodb can be posted on [GitHub][2].
+Issues and questions about node-nuodb can be posted on [GitHub](https://github.com/nuodb/node-nuodb/issues).
 
 ## License
 
-This package is released under the [BSD 3-Clause License][3].
+This package is released under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
 
-[1]: https://doc.nuodb.com/nuodb/latest/introduction-to-nuodb/
-[2]: https://github.com/nuodb/node-nuodb/issues
 <!-- [5]: https://github.com/nuodb/node-multiplexer -->
-[3]: https://opensource.org/licenses/BSD-3-Clause

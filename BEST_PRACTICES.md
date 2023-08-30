@@ -18,4 +18,44 @@ The decision between a singular connection and a connection pool should always b
 
 ## Type Safety
 
-Any `try` `catch` block in which NuoDB resources are created must be followed by a `finally` block in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a `try` block can lead to NuoDB resources being created and never cleaned up.
+The `node-nuodb` driver supports `try/catch`, `callback`, and `Promise` semantics. You should put guard rails that verify the availability of data and catching of any errors that could arise. For tighter type safety, you can deal with error catching at the operation level, rather than catching an errors of any operation within a block.
+
+Any `try` `catch` block in which **NuoDB** resources are created must be followed by a `finally` block in which NuoDB resources are then cleaned up. Attempting to clean up NuoDB resources in a `try` block can lead to NuoDB resources being created and never cleaned up.
+
+## Retrying Operations
+
+Under critical operations, it is recommended to retry operations were they to fail. You could catch the exception, clean-up any operations, and retry the operations. To allow some time margin, increase the time between retries. Here is a retry example:
+
+```js
+async function() {
+    const driver = new Driver();
+    let connection = null;
+    let results = null;
+    let tries = 1;
+
+    while (tries < 6) {
+
+        await new Promise(resolve => setTimeout(async () => {
+            try {
+                connection = await driver.connect(config);
+                results = await connection.execute("SELECT * FROM SYSTEM.NODE;");
+                const rows = await results.getRows();
+                // use rows
+            
+            } catch (err) {
+                console.error(err);
+
+            } finally {
+                if (results != null) {
+                    results.close().catch(err => { console.error(err) });
+                }
+                if (connection != null) {
+                    connection.close().catch(err => { console.error(err) });
+                }
+                tries++;
+                resolve();
+            }
+        }, 1000 * tries));
+    }
+}
+```
