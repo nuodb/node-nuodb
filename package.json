@@ -1,5 +1,5 @@
 {
-  "name": "nuodb-client",
+  "name": "node-nuodb",
   "author": "NuoDB, Inc.",
   "description": "The official NuoDB driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "Apache-2.0",
