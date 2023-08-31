@@ -13,12 +13,12 @@ With a connection pool in place, the **NuoDB** driver can intelligently manage t
 The lifecycle of a connection pool of the `node-nuodb` driver to a **NuoDB** database entails:
 
 - Initialization of the connection `Pool`
-- Request connections on the `pool`
+- Request connections from the `pool`
 - Use the connections
 - Release each connection
 - Close the `pool`
 
-For simplicity the examples to follow will use `try/catch` semantics, although you `Promise` semantics is also permitted. 
+For simplicity the examples to follow will use `try/catch` semantics, although `Promise` semantics is also permitted. 
 
 The following is a general example requesting 2 connections on the connection pool. You would in turn manage each connection as a [single connection](./SINGLE_CONNECTION.md#execute-sql).
 
@@ -97,7 +97,7 @@ You can request multiple connections this way. Each connection can then be used 
 
 ## Release Connections
 
-Once the user has finished using a connection, it can be returned to the pool. You must pass each connection in turn desired to release. Don't forget to manage each single connection's lifecycle properly prior to requesting its release.
+Once the user has finished using a connection, it can be returned to the pool. You must release a single connection at a time. Don't forget to manage each single connection's lifecycle properly prior to requesting its release.
 
 ```js
 await pool.releaseConnection(conn1)
@@ -144,6 +144,6 @@ Key | Value
 **connectionRetryLimit** | amount of times a pool will attempt to create a connection, default of 5 is used if no argument is provided.
 **id** | optional argument to give the pool an id. As default the pool will be provided the “new Date().getTime()” at the time of its creation as its id.
 **skipCheckLivelinessOnRelease** | turns off liveliness checks on connections when they are released back to the pool, which is different than the checkTime that is used for aging purposes. The default is false, meaning we will perform a liveliness check when a connection is returned to the pool.
-**livelinessCheck** | indicates the type of liveliness check to be performed. By default, the value is set to "query", which means a query to test the connection. If set to any value (quoted string) other than "query", it will only look to see if the NuoDB API isConnected returns true and we have not trapped a connection related exception previously.
+**livelinessCheck** | indicates the type of liveliness check to be performed. By default, the value is set to "query", which means a query is used to test the connection. If set to any value (quoted string) other than "query", it will only look to see if the NuoDB API isConnected returns true and we have not trapped a connection related exception previously.
 
 
