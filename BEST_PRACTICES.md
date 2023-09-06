@@ -3,9 +3,7 @@
 
 ## Single Connection vs Connection Pool
 
-While connection pooling offers advantages in managing multiple concurrent connections efficiently, a single connection might be preferred when dealing with specific use cases that prioritize simplicity, resource optimization, and predictable transactional behavior. 
-
-Maintaining a single connection can reduce the overhead associated with connection establishment and teardown. A single connection should result in quicker response times and is a more straightforward approach in applications with
+While connection pooling offers advantages in managing multiple concurrent connections efficiently, a single connection might be preferred when dealing with specific use cases that prioritize simplicity, resource optimization, and predictable transactional behavior. A single connection should result in quicker response times and is a more straightforward approach in applications with
 
 - Low to moderate traffic 
 - Relatively stable workloads
