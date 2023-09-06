@@ -5,11 +5,6 @@ The `node-nuodb` add-on for **Node.js** powers high performance **NuoDB** databa
 Uilizing the **NuoDB** **Node.js** driver allows developers to harness NuoDB's distributed architecture and dynamic scaling, while benefiting from **Node.js**' ease. This guide will help you set up, configure, and use the driver to connect seamlessly to a **NuoDB** database, empowering your applications to integrate smoothly with its advanced database technology.
 
 
-## Dependencies
-
-- Node 16.13.2
-
-
 ## Installation
 
 **NuoDB** has been designed for gradual adoption from the start, and you can use as little or as much of its capabilities as you need. To connect to a **NuoDB** database, you need to have **NuoDB** installed first. 
