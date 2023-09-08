@@ -5,7 +5,7 @@
 
 var config = {};
 
-config.database = 'test@localhost:48004,test@nuordcbig02:48004';
+config.database = 'test@ad1:48004';
 config.user = 'dba';
 config.password = 'dba';
 config.schema = 'USER';

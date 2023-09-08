@@ -27,7 +27,7 @@ format:
 #:help: build       | Creates a `build` Docker image variant
 .PHONY: build
 build:
-	docker build --target build --network nuodb-net -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
+	docker build --target build --network nuodb-net -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
 
 #:help: test        | Runs the `test` target, building and testing the driver.
 #changed to properly create and mount volumes
@@ -64,12 +64,12 @@ onbuild:
 #:help: package     | Creates a `package` Docker image
 .PHONY: package
 package:
-	docker build --target package -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-package .
+	docker build --target package -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-package .
 
 #:help: release     | Creates a `release` Docker image
 .PHONY: release
 release:
-	docker build --target release -f dockers/centos/Dockerfile -t nuodb/node-nuodb:$(VERSION)-centos .
+	docker build --target release -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-slim .
 	docker build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
 
 #:help: start-clair | Starts clair so we can perform image scans.
@@ -86,7 +86,7 @@ scan:
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(CURDIR)/clair-whitelist.yaml:/tmp/clair-whitelist.yaml nuodb/clair-scanner \
 		--clair="http://clair:6060" --ip="scanner" \
-    --threshold Medium --whitelist /tmp/clair-whitelist.yaml nuodb/node-nuodb:$(VERSION)-centos
+    --threshold Medium --whitelist /tmp/clair-whitelist.yaml nuodb/node-nuodb:$(VERSION)-slim
 	docker run --net=scanning --rm --name=scanner --link=clair:clair \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(CURDIR)/clair-whitelist.yaml:/tmp/clair-whitelist.yaml nuodb/clair-scanner \
@@ -107,7 +107,7 @@ clean:
 	-docker rm $(docker ps --all -q -f status=created)
 	-docker rmi -f nuodb/node-nuodb:$(VERSION)-build
 	-docker rmi -f nuodb/node-nuodb:$(VERSION)-onbuild
-	-docker rmi -f nuodb/node-nuodb:$(VERSION)-centos
+	-docker rmi -f nuodb/node-nuodb:$(VERSION)-slim
 	-docker image prune -f
 	-rm -fr build node_modules
 
