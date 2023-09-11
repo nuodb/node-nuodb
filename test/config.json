@@ -1,0 +1,27 @@
+{
+  "DBConnect":
+    {
+	"database" : "test@nuordc01:48004",
+	"user" : "dba",
+	"password" : "dba",
+	"schema" : "USER"
+    },
+    "REST":
+      { 
+	"hostname" : "localhost",
+	"port" : "8888"
+      },
+    "extraTE":
+      {
+	"engineType" : "TE",
+	"host" : "nuoadmin-3",
+	"dbName" : "test"
+      },
+    "sshInfo":
+    {
+	"user" : "dwe5",
+	"password" : "Yellowcard23!@#$",
+	"host" : "nuordc01"
+    }
+}
+
