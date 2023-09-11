@@ -1,10 +1,10 @@
-#ifndef NUOJS_CONNECTION_H
-#define NUOJS_CONNECTION_H
-
-// Copyright (c) 2018-2019, NuoDB, Inc.
+// Copyright 2023, Dassault Systèmes SE
 // All rights reserved.
 //
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
+
+#ifndef NUOJS_CONNECTION_H
+#define NUOJS_CONNECTION_H
 
 #include "NuoJsAddon.h"
 #include "NuoDB.h"
