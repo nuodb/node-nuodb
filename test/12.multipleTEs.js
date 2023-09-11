@@ -8,8 +8,15 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config');
 var async = require('async');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 const getNodeIdQuery = 'SELECT GETNODEID() FROM SYSTEM.DUAL';
 const getNodesQuery = 'SELECT * FROM SYSTEM.NODES';
@@ -32,7 +39,7 @@ describe('12. Test Connection to multiple TEs', () => {
 
   before('open connection, init tables', async () => {
     driver = new Driver();
-    connection = await driver.connect(config);
+    connection = await driver.connect(DBConnect);
     connection.should.be.ok();
 
     let err = null;
@@ -60,7 +67,7 @@ describe('12. Test Connection to multiple TEs', () => {
 
     // open up a bunch of connections, and figure ot what node is being connected to
     for(let i = 0; i < numConnectionsToTest; i++){
-      const nodeConnection = await driver.connect(config);
+      const nodeConnection = await driver.connect(DBConnect);
       const results = await nodeConnection.execute(getNodeIdQuery);
       const rows = await results.getRows();
       (rows.length).should.be.eql(1);
@@ -92,7 +99,7 @@ describe('12. Test Connection to multiple TEs', () => {
           // connect to each unique TE directly
           let err = null;
           try {
-            const nodeConfig = {... config
+            const nodeConfig = {... DBConnect
               , database: `test@localhost:${n.PORT}`
               , direct: "true"};
             const nodeConnection = await driver.connect(nodeConfig);
@@ -123,7 +130,7 @@ describe('12. Test Connection to multiple TEs', () => {
             // connect to each unique TE directly
             let err = null;
             try {
-              const nodeConfig = {... config
+              const nodeConfig = {... DBConnect
                 , LBQuery: `round_robin(node_id(${n.ID}))`};
               const nodeConnection = await driver.connect(nodeConfig);
               nodeConnection.should.be.ok();

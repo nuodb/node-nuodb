@@ -10,8 +10,15 @@ const RESULT_SET_TEST_TIMEOUT = 50000;
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config');
 var helper = require('./typeHelper');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 // constants for 13.1
 const tableNameChunk = 'TEST_RESULTSET';
@@ -38,7 +45,7 @@ describe('13. Test Result Set', () => {
 
   before('open connection, init tables', async () => {
     driver = new Driver();
-    connection = await driver.connect(config);
+    connection = await driver.connect(DBConnect);
     connection.should.be.ok();
 
     // for 13.1 Can get results in chunks

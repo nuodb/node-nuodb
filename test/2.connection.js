@@ -8,7 +8,13 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config.js');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
 
 describe('2. testing connections', function () {
 
@@ -19,7 +25,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.1 properly opens and releases connections', function (done) {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
       connection.close(function (err) {
         should.not.exist(err);
@@ -29,7 +35,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.2 raises an exception if calling method, commit(), after closed', function (done) {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
       connection.close(function (err) {
         should.not.exist(err);
@@ -43,7 +49,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.3 raises an exception if calling method, rollback(), after closed', function (done) {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
       connection.close(function (err) {
         should.not.exist(err);
@@ -57,7 +63,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.4 raises an exception if calling method, close(), after closed', function (done) {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
       connection.close(function (err) {
         should.not.exist(err);
@@ -71,7 +77,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.5 raises an exception if calling method, execute(), after closed', function (done) {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
       connection.close(function (err) {
         should.not.exist(err);
@@ -86,7 +92,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.10 setting auto-commit', function () {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
 
       describe('2.10.1 with non-boolean values raises an exception', function () {
@@ -141,7 +147,7 @@ describe('2. testing connections', function () {
   });
 
   it('2.11 setting read-only', function () {
-    driver.connect(config, function (err, connection) {
+    driver.connect(DBConnect, function (err, connection) {
       should.not.exist(err);
 
       describe('2.11.1 with non-boolean values raises an exception', function () {

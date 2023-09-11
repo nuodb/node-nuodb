@@ -8,7 +8,14 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 describe('3. testing promises', function () {
 
@@ -20,7 +27,7 @@ describe('3. testing promises', function () {
 
   it('3.1 returns a promise from Connection.connect', function (done) {
 
-    var promise = driver.connect(config);
+    var promise = driver.connect(DBConnect);
     promise
       .then(function (connection) {
         connection.should.be.ok();
@@ -39,7 +46,7 @@ describe('3. testing promises', function () {
   });
 
   it('3.2 returns a promise from connection.close', function (done) {
-    driver.connect(config)
+    driver.connect(DBConnect)
       .then(function (conn) {
         conn.should.be.ok();
         var promise = conn.close();
@@ -55,7 +62,7 @@ describe('3. testing promises', function () {
   });
 
   it('3.2 returns a promise from connection.commit', function (done) {
-    driver.connect(config)
+    driver.connect(DBConnect)
       .then(function (conn) {
         conn.should.be.ok();
         var promise = conn.commit();
@@ -72,7 +79,7 @@ describe('3. testing promises', function () {
   });
 
   it('3.2 returns a promise from connection.rollback', function (done) {
-    driver.connect(config)
+    driver.connect(DBConnect)
       .then(function (conn) {
         conn.should.be.ok();
         var promise = conn.rollback();
@@ -89,7 +96,7 @@ describe('3. testing promises', function () {
   });
 
   it('3.3 can run the documentation promises sample', function (done) {
-    driver.connect(config)
+    driver.connect(DBConnect)
       .then(connection => {
         connection.execute('SELECT 1 FROM DUAL')
           .then(results => {

@@ -8,7 +8,13 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config.js');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
 
 describe('1. testing callback', () => {
 
@@ -19,7 +25,7 @@ describe('1. testing callback', () => {
   });
 
   it('1.1 open and close connections using callbacks', function (done) {
-    driver.connect(config, (err, conn) => {
+    driver.connect(DBConnect, (err, conn) => {
       should.not.exist(err);
       const connection = conn;
       connection.should.be.ok();
@@ -32,7 +38,7 @@ describe('1. testing callback', () => {
   });
 
   it('1.2 can run the sample', function (done) {
-    driver.connect(config, (err, conn) => {
+    driver.connect(DBConnect, (err, conn) => {
       should.not.exist(err);
       const connection = conn;
       connection.should.be.ok();

@@ -8,8 +8,15 @@
 var { Driver } = require("..");
 var should = require("should");
 var async = require("async");
-var config = require("./config");
 var helper = require("./typeHelper");
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 describe("6. autoCommit.js", function () {
   this.timeout(5000);
@@ -22,7 +29,7 @@ describe("6. autoCommit.js", function () {
 
   before("open connection", function (done) {
     driver = new Driver();
-    driver.connect(config, function (err, conn) {
+    driver.connect(DBConnect, function (err, conn) {
       should.not.exist(err);
       connection = conn;
       done();

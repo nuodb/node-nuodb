@@ -8,9 +8,16 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config');
 var helper = require('./typeHelper');
 var async = require('async');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 const data = [
   'hello world',
@@ -34,7 +41,7 @@ describe('10. pattern matching clauses', () => {
 
   before('open connection, init tables', async () => {
     driver = new Driver();
-    connection = await driver.connect(config);
+    connection = await driver.connect(DBConnect);
     connection.should.be.ok();
 
     await connection.execute(helper.sqlDropTable(tableName));
