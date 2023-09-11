@@ -8,8 +8,15 @@
 var { Driver } = require('..');
 var should = require('should');
 var async = require('async');
-var config = require('./config');
 var helper = require('./typeHelper');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 var driver = null;
 var connection = null;
@@ -19,7 +26,7 @@ var testCases = require('./typeTestCases').testCases;
 describe('7. testing types', async () => {
   before('open connection', async () => {
     driver = new Driver();
-    connection = await driver.connect(config);
+    connection = await driver.connect(DBConnect);
   })
 
   after('close connection', async () => {

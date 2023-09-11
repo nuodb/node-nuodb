@@ -8,7 +8,14 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config.js');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 const sleep = (ms) => new Promise((res) => {
   setTimeout(() => res(),ms)
@@ -22,7 +29,7 @@ describe('8. testing query timeout', () => {
   let connection = null;
 
   before('create driver', async () => {
-    connection = await driver.connect(config);
+    connection = await driver.connect(DBConnect);
   });
 
   after('close connection', async () => {
@@ -59,8 +66,9 @@ describe('8. testing query timeout', () => {
 
   it('8.3 No query timeout on app layer wait', async () => {
     let e = null;
+    let result = null;
     try {
-      const result = await connection.execute(msleepQuery, [1000], {queryTimeout: 3000});
+      result = await connection.execute(msleepQuery, [1000], {queryTimeout: 3000});
       result.should.be.ok();
       // sleep 4 seconds to ensure that the app layer is sleeping longer than the query would take to timeout
       await sleep(4000);

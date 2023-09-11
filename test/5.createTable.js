@@ -8,7 +8,14 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config.js');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 var createTable = 'CREATE TABLE IF NOT EXISTS types \
   (\
@@ -36,7 +43,7 @@ describe('5. calling execute ', function () {
   describe('5.1 to create, insert into, and delete tables', function () {
     var connection = null;
     before(function (done) {
-      driver.connect(config, function (err, conn) {
+      driver.connect(DBConnect, function (err, conn) {
         should.not.exist(err);
         connection = conn;
         connection.execute(createTable, function (err, results) {

@@ -8,7 +8,14 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config.js');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 describe('4. testing await', () => {
 
@@ -20,7 +27,7 @@ describe('4. testing await', () => {
 
   it('4.1 open and close connections using async/await', async function () {
     try {
-      var connection = await driver.connect(config);
+      var connection = await driver.connect(DBConnect);
       connection.should.be.ok();
       await connection.close();
       connection.should.be.ok();
@@ -32,7 +39,7 @@ describe('4. testing await', () => {
   it('4.2 can run the documentation async/await sample', function () {
 
     (async () => {
-      var connection = await driver.connect(config);
+      var connection = await driver.connect(DBConnect);
       try {
         var results = await connection.execute('SELECT 1 AS VALUE FROM DUAL');
         var rows = await results.getRows();

@@ -8,7 +8,14 @@
 var { Driver } = require('..');
 
 var should = require('should');
-var config = require('./config.js');
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 const sprocCreate = `
   CREATE OR REPLACE PROCEDURE DUMMY_PROCEDURE (in_number INT)
@@ -34,7 +41,7 @@ describe('9. testing stored procedures', () => {
 
   before('open connection', async () => {
     driver = new Driver();
-    connection = await driver.connect(config);
+    connection = await driver.connect(DBConnect);
     connection.should.be.ok();
   });
 

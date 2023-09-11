@@ -7,11 +7,18 @@
 
 const { Pool } = require("..");
 var should = require("should");
-var config = require("./config");
+const nconf = require('nconf');
+const args = require('yargs').argv;
+
+// Setup order for test parameters and default configuration file
+nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+
+var DBConnect = nconf.get('DBConnect');
+
 
 const poolArgs = {
   minAvailable: 10,
-  connectionConfig: config,
+  connectionConfig: DBConnect,
   maxAge: 2000,
   checkTime: 10000,
   maxLimit: 12,
