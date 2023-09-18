@@ -1,7 +1,7 @@
 {
   "DBConnect":
     {
-	"database" : "test@nuordc01:48004",
+	"database" : "test@ad1:48004",
 	"user" : "dba",
 	"password" : "dba",
 	"schema" : "USER"

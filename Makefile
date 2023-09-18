@@ -27,6 +27,7 @@ format:
 #:help: build       | Creates a `build` Docker image variant
 .PHONY: build
 build:
+	docker network create nuodb-net || true
 	docker build --target build --network nuodb-net -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
 
 #:help: test        | Runs the `test` target, building and testing the driver.
