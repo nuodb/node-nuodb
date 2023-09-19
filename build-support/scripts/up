@@ -32,3 +32,8 @@ docker run -d --name te1 --hostname te1 --rm \
     --net nuodb-net ${IMG_NAME} nuodocker \
     --api-server ad1:8888 start te \
     --db-name test --server-id ad1
+
+docker run -d --name te2 --hostname te2 --rm \
+    --net nuodb-net ${IMG_NAME} nuodocker \
+    --api-server ad1:8888 start te \
+    --db-name test --server-id ad1

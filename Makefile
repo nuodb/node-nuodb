@@ -45,6 +45,13 @@ test-only:
 	docker volume create valgrind
 	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
+#:help: this-test  | Runs a single test file
+.PHONY: this-test
+this-test: build
+	docker volume create cores
+	docker volume create valgrind
+	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test)
+
 #:help: valgrind    | Runs the `valgrind` target, building the driver and running a sample application under valgrind.
 .PHONY: valgrind
 valgrind: build
