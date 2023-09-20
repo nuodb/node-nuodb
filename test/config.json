@@ -11,12 +11,12 @@
   },
   "extraTE": {
     "engineType": "TE",
-    "host": "te2",
+    "host": "nuoadmin-3",
     "dbName": "test"
   },
   "sshInfo": {
     "user": "xxxx",
     "password": "yyyyyyyyyyyy",
-    "host": "ad1"
+    "host": "nuordc01"
   }
 }
