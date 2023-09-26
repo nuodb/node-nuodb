@@ -2,11 +2,11 @@
 
 Node.js NAN C++ NuoDB Driver
 
-The node-nuodb add-on for Node.js powers high performance NuoDB Database applications.
+The nuodb driver add-on for Node.js powers high performance NuoDB Database applications.
 
-Use node-nuodb to connect Node.js to a NuoDB Database.
+Use nuodb driver to connect Node.js to a NuoDB Database.
 
-node-nuodb supports basic features of the NuoDB Database and NuoDB C++ client.
+nuodb driver supports basic features of the NuoDB Database and NuoDB C++ client.
 
 ## Dependencies
 
@@ -35,7 +35,7 @@ If you have NuoDB installed locally, skip to step 4
    npm test
 
 7. Import the driver into your node.js project.
-   var Driver = require('/path/to/driver/repo/node-nuodb');
+   var Driver = require('/path/to/driver/repo/nuodb');
 
 ## Documentation
 
@@ -174,7 +174,7 @@ Any `try` `catch` block in which NuoDB resources are created must be followed by
 
 ## Help
 
-Issues and questions about node-nuodb can be posted on [GitHub][2].
+Issues and questions about nuodb driver can be posted on [GitHub][2].
 
 ## License
 
