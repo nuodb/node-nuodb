@@ -1,12 +1,14 @@
 {
-  "name": "node-nuodb",
-  "author": "NuoDB, Inc.",
-  "description": "The official NuoDB driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
-  "license": "Apache-2.0",
-  "version": "3.6.0",
+  "name": "nuodb",
+  "author": "Dassault Systèmes SE",
+  "description": "The official NuoDB database driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
+  "license": "BSD-3-Clause",
+  "version": "3.7.0",
   "main": "index.js",
   "keywords": [
     "nuodb",
+    "database",
+    "SQL"
     "driver",
     "official"
   ],
@@ -24,7 +26,6 @@
   "gypfile": true,
   "dependencies": {
     "bindings": "^1.5.0",
-    "js-beautify": "^1.14.9",
     "nan": "^2.17.0",
     "nconf": "^0.12.0",
     "node-gyp": "^8.4.1",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "async": "^3.2.3",
     "eslint": "^8.6.0",
+    "js-beautify": "^1.14.9",
     "mocha": "^9.2.2",
     "okay": "^1.0.0",
     "should": "^13.2.3"
