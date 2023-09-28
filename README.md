@@ -1,6 +1,4 @@
-# node-nuodb
-
-Node.js NAN C++ NuoDB Driver
+# Node.js NAN C++ NuoDB Driver
 
 The nuodb driver add-on for Node.js powers high performance NuoDB Database applications.
 
