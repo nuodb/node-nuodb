@@ -8,4 +8,6 @@ vol1/
 vol2/
 
 build/
+crash.log
+lib/nuodb_nodejs.log
 node_modules/
