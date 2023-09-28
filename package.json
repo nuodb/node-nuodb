@@ -22,7 +22,6 @@
   "engines": {
     "node": ">=8"
   },
-  "private": true,
   "gypfile": true,
   "dependencies": {
     "bindings": "^1.5.0",
