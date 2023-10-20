@@ -47,7 +47,7 @@ helper.dropTable = function (connection, tableName, done) {
 helper.insertDataArray = function (connection, tableName, values, done) {
   // console.log(values);
   async.series(values.map((value) => (cb) => {
-    // console.log(value);
+    console.log(value);
     connection.execute(helper.sqlInsert(tableName), [value], function (err, results) {
       should.not.exist(err);
       should.not.exist(results);

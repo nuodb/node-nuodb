@@ -563,19 +563,26 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
                     break;
                 }
                 case NuoDB::NUOSQL_DATE: {
+		    int bufsize = 80;
                     char buffer[80];
+		    // Initializing buffer to string termination so there is
+		    // no possible unterminated string placed in the buffer.
+		    memset(buffer,'\0',bufsize);
                     time_t seconds = (time_t)(toInt64(value) / 1000);
                     struct tm* timeinfo;
                     timeinfo = localtime(&seconds);
-                    strftime(buffer, 80, "%F %T", timeinfo);
+                    strftime(buffer, bufsize, "%F %T", timeinfo);
+		    int strsize = strlen(buffer);
                     // buffer = "YYYY-MM-DD HH:MM:SS" -- 19 characters long
                     int ms = toInt64(value) % 1000;
-                    buffer[19] = '.';
-                    buffer[20] = '0' + ms / 100;
+                    buffer[strsize] = '.';
+                    buffer[++strsize] = '0' + ms / 100;
                     ms %= 100;
-                    buffer[21] = '0' + ms / 10;
+                    buffer[++strsize] = '0' + ms / 10;
                     ms %= 10;
-                    buffer[22] = '0' + ms;
+                    buffer[++strsize] = '0' + ms;
+		    
+		    assert (strsize < bufsize);
 
                     statement->setString(sqlIdx, buffer);
                     break;
