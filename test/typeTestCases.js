@@ -1,4 +1,5 @@
 var should = require('should');
+var now = Date();
 const testCases = [
   {
     type: 'BINARY',
@@ -234,6 +235,8 @@ const testCases = [
       new Date('2015-07-23 23:00:00.789123'),
       new Date('2015-07-24 00:00:00.456789'),
       new Date('2015-07-23 12:34:56.123456'),
+      new Date('2023-09-16T07:36:49.693Z'),
+      new Date(now),
     ],
     checkResults: (rows) => {
       (rows).should.containEql({F1: new Date(-100000000)});
@@ -247,6 +250,8 @@ const testCases = [
       (rows).should.containEql({F1: new Date('2015-07-23 23:00:00.789123')});
       (rows).should.containEql({F1: new Date('2015-07-24 00:00:00.456789')});
       (rows).should.containEql({F1: new Date('2015-07-23 12:34:56.123456')});
+      (rows).should.containEql({F1: new Date('2023-09-16T07:36:49.693Z')});
+      (rows).should.containEql({F1: new Date(now)});
     }
   },
   {
