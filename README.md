@@ -1,5 +1,7 @@
 # Node.js NAN C++ NuoDB Driver
 
+[![Run NuoDB NodeJS Tests](https://github.com/eresende-nuodb/node-nuodb/actions/workflows/test.yml/badge.svg)](https://github.com/eresende-nuodb/node-nuodb/actions/workflows/test.yml)
+
 The nuodb driver add-on for Node.js powers high performance NuoDB Database applications.
 
 Use nuodb driver to connect Node.js to a NuoDB Database.
