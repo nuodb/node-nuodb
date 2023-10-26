@@ -1,6 +1,6 @@
 # Node.js NAN C++ NuoDB Driver
 
-[![Functional Tests](https://github.com/eresende-nuodb/node-nuodb/actions/workflows/test.yml/badge.svg)](https://github.com/eresende-nuodb/node-nuodb/actions/workflows/test.yml)
+[![Functional Tests](https://github.com/eresende-nuodb/node-nuodb/actions/workflows/nightly-tests.yml/badge.svg)](https://github.com/eresende-nuodb/node-nuodb/actions/workflows/nightly-tests.yml)
 
 The nuodb driver add-on for Node.js powers high performance NuoDB Database applications.
 

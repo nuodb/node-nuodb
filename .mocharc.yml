@@ -1,0 +1,9 @@
+reporter: 'spec'
+recursive: true
+check-leaks: true
+require:
+  - 'should'
+  - 'async'
+ui: 'bdd'
+ignore: 
+  - 'test/nightly/14.errorHandling.js'

@@ -6,13 +6,13 @@
 "use strict";
 const {
   Driver
-} = require("..");
+} = require("../..");
 const {
   exec
 } = require("child_process");
 const should = require("should");
 const http = require("http");
-const safeExecute = require('../examples/safeExecute');
+const safeExecute = require('../../examples/safeExecute');
 const sshexec = require('ssh-exec');
 var process = require('process');
 var nconf = require('nconf');

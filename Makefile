@@ -30,13 +30,28 @@ build:
 	docker network create nuodb-net || true
 	docker build --target build --network nuodb-net -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
 
-#:help: test        | Runs the `test` target, building and testing the driver.
+#:help: smoke-tests        | Runs the `test` target, building and testing the driver.
 #changed to properly create and mount volumes
-.PHONY: test
-test: build
+.PHONY: smoke-tests
+smoke-tests: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-smoke
+
+#:help: nightly-tests        | Runs the `test-nightly` target which takes longer to run.
+.PHONY: nightly-tests
+nightly-tests: build
+	docker volume create cores
+	docker volume create valgrind
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-nightly
+
+#:help: all-tests   | Runs both smoke-tests and nightly-tests
+.PHONY: all-tests
+all-tests: build
+	docker volume create cores
+	docker volume create valgrind
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test test-nightly
+
 
 #:help: test-only   | Runs the `test` target, testing the driver without building the Docker.
 .PHONY: test-only
