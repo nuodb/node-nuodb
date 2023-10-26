@@ -16,7 +16,7 @@ jobs:
       NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client-2023.2.lin-x64'
       DOCKER_BUILDKIT: false
     steps:
-      - uses: actions/checkout@4
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
