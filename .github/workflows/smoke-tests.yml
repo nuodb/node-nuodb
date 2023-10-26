@@ -27,5 +27,5 @@ jobs:
       - name: Make sure we have a clean environment
         run: make dn || true
       - name: Start NuoDB test database and run tests
-        run: make up && make smoke-test
+        run: make up && make smoke-tests
 
