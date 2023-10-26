@@ -1,0 +1,28 @@
+name: Run NuoDB NodeJS Tests
+
+
+on:
+  push:
+    branches:
+      - master
+      - dummy
+  pull_request:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client-2023.2.lin-x64'
+      DOCKER_BUILDKIT: false
+    steps:
+      - uses: actions/checkout@4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: mkdir /tmp/nuodb-client-package
+      - run: wget https://github.com/nuodb/nuodb-client/releases/download/v2023.2/nuodb-client-2023.2.lin-x64.tar.gz -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz
+      - run: cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
+      - run: make dn || true
+      - run: make up && make test
+
