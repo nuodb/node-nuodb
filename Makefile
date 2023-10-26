@@ -36,33 +36,33 @@ build:
 test: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: test-only   | Runs the `test` target, testing the driver without building the Docker.
 .PHONY: test-only
 test-only:
 	docker volume create cores
 	docker volume create valgrind
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: this-test  | Runs a single test file
 .PHONY: this-test
 this-test: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test)
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test)
 
 #:help: valgrind    | Runs the `valgrind` target, building the driver and running a sample application under valgrind.
 .PHONY: valgrind
 valgrind: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run -it --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run valgrind
+	docker run -t --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run valgrind
 
 #:help: run-build   | Runs the `build` Docker variant
 .PHONY: run-build
 run-build:
-	docker run -it --cap-add=SYS_PTRACE --network nuodb-net --rm nuodb/node-nuodb:$(VERSION)-build bash
+	docker run -t --cap-add=SYS_PTRACE --network nuodb-net --rm nuodb/node-nuodb:$(VERSION)-build bash
 
 #:help: onbuild     | Creates an `ONBUILD` Docker image variant
 .PHONY: onbuild
