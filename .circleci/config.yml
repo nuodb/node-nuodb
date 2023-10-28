@@ -5,6 +5,9 @@ jobs:
     docker:
       - image: cimg/node:18.18
     resource_class: medium
+    environment:
+      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client-2023.2.lin-x64'
+      DOCKER_BUILDKIT: false
     steps:
       - checkout
       - setup_remote_docker
