@@ -1,13 +1,42 @@
 version: 2.1
 
 jobs:
+  smoke_tests:
+    docker:
+      - image: cimg/node:18.18
+    resource_class: medium
+    environment:
+      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client-2023.2.lin-x64'
+      DOCKER_BUILDKIT: 'false'
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Get latest NuoDB Client package
+          command: |
+            mkdir /tmp/nuodb-client-package
+            curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
+            | grep "browser_download_url.*tar.gz" \
+            | cut -d : -f 2,3 \
+            | tr -d \" \
+            | wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -qi -
+      - run:
+          name: Extract client package for testing
+          command: cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
+      - run:
+          name: Make sure we have a clean environment
+          command: make dn || true
+      - run:
+          name: Start NuoDB test database and run tests
+          command: make up && make nightly-tests
+
   nightly_tests:
     docker:
       - image: cimg/node:18.18
     resource_class: medium
     environment:
       NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client-2023.2.lin-x64'
-      DOCKER_BUILDKIT: false
+      DOCKER_BUILDKIT: 'false'
     steps:
       - checkout
       - setup_remote_docker
@@ -31,7 +60,18 @@ jobs:
           command: make up && make nightly-tests
 
 workflows:
+  run_smoke_tests:
+    jobs:
+      - smoke_tests
+
   run_nightly_tests:
     jobs:
       - nightly_tests
+    triggers:
+      - schedule:
+          cron: "0 15 * * *"
+          filters:
+            branches:
+              only:
+                - master
 
