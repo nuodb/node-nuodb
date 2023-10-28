@@ -69,7 +69,7 @@ workflows:
       - nightly_tests
     triggers:
       - schedule:
-          cron: "0 15 * * *"
+          cron: "15 0 * * *"
           filters:
             branches:
               only:
