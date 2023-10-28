@@ -1,0 +1,33 @@
+version: 2.1
+
+jobs:
+  nightly_tests:
+    docker:
+      - image: cimg/node:18.18
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: Get latest NuoDB Client package
+          command: |
+            mkdir /tmp/nuodb-client-package
+            curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
+            | grep "browser_download_url.*tar.gz" \
+            | cut -d : -f 2,3 \
+            | tr -d \" \
+            | wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -qi -
+      - run:
+          name: Extract client package for testing
+          command: cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
+      - run:
+          name: Make sure we have a clean environment
+          command: make dn || true
+      - run:
+          name: Start NuoDB test database and run tests
+          command: make up && make nightly-tests
+
+workflows:
+  run_nightly_tests:
+    jobs:
+      - nightly-tests
+
