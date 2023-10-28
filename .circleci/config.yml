@@ -29,5 +29,5 @@ jobs:
 workflows:
   run_nightly_tests:
     jobs:
-      - nightly-tests
+      - nightly_tests
 
