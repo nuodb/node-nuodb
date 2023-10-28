@@ -28,7 +28,7 @@ jobs:
           command: make dn || true
       - run:
           name: Start NuoDB test database and run tests
-          command: make up && make nightly-tests
+          command: make up && make smoke-tests
 
   nightly_tests:
     docker:
