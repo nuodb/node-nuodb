@@ -65,6 +65,8 @@ workflows:
       - smoke_tests
 
   run_nightly_tests:
+    when:
+      equal: [ api, << pipeline.trigget_source >> ]
     jobs:
       - nightly_tests
     triggers:
