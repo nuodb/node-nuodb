@@ -69,11 +69,4 @@ workflows:
       equal: [ api, << pipeline.trigger_source >> ]
     jobs:
       - nightly_tests
-    triggers:
-      - schedule:
-          cron: "15 0 * * *"
-          filters:
-            branches:
-              only:
-                - master
 
