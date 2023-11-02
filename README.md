@@ -1,5 +1,7 @@
 # Node.js NAN C++ NuoDB Driver
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/eresende-nuodb/node-nuodb/tree/master.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/eresende-nuodb/node-nuodb/tree/master)
+
 The nuodb driver add-on for Node.js powers high performance NuoDB Database applications.
 
 Use nuodb driver to connect Node.js to a NuoDB Database.

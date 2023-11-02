@@ -6,7 +6,7 @@
 'use strict';
 
 
-const { Pool } = require('..');
+const { Pool } = require('../..');
 var async = require('async');
 const should = require('should');
 const nconf = require('nconf');

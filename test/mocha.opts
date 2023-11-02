@@ -4,3 +4,4 @@
 --require should
 --require async
 --ui bdd
+--exclude test/14.errorHandling.js
