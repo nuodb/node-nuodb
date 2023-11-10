@@ -30,6 +30,11 @@ jobs:
           name: Start NuoDB test database and run tests
           command: make up && sleep 10 && make status && make smoke-tests
 
+  parameters:
+    run-nightly-tests:
+      type: boolean
+      default: false
+
   nightly_tests:
     docker:
       - image: cimg/node:18.18
@@ -66,7 +71,7 @@ workflows:
 
   run_nightly_tests:
     when:
-      equal: [ api, << pipeline.trigger_source >> ]
+      when: << pipeline.parameters.run-nightly-tests >>
     jobs:
       - nightly_tests
 
