@@ -30,11 +30,6 @@ jobs:
           name: Start NuoDB test database and run tests
           command: make up && sleep 10 && make status && make smoke-tests
 
-  parameters:
-    run-nightly-tests:
-      type: boolean
-      default: false
-
   nightly_tests:
     docker:
       - image: cimg/node:18.18
@@ -63,6 +58,10 @@ jobs:
       - run:
           name: Start NuoDB test database and run tests
           command: make up && sleep 10 && make status && make nightly-tests
+parameters:
+  run-nightly-tests:
+    type: boolean
+    default: false
 
 workflows:
   run_smoke_tests:
