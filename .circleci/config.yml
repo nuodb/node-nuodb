@@ -6,7 +6,7 @@ jobs:
       - image: cimg/node:18.18
     resource_class: 'medium'
     environment:
-      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client-2023.2.lin-x64'
+      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
       DOCKER_BUILDKIT: 'false'
     steps:
       - checkout
@@ -15,14 +15,13 @@ jobs:
           name: Get latest NuoDB Client package
           command: |
             mkdir /tmp/nuodb-client-package
-            curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
+            export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
             | grep "browser_download_url.*tar.gz" \
             | cut -d : -f 2,3 \
-            | tr -d \" \
-            | wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -qi -
-      - run:
-          name: Extract client package for testing
-          command: cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
+            | tr -d " " | tr -d \")"
+            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -qi -
+            cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
+            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_UR")" /tmp/nuodb-client-package/nuodb-client.lin-x64
       - run:
           name: Make sure we have a clean environment
           command: make dn || true
