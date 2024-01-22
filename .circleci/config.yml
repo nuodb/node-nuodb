@@ -19,9 +19,9 @@ jobs:
             | grep "browser_download_url.*tar.gz" \
             | cut -d : -f 2,3 \
             | tr -d " " | tr -d \")"
-            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -qi -
+            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
             cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
-            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_UR")" /tmp/nuodb-client-package/nuodb-client.lin-x64
+            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
       - run:
           name: Make sure we have a clean environment
           command: make dn || true
