@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-: ${IMG_NAME:="nuodb/nuodb-ce:latest"}
+: ${IMG_NAME:="nuodb/nuodb:5.1"}
 
 docker network create nuodb-net
 
