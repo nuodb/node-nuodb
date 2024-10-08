@@ -6,7 +6,7 @@
 # -------------------------------------
 # nuodb image
 
-FROM nuodb/nuodb:5.1 AS nuodb
+FROM nuodb/nuodb:latest AS nuodb
 
 # -------------------------------------
 # build image
