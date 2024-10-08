@@ -64,11 +64,15 @@ parameters:
 workflows:
   run_smoke_tests:
     jobs:
-      - smoke_tests
+      - smoke_tests:
+          context:
+            - common-config
 
   run_nightly_tests:
     when:
       when: << pipeline.parameters.run-nightly-tests >>
     jobs:
-      - nightly_tests
+      - nightly_tests:
+          context:
+            - common-config
 
