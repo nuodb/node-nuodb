@@ -24,7 +24,7 @@ echo
 
 # Apply limited license
 echo -n "Applying license.. "
-docker exec -it -e "NUODB_LIMITED_LICENSE_CONTENT=$NUODB_LIMITED_LICENSE_CONTENT" ad1 /bin/bash -c 'echo "$NUODB_LIMITED_LICENSE_CONTENT" > ~/nuodb.lic && nuocmd set license --license-file ~/nuodb.lic && rm ~/nuodb.lic'
+docker exec -it -e "NUODB_LIMITED_LICENSE_CONTENT=$NUODB_LIMITED_LICENSE_CONTENT" ad1 /bin/bash -c 'echo "$NUODB_LIMITED_LICENSE_CONTENT" | base64 -d > ~/nuodb.lic && nuocmd set license --license-file ~/nuodb.lic && rm ~/nuodb.lic'
 echo "Done!"
 
 #changed to properly create and mount volumes

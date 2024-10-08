@@ -27,7 +27,7 @@ jobs:
           command: make dn || true
       - run:
           name: Start NuoDB test database and run tests
-          command: NUODB_LIMITED_LICENSE_CONTENT="$NUODB_LIMITED_LICENSE_CONTENT" make up && sleep 10 && make status && make smoke-tests
+          command: make up && sleep 10 && make status && make smoke-tests
 
   nightly_tests:
     docker:
@@ -55,7 +55,7 @@ jobs:
           command: make dn || true
       - run:
           name: Start NuoDB test database and run tests
-          command: NUODB_LIMITED_LICENSE_CONTENT="$NUODB_LIMITED_LICENSE_CONTENT" make up && sleep 10 && make status && make nightly-tests
+          command: make up && sleep 10 && make status && make nightly-tests
 parameters:
   run-nightly-tests:
     type: boolean
