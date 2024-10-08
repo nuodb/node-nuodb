@@ -55,12 +55,3 @@ docker run -d --name te2 --hostname te2 --rm \
     --db-name test --server-id ad1
 echo "Done!"
 
-echo -n "Wating for database to start..."
-while ! $COMMAND | grep -q "state = RUNNING"; do
-    echo "."
-    sleep 2
-done
-sleep 2
-echo "Done!"
-$COMMAND
-
