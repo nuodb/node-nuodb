@@ -23,11 +23,11 @@ jobs:
             cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
             mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
       - run:
-          name: Make sure we have a clean environment
-          command: make dn
-      - run:
           name: Start NuoDB test database and run tests
           command: make up && make smoke-tests
+      - run:
+          name: Make sure we clean the test environment
+          command: make dn
 
   nightly_tests:
     docker:
@@ -51,11 +51,11 @@ jobs:
             cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
             mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
       - run:
-          name: Make sure we have a clean environment
-          command: make dn
-      - run:
           name: Start NuoDB test database and run tests
           command: make up && make nightly-tests
+      - run:
+          name: Make sure we clean the test environment
+          command: make dn
 parameters:
   run-nightly-tests:
     type: boolean
