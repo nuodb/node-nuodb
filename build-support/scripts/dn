@@ -1,8 +1,30 @@
 #!/usr/bin/env bash
 
-docker stop te1 te2 sm1 ad1
-docker network rm nuodb-net
-##rm -fr vol1 vol2
+echo "Stopping NuoDB environment.... "
+containers=("te1" "te2" "sm1" "ad1")
+for container in "${containers[@]}"; do
+    if docker ps -a | grep -q "$container"; then
+        echo -n "- "
+        docker stop "$container"
+    else
+        echo "'$container' alredy stopped."
+    fi
+done
+echo "Done!"
+echo
+echo -n "Remove local network... "
+if docker network rm nuodb-net 2>/dev/null; then
+    echo "Done!"
+else
+    echo "Local network already removed."
+fi
 
-#added to properly remove newly created volumes
-docker volume rm vol1 vol2 cores valgrind
+echo
+echo "Remove local volumes..."
+for vol in vol1 vol2 cores valgrind; do
+    echo -n "- "
+    docker volume rm "$vol" 2>/dev/null || echo "'$vol' volume already removed."
+done
+echo "Done!"
+echo
+echo "Environment cleaned."
