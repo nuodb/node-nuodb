@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
 
-COMMAND="docker exec ad1 nuocmd check database --db-name test --check-running"
-if ! $COMMAND 2>/dev/null; then
-    echo "Environment already cleaned."
-    exit 0
-fi
-
-
 echo "Stopping NuoDB environment.... "
-for c in te1 te2 sm1 ad1; do
-    echo -n "- "
-    docker stop "$c"
+containers=("te1" "te2" "sm1" "ad1")
+for container in "${containers[@]}"; do
+    if docker ps -a | grep -q "$container"; then
+        echo -n "- "
+        docker stop "$container"
+    else
+        echo "'$container' alredy stopped."
+    fi
 done
 echo "Done!"
 echo
-echo -n "Remove local network..."
-docker network rm nuodb-net
-echo "Done!"
+echo -n "Remove local network... "
+if docker network rm nuodb-net 2>/dev/null; then
+    echo "Done!"
+else
+    echo "Local network already removed."
+fi
+
 echo
 echo "Remove local volumes..."
 for vol in vol1 vol2 cores valgrind; do
