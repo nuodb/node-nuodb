@@ -48,7 +48,7 @@ smoke-tests: build
 coverage-smoke: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume /tmp/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run coverage-smoke
+	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run coverage-smoke
 
 #:help: this-coverage        | Runs the `test` target and generates code coverage report.
 #changed to properly create and mount volumes
@@ -56,7 +56,7 @@ coverage-smoke: build
 this-coverage: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume /tmp/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-coverage
+	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-coverage
 
 #:help: x-this-coverage        | Runs the `test` target and generates code coverage report.
 #changed to properly create and mount volumes
@@ -64,7 +64,7 @@ this-coverage: build
 x-this-coverage: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume /tmp/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run x-this-coverage
+	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run x-this-coverage
 
 #:help: nightly-tests        | Runs the `test-nightly` target which takes longer to run.
 .PHONY: nightly-tests

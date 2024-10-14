@@ -82,7 +82,7 @@ jobs:
           command: |
             make up && \
             make coverage-smoke && \
-            ls -las && \
+            scp -r remote-docker:~/project/coverage /tmp/ && \
             ls -las /tmp/coverage
       - run:
           name: Make sure we clean the test environment
