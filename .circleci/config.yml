@@ -82,13 +82,15 @@ jobs:
           command: |
             make up && \
             make coverage-smoke && \
-            cp -r ./coverage /tmp/
+            ls -las && \
+            ls -las "$CIRCLE_WORKING_DIRECTORY/coverage" && \
+            cp -r "$CIRCLE_WORKING_DIRECTORY/coverage" /tmp/
 
       - run:
           name: Make sure we clean the test environment
           command: make dn
       - store_artifacts:
-          path: /coverage
+          path: /tmp/coverage
           destination: coverage-smoke-report
 parameters:
   run-nightly-tests:
