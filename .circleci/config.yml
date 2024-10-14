@@ -83,9 +83,7 @@ jobs:
             make up && \
             make coverage-smoke && \
             ls -las && \
-            ls -las "$CIRCLE_WORKING_DIRECTORY/coverage" && \
-            cp -r "$CIRCLE_WORKING_DIRECTORY/coverage" /tmp/
-
+            ls -las /tmp/coverage
       - run:
           name: Make sure we clean the test environment
           command: make dn
