@@ -79,7 +79,7 @@ jobs:
             mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
       - run:
           name: Start NuoDB test database and run tests
-          command: make up && make coverage-smoke && tree ./coverage && cp -r ./coverage /tmp/coverage
+          command: make up && make coverage-smoke && ls -l ./coverage && cp -r ./coverage /tmp/coverage
       - run:
           name: Make sure we clean the test environment
           command: make dn
