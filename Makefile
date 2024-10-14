@@ -42,6 +42,30 @@ smoke-tests: build
 	docker volume create valgrind
 	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-smoke
 
+#:help: coverage-smoke        | Runs the `test` target and generates code coverage report.
+#changed to properly create and mount volumes
+.PHONY: coverage-smoke
+coverage-smoke: build
+	docker volume create cores
+	docker volume create valgrind
+	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run coverage-smoke
+
+#:help: this-coverage        | Runs the `test` target and generates code coverage report.
+#changed to properly create and mount volumes
+.PHONY: this-coverage
+this-coverage: build
+	docker volume create cores
+	docker volume create valgrind
+	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-coverage
+
+#:help: x-this-coverage        | Runs the `test` target and generates code coverage report.
+#changed to properly create and mount volumes
+.PHONY: x-this-coverage
+x-this-coverage: build
+	docker volume create cores
+	docker volume create valgrind
+	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run x-this-coverage
+
 #:help: nightly-tests        | Runs the `test-nightly` target which takes longer to run.
 .PHONY: nightly-tests
 nightly-tests: build
