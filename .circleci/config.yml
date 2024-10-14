@@ -79,12 +79,12 @@ jobs:
             mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
       - run:
           name: Start NuoDB test database and run tests
-          command: make up && make coverage-smoke && ls -l && ls -l /
+          command: make up && make coverage-smoke && ls -l && ls -l /home/circleci/project && ls -l /home/circleci/project/coverage
       - run:
           name: Make sure we clean the test environment
           command: make dn
       - store_artifacts:
-          path: /coverage
+          path: /home/circleci/project/coverage
           destination: coverage-smoke-report
 parameters:
   run-nightly-tests:
