@@ -38,6 +38,7 @@
     "eslint": "^8.6.0",
     "js-beautify": "^1.14.9",
     "mocha": "^9.2.2",
+    "nyc": "^17.1.0",
     "okay": "^1.0.0",
     "should": "^13.2.3"
   },
@@ -45,8 +46,10 @@
     "build": "node-gyp rebuild -d",
     "lint": "eslint index.js lib/*.js test/*.js",
     "this-test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --check-leaks ",
+    "this-coverage": "node-gyp rebuild -d && npm run lint && nyc --reporter=lcov --reporter=text-lcov mocha --reporter spec --bail --check-leaks ",
     "test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks test/",
     "test-smoke": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks --exclude='test/nightly/**' test/",
+    "coverage-smoke": "node-gyp rebuild -d && npm run lint && nyc --report-dir /coverage --reporter=lcov --reporter=text-lcov mocha --reporter spec --timeout 10000 --check-leaks --exclude='test/nightly/**' test/",
     "test-nightly": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks test/nightly",
     "valgrind": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log $(which node) valgrind.js",
     "valgrind-test": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log mocha --reporter spec --bail --check-leaks test/"

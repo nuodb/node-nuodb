@@ -56,6 +56,40 @@ jobs:
       - run:
           name: Make sure we clean the test environment
           command: make dn
+  coverage_smoke:
+    docker:
+      - image: cimg/node:18.18
+    resource_class: 'medium'
+    environment:
+      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
+      DOCKER_BUILDKIT: 'false'
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Get latest NuoDB Client package
+          command: |
+            mkdir /tmp/nuodb-client-package
+            export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
+            | grep "browser_download_url.*tar.gz" \
+            | cut -d : -f 2,3 \
+            | tr -d " " | tr -d \")"
+            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
+            cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
+            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
+      - run:
+          name: Start NuoDB test database and run tests
+          command: |
+            make up && \
+            make coverage-smoke && \
+            scp -r remote-docker:~/project/coverage /tmp/ && \
+            ls -las /tmp/coverage
+      - run:
+          name: Make sure we clean the test environment
+          command: make dn
+      - store_artifacts:
+          path: /tmp/coverage
+          destination: coverage-smoke-report
 parameters:
   run-nightly-tests:
     type: boolean
@@ -65,6 +99,9 @@ workflows:
   run_smoke_tests:
     jobs:
       - smoke_tests:
+          context:
+            - common-config
+      - coverage_smoke:
           context:
             - common-config
 
