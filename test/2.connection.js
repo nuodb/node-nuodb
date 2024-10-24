@@ -41,7 +41,7 @@ describe('2. testing connections', function () {
         should.not.exist(err);
         connection.commit(function (err) {
           should.exist(err);
-          should.strictEqual(err.message, "connection closed");
+          should.strictEqual(JSON.parse(err.message).Context, "connection closed");
           done();
         });
       });
@@ -55,7 +55,7 @@ describe('2. testing connections', function () {
         should.not.exist(err);
         connection.rollback(function (err) {
           should.exist(err);
-          should.strictEqual(err.message, "connection closed");
+          should.strictEqual(JSON.parse(err.message).Context, "connection closed");
           done();
         });
       });
@@ -69,7 +69,7 @@ describe('2. testing connections', function () {
         should.not.exist(err);
         connection.close(function (err) {
           should.exist(err);
-          should.strictEqual(err.message, "failed to close connection [connection closed]");
+          should.strictEqual(JSON.parse(err.message).Context, "failed to close connection");
           done();
         });
       });
@@ -84,7 +84,7 @@ describe('2. testing connections', function () {
         connection.execute('SELECT * FROM SYSTEM.CONNECTIONS', function (err, results) {
           should.exist(err);
           should.not.exist(results);
-          should.strictEqual(err.message, "connection closed");
+          should.strictEqual(JSON.parse(err.message).Context, "connection closed");
           done();
         });
       });

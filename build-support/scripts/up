@@ -72,4 +72,3 @@ done
 echo " Running!"
 echo
 docker exec ad1 nuocmd show domain
-
