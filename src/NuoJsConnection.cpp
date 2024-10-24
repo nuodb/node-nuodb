@@ -223,7 +223,7 @@ void Connection::doClose()
         connection->close();
         connection = nullptr;
     } catch (NuoDB::SQLException& e) {
-        std::string message = ErrMsg::get(ErrMsgType::errCommit, e.getText());
+        std::string message = ErrMsg::get(ErrMsgType::errCommit, ErrMsg::get(e));
         throw std::runtime_error(message);
     }
 }
@@ -295,7 +295,7 @@ void Connection::doCommit()
     try {
         connection->commit();
     } catch (NuoDB::SQLException& e) {
-        std::string message = ErrMsg::get(ErrMsgType::errCommit, e.getText());
+        std::string message = ErrMsg::get(ErrMsgType::errCommit, ErrMsg::get(e));
         throw std::runtime_error(message);
     }
 }
@@ -367,7 +367,7 @@ void Connection::doRollback()
     try {
         connection->rollback();
     } catch (NuoDB::SQLException& e) {
-        std::string message = ErrMsg::get(ErrMsgType::errRollback, e.getText());
+        std::string message = ErrMsg::get(ErrMsgType::errRollback, ErrMsg::get(e));
         throw std::runtime_error(message);
     }
 }
@@ -595,7 +595,7 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
             }
         }
     } catch (NuoDB::SQLException& e) {
-        throw std::runtime_error(e.getText());
+        throw std::runtime_error(ErrMsg::get(e));
     }
 
     return statement;
@@ -610,7 +610,7 @@ void Connection::markForFailure(NuoDB::SQLException& e) {
 	if ((code == -7) || 
 	    (code == -10) ||
             (code == -50)) {
-		failureText = e.getText();
+		failureText = ErrMsg::get(e);
 	}
 }
 
@@ -626,7 +626,7 @@ bool Connection::doExecute(NuoDB::PreparedStatement* statement)
     } catch (NuoDB::SQLException& e) {
 	// Execution has failed, see if the failure should consider the connection dead
 	markForFailure(e);
-        throw std::runtime_error(e.getText());
+        throw std::runtime_error(ErrMsg::get(e));
     }
 }
 
@@ -648,7 +648,7 @@ NAN_METHOD(Connection::hasFailed)
 NAN_METHOD(Connection::isConnected)
 {
     TRACE("Connection::isConnected");
-    std::cout << "NAN_METHOD Connection::isConnected" << std::endl;
+//    std::cout << "NAN_METHOD Connection::isConnected" << std::endl;
     Nan::HandleScope scope;
 
     Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());

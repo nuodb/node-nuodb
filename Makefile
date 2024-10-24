@@ -40,7 +40,7 @@ build:
 smoke-tests: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-smoke
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-smoke
 
 #:help: coverage-smoke        | Runs the `test` target and generates code coverage report.
 #changed to properly create and mount volumes
@@ -48,7 +48,7 @@ smoke-tests: build
 coverage-smoke: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run coverage-smoke
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run coverage-smoke
 
 #:help: this-coverage        | Runs the `test` target and generates code coverage report.
 #changed to properly create and mount volumes
@@ -56,21 +56,21 @@ coverage-smoke: build
 this-coverage: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-coverage
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --volume $(shell pwd)/coverage:/coverage --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-coverage
 
 #:help: nightly-tests        | Runs the `test-nightly` target which takes longer to run.
 .PHONY: nightly-tests
 nightly-tests: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-nightly
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test-nightly
 
 #:help: all-tests   | Runs both smoke-tests and nightly-tests
 .PHONY: all-tests
 all-tests: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test test-nightly
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test test-nightly
 
 
 #:help: test-only   | Runs the `test` target, testing the driver without building the Docker.
@@ -78,26 +78,26 @@ all-tests: build
 test-only:
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: this-test  | Runs a single test file
 .PHONY: this-test
 this-test: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test)
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test)
 
 #:help: valgrind    | Runs the `valgrind` target, building the driver and running a sample application under valgrind.
 .PHONY: valgrind
 valgrind: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run valgrind
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run valgrind
 
 #:help: run-build   | Runs the `build` Docker variant
 .PHONY: run-build
 run-build:
-	docker run ${TTY} --cap-add=SYS_PTRACE --network nuodb-net --rm nuodb/node-nuodb:$(VERSION)-build bash
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --network nuodb-net --rm nuodb/node-nuodb:$(VERSION)-build bash
 
 #:help: onbuild     | Creates an `ONBUILD` Docker image variant
 .PHONY: onbuild

@@ -7,6 +7,7 @@
 #define NUOJS_ERRMSG_H
 
 #include <string>
+#include "SQLException.h"
 
 namespace NuoJs
 {
@@ -42,6 +43,7 @@ class ErrMsg
 {
 public:
     static std::string get(int err, ...);
+    static std::string get(NuoDB::SQLException &e);
 };
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-: ${IMG_NAME:="nuodb/nuodb:latest"}
+: ${IMG_NAME:="nuodb/nuodb:5.1"}
 
 COMMAND="docker exec ad1 nuocmd check database --db-name test --check-running"
 if $COMMAND 2>/dev/null; then
@@ -72,4 +72,3 @@ done
 echo " Running!"
 echo
 docker exec ad1 nuocmd show domain
-
