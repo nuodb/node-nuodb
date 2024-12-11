@@ -42,7 +42,7 @@
         "-Wall",
         "-Werror",
         "-Wextra",
-        "-std=c++14"
+        "-std=c++17"
       ],
       "variables": {
         "nuodb_client_package": "<!(echo ${NUODB_CLIENT_PACKAGE:-${NUODB_HOME:-\"/opt/nuodb\"}})"
