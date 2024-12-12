@@ -37,7 +37,7 @@ RUN npm run build
 # -------------------------------------
 # release image
 
-FROM node:18-slim AS release
+FROM node:20-slim AS release
 
 COPY --from=build /opt/nuodb/lib64 /opt/nuodb/lib64
 COPY --from=build /src /src
