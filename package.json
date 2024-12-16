@@ -3,7 +3,7 @@
   "author": "Dassault Systèmes SE",
   "description": "The official NuoDB database driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "BSD-3-Clause",
-  "version": "3.7.4",
+  "version": "4.0.0",
   "main": "index.js",
   "keywords": [
     "nuodb",
