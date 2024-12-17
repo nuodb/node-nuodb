@@ -23,7 +23,7 @@ jobs:
             wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
             cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
             mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
-            echo "export NUODB_CLIENT_PACKAGE=/tmp/nuodb-client-package/nuodb-client.lin-x64" >> $GITHUB_ENV
+            echo "NUODB_CLIENT_PACKAGE=/tmp/nuodb-client-package/nuodb-client.lin-x64" >> $GITHUB_ENV
       - run: npm ci
       - run: npm publish
         env:
