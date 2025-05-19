@@ -33,7 +33,7 @@ describe('7. testing types', async () => {
     await connection.close();
   });
 
-  // This particular test started to fail with Node 22 as shown in JIRA
+  // This particular test started to fail with Node 22 as shown in JIRA NJS-42
   // The use of promises was removed in favor of callbacks since it seem
   // to be more in-line with the basic of desired behavior which was to run
   // each subtest after the previous, all serialized.  I did see promises worked
