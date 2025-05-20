@@ -4,7 +4,7 @@ jobs:
   smoke_tests:
     docker:
       - image: cimg/node:18.18
-    resource_class: 'medium'
+    resource_class: 'medium+'
     environment:
       NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
       DOCKER_BUILDKIT: 'false'
