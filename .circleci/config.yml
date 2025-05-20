@@ -3,8 +3,8 @@ version: 2.1
 jobs:
   smoke_tests:
     docker:
-      - image: cimg/node:18.18
-    resource_class: 'medium'
+      - image: cimg/node:22.15
+    resource_class: 'medium+'
     environment:
       NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
       DOCKER_BUILDKIT: 'false'
@@ -31,7 +31,7 @@ jobs:
 
   nightly_tests:
     docker:
-      - image: cimg/node:18.18
+      - image: cimg/node:22.15
     resource_class: 'medium+'
     environment:
       NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
@@ -58,7 +58,7 @@ jobs:
           command: make dn
   coverage_smoke:
     docker:
-      - image: cimg/node:18.18
+      - image: cimg/node:22.15
     resource_class: 'medium'
     environment:
       NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'

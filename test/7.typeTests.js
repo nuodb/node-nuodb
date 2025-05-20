@@ -33,8 +33,13 @@ describe('7. testing types', async () => {
     await connection.close();
   });
 
-
-  await async.series(testCases.map((curr, index) => new Promise((res) => {
+  // This particular test started to fail with Node 22 as shown in JIRA NJS-42
+  // The use of promises was removed in favor of callbacks since it seem
+  // to be more in-line with the basic of desired behavior which was to run
+  // each subtest after the previous, all serialized.  I did see promises worked
+  // using the following syntax, but it seemed more confuscated to me
+  // await async.series(testCases.map((curr, index) => async.asyncify(async () => { new Promise((res) => {
+  await async.series(testCases.map((curr, index) => { return function(callback) {
     const {data,type} = curr;
     // use specified table name for test if exists, otherwise determine programatically by type
     const tableName = curr.tableName ?? `table_${type}`;
@@ -56,7 +61,8 @@ describe('7. testing types', async () => {
       });
 
       after((done) => {
-        helper.dropTable(connection, tableName, () => {done();res();});
+        helper.dropTable(connection, tableName, () => {done();});
+        //helper.dropTable(connection, tableName, () => {done();res();});
       });
 
       it(`7.${index} result set stores ${type} correctly`, async () => {
@@ -70,5 +76,16 @@ describe('7. testing types', async () => {
         await results.close();
       });
     });
-  })));
+    callback(null,'OK');}}),
+  // Normally one would use function(err, results)
+  // but there is nothing to do with results when everything runs cleanly
+  function(err) {
+    if (err) {
+      console.error('Error:', err);
+    } else {
+      // If no error there is no reason to pring results
+      //console.log('Results:', results);
+    }
+  }
+  );
 });

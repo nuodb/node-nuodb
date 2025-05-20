@@ -11,7 +11,7 @@ FROM nuodb/nuodb:latest AS nuodb
 # -------------------------------------
 # build image
 
-FROM node:18-slim AS build
+FROM node:22-slim AS build
 
 RUN apt-get -y update && apt-get install -y git gcc g++ make python3 eslint locales
 
@@ -37,7 +37,7 @@ RUN npm run build
 # -------------------------------------
 # release image
 
-FROM node:20-slim AS release
+FROM node:22-slim AS release
 
 COPY --from=build /opt/nuodb/lib64 /opt/nuodb/lib64
 COPY --from=build /src /src
