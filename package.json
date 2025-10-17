@@ -1,9 +1,9 @@
 {
-  "name": "nuodb",
+  "name": "node-nuodb",
   "author": "Dassault Systèmes SE",
   "description": "The official NuoDB database driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "BSD-3-Clause",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "main": "index.js",
   "keywords": [
     "nuodb",
@@ -25,25 +25,25 @@
   "gypfile": true,
   "dependencies": {
     "bindings": "^1.5.0",
-    "nan": "^2.17.0",
-    "nconf": "^0.12.0",
-    "node-gyp": "^8.4.1",
-    "pino": "^8.14.1",
+    "express": "^5.1.0",
+    "nan": "^2.23.0",
+    "nconf": "^0.13.0",
+    "node-gyp": "^11.4.1",
+    "pino": "^9.9.0",
     "segfault-handler": "^1.3.0",
-    "ssh-exec": "^2.0.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "async": "^3.2.3",
-    "eslint": "^8.6.0",
-    "js-beautify": "^1.14.9",
-    "mocha": "^9.2.2",
+    "eslint": "^9.34.0",
+    "js-beautify": "^1.15.4",
+    "mocha": "^11.7.1",
     "nyc": "^17.1.0",
     "okay": "^1.0.0",
     "should": "^13.2.3"
   },
   "scripts": {
-    "build": "node-gyp rebuild -d",
+    "build": "node-gyp rebuild",
     "lint": "eslint index.js lib/*.js test/*.js",
     "this-test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --check-leaks ",
     "this-coverage": "node-gyp rebuild -d && npm run lint && nyc --reporter=lcov --reporter=text-lcov mocha --reporter spec --bail --check-leaks ",

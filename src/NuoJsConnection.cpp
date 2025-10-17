@@ -287,6 +287,7 @@ NAN_METHOD(Connection::commit)
 
 void Connection::doCommit()
 {
+    TRACE("Connection::doCommit");
     if (!isConnected()) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
@@ -481,6 +482,7 @@ NAN_METHOD(Connection::execute)
               return;
           }
       }
+    TRACE("Connection::execute:set");
       if ((options.isNonDefault(Options::Option::isolationlevel)) && (self->_IsolationLevel != options.getIsolationLevel())) self->setIsolationLevel(options.getIsolationLevel());
       if ((options.isNonDefault(Options::Option::autocommit)) && (self->_AutoCommit != options.getAutoCommit())) self->setAutoCommit(options.getAutoCommit());
       if ((options.isNonDefault(Options::Option::readonly)) && (self->_ReadOnly != options.getReadOnly())) self->setReadOnly(options.getReadOnly());
@@ -491,6 +493,7 @@ NAN_METHOD(Connection::execute)
         error = e.what();
     }
 
+    TRACE("Connection::execute:prepare");
     NuoDB::PreparedStatement* statement = nullptr;
     try {
         statement = self->createStatement(sql, binds);
@@ -505,7 +508,9 @@ NAN_METHOD(Connection::execute)
 
     ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options, error);
     worker->SaveToPersistent("nuodb:Connection", info.This());
+    TRACE("Connection::execute:AsyncQueueWorker");
     Nan::AsyncQueueWorker(worker);
+    TRACE("Connection::execute:Done");
 }
 
 NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Array> binds)
