@@ -16,7 +16,7 @@ jobs:
           command: |
             mkdir /tmp/nuodb-client-package
             export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*lin-x64.tar.gz" \
+            | grep "browser_download_url.*nuodb-client-.*lin-x64.tar.gz" \
             | cut -d : -f 2,3 \
             | tr -d " " | tr -d \")"
             wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
@@ -44,7 +44,7 @@ jobs:
           command: |
             mkdir /tmp/nuodb-client-package
             export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*lin-x64.tar.gz" \
+            | grep "browser_download_url.*nuodb-client-.*lin-x64.tar.gz" \
             | cut -d : -f 2,3 \
             | tr -d " " | tr -d \")"
             wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
@@ -71,7 +71,7 @@ jobs:
           command: |
             mkdir /tmp/nuodb-client-package
             export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*lin-x64.tar.gz" \
+            | grep "browser_download_url.*nuodb-client-.*lin-x64.tar.gz" \
             | cut -d : -f 2,3 \
             | tr -d " " | tr -d \")"
             wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
