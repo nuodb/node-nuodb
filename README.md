@@ -10,7 +10,7 @@ nuodb driver supports basic features of the NuoDB Database and NuoDB C++ client.
 
 ## Dependencies
 
-Node 20.18.0
+Node 22.14.0
 
 ## Installation
 
