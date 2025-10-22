@@ -31,5 +31,5 @@ jobs:
             mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
             echo "NUODB_CLIENT_PACKAGE=/tmp/nuodb-client-package/nuodb-client.lin-x64" >> $GITHUB_ENV
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --provenance --access public
 
