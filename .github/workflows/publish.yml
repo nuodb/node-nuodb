@@ -10,14 +10,14 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Download and extract NuoDB Client Package
         run: |
             mkdir /tmp/nuodb-client-package
             export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*tar.gz" \
+            | grep "browser_download_url.*nuodb-client-.*lin-x64.tar.gz" \
             | cut -d : -f 2,3 \
             | tr -d " " | tr -d \")"
             wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
