@@ -5,6 +5,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Uses OIDC Trusted Publishing
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
@@ -26,6 +32,4 @@ jobs:
             echo "NUODB_CLIENT_PACKAGE=/tmp/nuodb-client-package/nuodb-client.lin-x64" >> $GITHUB_ENV
       - run: npm ci
       - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
