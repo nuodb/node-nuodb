@@ -1,5 +1,5 @@
 {
-  "name": "nuodb",
+  "name": "node-nuodb",
   "author": "Dassault Systèmes SE",
   "description": "The official NuoDB database driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "BSD-3-Clause",
@@ -44,13 +44,15 @@
   },
   "scripts": {
     "build": "node-gyp rebuild",
+    "mocha-list": "mocha",
     "lint": "eslint index.js lib/*.js test/*.js",
-    "this-test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --bail --check-leaks ",
-    "this-coverage": "node-gyp rebuild -d && npm run lint && nyc --reporter=lcov --reporter=text-lcov mocha --reporter spec --bail --check-leaks ",
-    "test": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks test/",
+    "this-test": "node-gyp rebuild -d && npm run lint && mocha --timeout 10000 --reporter spec --bail --check-leaks ",
+    "this-coverage": "node-gyp rebuild -d && npm run lint && nyc --reporter=lcov --reporter=text-lcov mocha --timeout 10000 --reporter spec --bail --check-leaks ",
+    "test": "node-gyp rebuild -d && mocha --reporter spec --timeout 10000 --check-leaks test/",
     "test-smoke": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks --exclude='test/nightly/**' test/",
     "coverage-smoke": "node-gyp rebuild -d && npm run lint && nyc --report-dir /coverage --reporter=lcov --reporter=text-lcov mocha --reporter spec --timeout 10000 --check-leaks --exclude='test/nightly/**' test/",
-    "test-nightly": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks test/nightly",
+    "test-nightly": "node-gyp rebuild -d && npm run lint && mocha --reporter spec --timeout 10000 --check-leaks test/nightly/ test/shutdown/",
+    "shutdown": "node-gyp rebuild -d && mocha --reporter spec --timeout 10000 --check-leaks test/shutdown/",
     "valgrind": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log $(which node) valgrind.js",
     "valgrind-test": "node-gyp rebuild -d && G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=40 --log-file=/valgrind/valgrind.log mocha --reporter spec --bail --check-leaks test/"
   }
