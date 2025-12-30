@@ -5,7 +5,9 @@
 
 'use strict';
 
-var { Driver } = require('..');
+var {
+  Driver
+} = require('..');
 var should = require('should');
 var async = require('async');
 var helper = require('./typeHelper');
@@ -13,15 +15,19 @@ const nconf = require('nconf');
 const args = require('yargs').argv;
 
 // Setup order for test parameters and default configuration file
-nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+nconf.argv({
+  parseValues: true
+}).env({
+  parseValues: true
+}).file({
+  file: args.config || 'test/config.json'
+});
 
 var DBConnect = nconf.get('DBConnect');
-
 
 var driver = null;
 var connection = null;
 var testCases = require('./typeTestCases').testCases;
-
 
 describe('7. testing types', async () => {
   before('open connection', async () => {
@@ -39,44 +45,52 @@ describe('7. testing types', async () => {
   // each subtest after the previous, all serialized.  I did see promises worked
   // using the following syntax, but it seemed more confuscated to me
   // await async.series(testCases.map((curr, index) => async.asyncify(async () => { new Promise((res) => {
-  await async.series(testCases.map((curr, index) => { return function(callback) {
-    const {data,type} = curr;
-    // use specified table name for test if exists, otherwise determine programatically by type
-    const tableName = curr.tableName ?? `table_${type}`;
-    const tableCreate = curr.tableCreate ?? helper.sqlCreateTable(tableName, type);
-    const testDescription = curr.description ?? `type ${type}`;
+  await async.series(testCases.map((curr, index) => {
+    return function(callback) {
+      const {
+        data,
+        type
+      } = curr;
+      // use specified table name for test if exists, otherwise determine programatically by type
+      const tableName = curr.tableName ?? `table_${type}`;
+      const tableCreate = curr.tableCreate ?? helper.sqlCreateTable(tableName, type);
+      const testDescription = curr.description ?? `type ${type}`;
 
-    describe(`7.${index} Testing ${testDescription}`, () => {
+      describe(`7.${index} Testing ${testDescription}`, () => {
 
-      before(`create ${type} table, insert data`, async () => {
-        await connection.execute(helper.sqlDropTable(tableName));
-        await connection.execute(tableCreate);
-        await async.series(data.map((d) => async () => {
-          if(curr.tableInsert != undefined){
-            await connection.execute(curr.tableInsert, d);
-          } else {
-            await connection.execute(helper.sqlInsert(tableName),[d]);
-          }
-        }))
+        before(`create ${type} table, insert data`, async () => {
+          await connection.execute(helper.sqlDropTable(tableName));
+          await connection.execute(tableCreate);
+          await async.series(data.map((d) => async () => {
+            if (curr.tableInsert != undefined) {
+              await connection.execute(curr.tableInsert, d);
+            } else {
+              await connection.execute(helper.sqlInsert(tableName), [d]);
+            }
+          }))
+        });
+
+        after((done) => {
+          helper.dropTable(connection, tableName, () => {
+            done();
+          });
+          //helper.dropTable(connection, tableName, () => {done();res();});
+        });
+
+        it(`7.${index} result set stores ${type} correctly`, async () => {
+          const results = await connection.execute("SELECT F1 FROM " + tableName);
+          results.should.be.ok();
+
+          const rows = await results.getRows();
+          should.exist(rows);
+          // check the results via a predefined method, only if that method exists
+          curr.checkResults?.(rows);
+          await results.close();
+        });
       });
-
-      after((done) => {
-        helper.dropTable(connection, tableName, () => {done();});
-        //helper.dropTable(connection, tableName, () => {done();res();});
-      });
-
-      it(`7.${index} result set stores ${type} correctly`, async () => {
-        const results = await connection.execute("SELECT F1 FROM " + tableName);
-        results.should.be.ok();
-
-        const rows = await results.getRows();
-        should.exist(rows);
-        // check the results via a predefined method, only if that method exists
-        curr.checkResults?.(rows);
-        await results.close();
-      });
-    });
-    callback(null,'OK');}}),
+      callback(null, 'OK');
+    }
+  }),
   // Normally one would use function(err, results)
   // but there is nothing to do with results when everything runs cleanly
   function(err) {
@@ -86,6 +100,5 @@ describe('7. testing types', async () => {
       // If no error there is no reason to pring results
       //console.log('Results:', results);
     }
-  }
-  );
+  });
 });

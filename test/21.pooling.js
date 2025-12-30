@@ -34,7 +34,7 @@ const badPoolArgs = {
   wrong: "this is not how it is done",
 };
 
-describe("14 test pooling", function () {
+describe("21. test pooling", function () {
   this.timeout(500000);
   let pool = null;
   let connections = null;
@@ -43,7 +43,7 @@ describe("14 test pooling", function () {
     pool = new Pool(poolArgs);
   });
 
-  it("14.1 does not allow users to request connections before initializing the pool", async () => {
+  it("21.1 does not allow users to request connections before initializing the pool", async () => {
     await pool
       .requestConnection()
       .should.be.rejectedWith(
@@ -51,7 +51,7 @@ describe("14 test pooling", function () {
       );
   });
 
-  it("14.2 should reject pool creation with missing arguments", () => {
+  it("21.2 should reject pool creation with missing arguments", () => {
     (() => {
       const wrong = new Pool(badPoolArgs);
       return wrong;
@@ -60,7 +60,7 @@ describe("14 test pooling", function () {
     );
   });
 
-  it("14.3 Pool can open", async () => {
+  it("21.3 Pool can open", async () => {
     await pool.init();
     pool.should.be.ok();
     should.equal(
@@ -71,7 +71,7 @@ describe("14 test pooling", function () {
     should.equal(pool.state, "running", "pool should be running after init");
   });
 
-  it("14.4 Allows user to request and return connections", async () => {
+  it("21.4 Allows user to request and return connections", async () => {
     let connection = await pool.requestConnection();
     connection.should.be.ok();
     should.equal(
@@ -87,7 +87,7 @@ describe("14 test pooling", function () {
     );
   });
 
-  it("14.5 Check that Connecitons are reset", async () => {
+  it("21.5 Check that Connecitons are reset", async () => {
     for (let i = 0; i < pool.free_connections.length; i++) {
       let connection = await pool.requestConnection();
       connection.autoCommit = false;
@@ -102,7 +102,7 @@ describe("14 test pooling", function () {
     await pool.releaseConnection(connection1);
   });
 
-  it("14.6 Allows users to request over soft limit of connections", async () => {
+  it("21.6 Allows users to request over soft limit of connections", async () => {
     connections = [];
     for (let i = 0; i < 11; i++) {
       connections.push(await pool.requestConnection());
@@ -123,7 +123,7 @@ describe("14 test pooling", function () {
     );
   });
 
-  it("14.7 does not drop below soft limit of connections", async () => {
+  it("21.7 does not drop below soft limit of connections", async () => {
     await pool._closeConnection(pool.free_connections[0]._id);
 
     should.equal(
@@ -133,7 +133,7 @@ describe("14 test pooling", function () {
     );
   });
 
-  it("14.8 Does not close a connection in use on age out", async () => {
+  it("21.8 Does not close a connection in use on age out", async () => {
     let curr = await pool.requestConnection();
     await pool._closeConnection(curr._id);
     should.equal(
@@ -144,7 +144,7 @@ describe("14 test pooling", function () {
     await pool.releaseConnection(curr);
   });
 
-  it("14.9 Does not allow the pool to exceed the hard limit of connections", async () => {
+  it("21.9 Does not allow the pool to exceed the hard limit of connections", async () => {
     connections = [];
     for (let i = 0; i < 12; i++) {
       connections.push(await pool.requestConnection());
@@ -159,13 +159,13 @@ describe("14 test pooling", function () {
     }
   });
 
-  it("14.10 rejects connections that do not belong to the pool", async () => {
+  it("21.10 rejects connections that do not belong to the pool", async () => {
     await pool
       .releaseConnection(connectionDoesntBelong)
       .should.be.rejectedWith("connection is not from this pool");
   });
 
-  it("14.11 does not allow release of connections that are not in use/have already been released", async () => {
+  it("21.11 does not allow release of connections that are not in use/have already been released", async () => {
     const connection = await pool.requestConnection();
     await pool.releaseConnection(connection);
     await pool
@@ -175,7 +175,7 @@ describe("14 test pooling", function () {
       );
   });
 
-  it("14.12 Has changed the connection.close method to return the connection to the pool", async () => {
+  it("21.12 Has changed the connection.close method to return the connection to the pool", async () => {
     const connection = await pool.requestConnection();
     should.equal(
       pool.free_connections.length,
@@ -190,7 +190,7 @@ describe("14 test pooling", function () {
     );
   });
 
-  it("14.13 Pool can close", async () => {
+  it("21.13 Pool can close", async () => {
     await pool.closePool();
     should.equal(
       pool.free_connections.length,

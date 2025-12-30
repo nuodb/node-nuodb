@@ -5,7 +5,7 @@
 
 'use strict';
 
-var { Driver } = require('..');
+const { Driver } = require('..');
 
 var should = require('should');
 const nconf = require('nconf');

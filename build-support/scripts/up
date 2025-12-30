@@ -25,6 +25,7 @@ docker run -d --name ad1 --rm \
     -p 8888:8888 \
     -p 48004:48004 \
     -p 48005:48005 \
+    -p 9000:9000 \
     -e "NUODB_DOMAIN_ENTRYPOINT=ad1" \
     "${IMG_NAME}" nuoadmin
 echo "Done!"

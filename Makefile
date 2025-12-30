@@ -70,8 +70,7 @@ nightly-tests: build
 all-tests: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test test-nightly
-
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run test
 
 #:help: test-only   | Runs the `test` target, testing the driver without building the Docker.
 .PHONY: test-only
@@ -85,7 +84,7 @@ test-only:
 this-test: build
 	docker volume create cores
 	docker volume create valgrind
-	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test)
+	docker run ${TTY} --env-file .env --cap-add=SYS_PTRACE --memory 1g --volume cores:/cores --volume valgrind:/valgrind --name test --rm --network nuodb-net nuodb/node-nuodb:$(VERSION)-build npm run this-test $(test) test/shutdown/
 
 #:help: valgrind    | Runs the `valgrind` target, building the driver and running a sample application under valgrind.
 .PHONY: valgrind
