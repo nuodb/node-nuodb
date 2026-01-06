@@ -4,12 +4,8 @@
 // Redistribution and use permitted under the terms of the 3-clause BSD license.
 
 "use strict";
-const {
-  Driver
-} = require("../..");
-const {
-  exec
-} = require("child_process");
+const  { Driver } = require("../..");
+const { exec } = require("child_process");
 const should = require("should");
 const http = require("http");
 const safeExecute = require('../../examples/safeExecute');
