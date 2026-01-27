@@ -32,7 +32,7 @@ format:
 .PHONY: build
 build:
 	docker network create nuodb-net || true
-	docker build --target build --network nuodb-net -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
+	docker buildx build --target build -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-build .
 
 #:help: smoke-tests        | Runs the `test` target, building and testing the driver.
 #changed to properly create and mount volumes
@@ -101,18 +101,18 @@ run-build:
 #:help: onbuild     | Creates an `ONBUILD` Docker image variant
 .PHONY: onbuild
 onbuild:
-	docker build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
+	docker buildx build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
 
 #:help: package     | Creates a `package` Docker image
 .PHONY: package
 package:
-	docker build --target package -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-package .
+	docker buildx build --target package -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-package .
 
 #:help: release     | Creates a `release` Docker image
 .PHONY: release
 release:
-	docker build --target release -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-slim .
-	docker build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
+	docker buildx build --target release -f dockers/slim/Dockerfile -t nuodb/node-nuodb:$(VERSION)-slim .
+	docker buildx build -f dockers/onbuild/Dockerfile --build-arg VERSION=$(VERSION) -t nuodb/node-nuodb:$(VERSION)-onbuild .
 
 #:help: start-clair | Starts clair so we can perform image scans.
 .PHONY: start-clair
