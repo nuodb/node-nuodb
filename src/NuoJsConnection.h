@@ -49,7 +49,7 @@ private:
     static unsigned int restrictedAPI;
     static NAN_METHOD(execute);
     friend class ExecuteWorker;
-    bool doExecute(NuoDB::PreparedStatement* statement);
+    bool doExecute(NuoDB::PreparedStatement* statement, std::string sql);
     NuoDB::PreparedStatement* createStatement(std::string sql, Local<Array> binds);
 
     static NAN_METHOD(commit);
