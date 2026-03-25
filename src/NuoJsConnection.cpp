@@ -10,18 +10,62 @@
 #include "NuoJsNan.h"
 #include "NuoJsResultSet.h"
 #include <iostream>
+#include <thread>
+#include <sstream>
+#include <cstdio>
+#include <chrono>
+#include <map>
+#include <string>
+#include <mutex>
+#include <vector>
 
 #include "NuoDB.h"
+
+#include "NuoJsData.h"
+
 namespace NuoJs
 {
+
+using Clock = std::chrono::steady_clock;
+using Duration = std::chrono::duration<double, std::milli>;
+
+std::map<std::string, Duration> global_execution_times;
+std::mutex global_mutex;
+
+thread_local std::map<std::string, Duration> thread_execution_times;
+
+template<typename Func>
+void measure_execution_time(const std::string& function_name, Func func) 
+{
+    auto start = Clock::now();
+    func();
+    auto end = Clock::now();
+    Duration duration = end - start;
+
+    // Accumulate time in the thread-local map
+    thread_execution_times[function_name] += duration;
+}
+
+/**
+ * @brief Aggregates the current thread's accumulated times into the global map.
+ */
+void aggregate_thread_times() 
+{
+    std::lock_guard<std::mutex> lock(global_mutex);
+    for (const auto& pair : thread_execution_times) {
+        global_execution_times[pair.first] += pair.second;
+    }
+}
+
 Nan::Persistent<Function> Connection::constructor;
 
 // Create a unique bitmask for each Connection setting that we can allow the developer
-// using the driver can promise to use just the Conneciton API to set these properties
+// using the driver can promise to use just the Connection API to set these properties
 // and not set them through SQL commands.  With this restriction, we can avoid expensive
 // calls on the NuoDB driver that involve network calls
 // 
-enum API_ID {
+enum API_ID 
+{
 	READONLY = (1u << 0),
 	AUTOCOMMIT = (1u << 1),
 	ISOLATIONLEVEL = (1u << 2),
@@ -34,7 +78,8 @@ uint32_t Connection::Default_IsolationLevel = 7;
 // This routine is used to translate the textual name used for an ENUM setting and get
 // the actual bitmask value associated with it
 // 
-unsigned int str2int(const std::string& str) {
+unsigned int str2int(const std::string& str) 
+{
   if (str == std::string("READONLY")) {
     return(API_ID::READONLY);
   } else if (str == std::string("AUTOCOMMIT")) {
@@ -50,19 +95,20 @@ unsigned int str2int(const std::string& str) {
 // This routine will take a string designed to use any number of textual bitmask names
 // separated by | and return the appropriate bitmask for the combined values
 //
-unsigned int Connection::Restricted_API(const std::string& s) {
+unsigned int Connection::Restricted_API(const std::string& s) 
+{
   std::string delimiter("|");
   unsigned int retvalue = 0;
   auto start = 0U;
   auto end = s.find(delimiter);
-  while (end != std::string::npos)
-  {
-        retvalue |= str2int(s.substr(start, end - start));
-        start = end + delimiter.length();
-        end = s.find(delimiter, start);
-    }
 
-    retvalue |= str2int(s.substr(start, end));
+  while (end != std::string::npos) {
+    retvalue |= str2int(s.substr(start, end - start));
+    start = end + delimiter.length();
+    end = s.find(delimiter, start);
+  }
+
+  retvalue |= str2int(s.substr(start, end));
 
   return retvalue;
 }
@@ -118,7 +164,6 @@ NAN_MODULE_INIT(Connection::init)
 }
 
 unsigned int Connection::getRestrictedAPI() {
-	//return Connection::noReuseReset;
 	return Connection::restrictedAPI;
 };
 
@@ -156,28 +201,39 @@ Local<Object> Connection::createFrom(class NuoDB::Connection* conn)
 
 class ConnectionCloseWorker : public Nan::AsyncWorker
 {
-public:
-    ConnectionCloseWorker(Nan::Callback* callback, Connection* self)
+   public:
+     ConnectionCloseWorker(Nan::Callback* callback, Connection* self)
         : Nan::AsyncWorker(callback), self(self)
-    {
+     {
         TRACE("ConnectionCloseWorker::ConnectionCloseWorker");
-    }
+	data = manager.getData();
+	COUNT_ADD(data, CONNECTIONCLOSE_CNT);
+     }
 
-    virtual ~ConnectionCloseWorker()
-    {
+     virtual ~ConnectionCloseWorker()
+     {
         TRACE("ConnectionCloseWorker::~ConnectionCloseWorker");
-    }
+	COUNT_SUB(data, CONNECTIONCLOSE_CNT);
 
-    virtual void Execute()
-    {
+     }
+
+     virtual void Execute()
+     {
         TRACE("ConnectionCloseWorker::Execute");
         try {
-            self->doClose();
+	  COUNT_ADD(data, CONNECTIONCLOSE_DO);
+	  COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          self->doClose();
+	  COUNT_SUB(data, CONNECTIONCLOSE_DO);
+	  COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
+
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             SetErrorMessage(message.c_str());
         }
-    }
+     }
 
     virtual void HandleOKCallback()
     {
@@ -187,9 +243,15 @@ public:
             Nan::Null()
         };
         callback->Call(1, argv, async_resource);
+	COUNT_SUB(data, CONNECTIONCLOSE_QUE);
+	COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
     }
 
-protected:
+    NuoJsData* data;
+
+  protected:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     Connection* self;
 };
 
@@ -210,10 +272,14 @@ NAN_METHOD(Connection::close)
     ConnectionCloseWorker* worker = new ConnectionCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
+    COUNT_ADD(worker->data, CONNECTIONCLOSE_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
 }
 
 void Connection::doClose()
 {
+    TRACE("Connection::doClose");
     if (!isConnected()) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
@@ -235,18 +301,27 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("CommitWorker::CommitWorker");
+	data = manager.getData();
+        COUNT_ADD(data, COMMIT_CNT);
     }
 
     virtual ~CommitWorker()
     {
         TRACE("CommitWorker::~CommitWorker");
+        COUNT_SUB(data, COMMIT_CNT);
     }
 
     virtual void Execute()
     {
         TRACE("CommitWorker::Execute");
         try {
-            self->doCommit();
+          COUNT_ADD(data, COMMIT_DO);
+          COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          self->doCommit();
+          COUNT_SUB(data, COMMIT_DO);
+          COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
         }
@@ -260,9 +335,15 @@ public:
             Nan::Null()
         };
         callback->Call(1, argv, async_resource);
+        COUNT_SUB(data, COMMIT_QUE);
+        COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
     }
 
+    NuoJsData* data;
+
 protected:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     Connection* self;
 };
 
@@ -283,6 +364,9 @@ NAN_METHOD(Connection::commit)
     CommitWorker* worker = new CommitWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
+    COUNT_ADD(worker->data, COMMIT_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
 }
 
 void Connection::doCommit()
@@ -308,18 +392,28 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("RollbackWorker::RollbackWorker");
+	data = manager.getData();
+	COUNT_ADD(data, ROLLBACK_CNT);
     }
 
     virtual ~RollbackWorker()
     {
         TRACE("RollbackWorker::~RollbackWorker");
+	COUNT_SUB(data, ROLLBACK_CNT);
     }
 
     virtual void Execute()
     {
         TRACE("RollbackWorker::Execute");
         try {
-            self->doRollback();
+	  COUNT_ADD(data, ROLLBACK_DO);
+	  COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          self->doRollback();
+	  COUNT_SUB(data, ROLLBACK_DO);
+	  COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
+
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
         }
@@ -333,9 +427,16 @@ public:
             Nan::Null()
         };
         callback->Call(1, argv, async_resource);
+        COUNT_SUB(data, ROLLBACK_QUE);
+        COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
+
     }
 
+    NuoJsData* data;
+
 protected:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     Connection* self;
 };
 
@@ -356,6 +457,10 @@ NAN_METHOD(Connection::rollback)
     RollbackWorker* worker = new RollbackWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
+    COUNT_ADD(worker->data, ROLLBACK_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
+
 }
 
 void Connection::doRollback()
@@ -375,27 +480,39 @@ void Connection::doRollback()
 
 class ExecuteWorker : public Nan::AsyncWorker
 {
-public:
-    ExecuteWorker(Nan::Callback* callback, Connection* self, NuoDB::PreparedStatement* statement, Options options, const char* error)
+  public:
+    std::string _sql;
+
+    ExecuteWorker(Nan::Callback* callback, Connection* self, NuoDB::PreparedStatement* statement, Options options, const char* error, std::string sql)
         : Nan::AsyncWorker(callback), self(self), statement(statement), options(options), error(error), hasResults(false)
     {
         TRACE("ExecuteWorker::ExecuteWorker");
+        data = manager.getData();
+	this->_sql = sql;
+        COUNT_ADD(data, EXECUTE_CNT);
     }
 
     virtual ~ExecuteWorker()
     {
         TRACE("ExecuteWorker::~ExecuteWorker");
+        COUNT_SUB(data, EXECUTE_CNT);
     }
 
     virtual void Execute()
     {
-        TRACE("ExecuteWorker::Execute");
+        TRACE("ExecuteWorker::~Execute");
         if (error) {
             SetErrorMessage(error);
             return;
         }
         try {
-            hasResults = self->doExecute(statement);
+          COUNT_ADD(data, EXECUTE_DO);
+          COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          hasResults = self->doExecute(statement,this->_sql);
+          COUNT_SUB(data, EXECUTE_DO);
+          COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
         }
@@ -407,7 +524,6 @@ public:
         Nan::HandleScope scope;
         Local<Value> results = Nan::Undefined();
         if (hasResults) {
-            TRACE(">>>>>> HAS RESULTS");
             results = ResultSet::createFrom(statement, options);
         } else {
             statement->close();
@@ -417,9 +533,15 @@ public:
             results
         };
         callback->Call(2, argv, async_resource);
+        COUNT_SUB(data, EXECUTE_QUE);
+        COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
     }
 
-protected:
+    NuoJsData* data;
+
+  protected:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     Connection* self;
     NuoDB::PreparedStatement* statement;
     Options options;
@@ -470,10 +592,6 @@ NAN_METHOD(Connection::execute)
       // sets the resultant options for AutoCommit, IsolationLevel and ReadOnly
       // It would obviously be best if we can avoid making these calls since they result in
       // a newtork call
-//      if (!NuoJs::Connection::getNoReuseReset()) {
-//        options.setAutoCommit(self->isAutoCommit());
-//        options.setReadOnly(self->isReadOnly());
-//      }
       if (infoLen > infoIdx && !info[infoIdx]->IsFunction()) {
           try {
               getJsonOptions(info[infoIdx++].As<Object>(), options);
@@ -486,9 +604,6 @@ NAN_METHOD(Connection::execute)
       if ((options.isNonDefault(Options::Option::isolationlevel)) && (self->_IsolationLevel != options.getIsolationLevel())) self->setIsolationLevel(options.getIsolationLevel());
       if ((options.isNonDefault(Options::Option::autocommit)) && (self->_AutoCommit != options.getAutoCommit())) self->setAutoCommit(options.getAutoCommit());
       if ((options.isNonDefault(Options::Option::readonly)) && (self->_ReadOnly != options.getReadOnly())) self->setReadOnly(options.getReadOnly());
-//      self->setIsolationLevel(options.getIsolationLevel());
-//      self->setAutoCommit(options.getAutoCommit());
-//      self->setReadOnly(options.getReadOnly());
     } catch (std::exception& e) {
         error = e.what();
     }
@@ -506,11 +621,12 @@ NAN_METHOD(Connection::execute)
 
     Nan::Callback* callback = new Nan::Callback(info[infoIdx].As<Function>());
 
-    ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options, error);
+    ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options, error, sql);
     worker->SaveToPersistent("nuodb:Connection", info.This());
-    TRACE("Connection::execute:AsyncQueueWorker");
     Nan::AsyncQueueWorker(worker);
-    TRACE("Connection::execute:Done");
+    COUNT_ADD(worker->data, EXECUTE_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
 }
 
 NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Array> binds)
@@ -619,7 +735,7 @@ void Connection::markForFailure(NuoDB::SQLException& e) {
 	}
 }
 
-bool Connection::doExecute(NuoDB::PreparedStatement* statement)
+bool Connection::doExecute(NuoDB::PreparedStatement* statement, std::string sql)
 {
     if (!isConnected()) {
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
@@ -627,6 +743,9 @@ bool Connection::doExecute(NuoDB::PreparedStatement* statement)
     }
 
     try {
+	std::ostringstream oss;
+	oss << std::this_thread::get_id();
+	std::string sid = oss.str();
         return statement->execute();
     } catch (NuoDB::SQLException& e) {
 	// Execution has failed, see if the failure should consider the connection dead
@@ -653,7 +772,6 @@ NAN_METHOD(Connection::hasFailed)
 NAN_METHOD(Connection::isConnected)
 {
     TRACE("Connection::isConnected");
-//    std::cout << "NAN_METHOD Connection::isConnected" << std::endl;
     Nan::HandleScope scope;
 
     Connection* self = Nan::ObjectWrap::Unwrap<Connection>(info.This());
@@ -724,7 +842,6 @@ NAN_GETTER(Connection::getAutoCommit)
 // Set AutoCommit mode synchronously.
 NAN_SETTER(Connection::setAutoCommit)
 {
-
     TRACE("Connection::SetAutoCommit");
     Nan::HandleScope scope;
     Isolate* isolate = Isolate::GetCurrent();

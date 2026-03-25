@@ -7,14 +7,36 @@
 #include "NuoJsConnection.h"
 #include "NuoJsParams.h"
 #include "NuoJsErrMsg.h"
-
-#include "NuoDB.h"
-
 #include <functional>
 #include <memory>
+#include <chrono>
+#include <thread>
+#include <string>
+#include <ctime>
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
+
+#include "NuoDB.h"
+#include "NuoJsData.h"
+
+using namespace std;
 
 namespace NuoJs
 {
+
+std::string format_time_point(std::chrono::system_clock::time_point tp) {
+    std::time_t t = std::chrono::system_clock::to_time_t(tp);
+    // Use localtime() for local time zone, or gmtime() for UTC
+    // Note: localtime() and gmtime() are not thread-safe; use localtime_s/localtime_r
+    // or gmtime_s/gmtime_r for thread-safe alternatives where available.
+    std::tm tm_struct = *std::localtime(&t);
+
+    std::ostringstream oss;
+    // Format the time as "YYYY-MM-DD HH:MM:SS"
+    oss << std::put_time(&tm_struct, "%Y-%m-%d %H:%M:%S");
+    return oss.str();
+}
 
 Nan::Persistent<Function> Driver::constructor;
 
@@ -35,6 +57,7 @@ NAN_MODULE_INIT(Driver::init)
 {
     TRACE("Driver::init");
     Nan::HandleScope scope;
+    (void) NuoJsDataManager::getInstance(true);
 
     // prepare constructor template...
     Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(Driver::newInstance);
@@ -43,10 +66,10 @@ NAN_MODULE_INIT(Driver::init)
 
     // prototypes...
     Nan::SetPrototypeMethod(tpl, "connect", connect);
+    Nan::SetMethod(tpl, "getAsyncJSON", GetAsyncJSON);
 
     constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
-    Nan::Set(target, Nan::New<String>("Driver").ToLocalChecked(),
-             Nan::GetFunction(tpl).ToLocalChecked());
+    Nan::Set(target, Nan::New<String>("Driver").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }
 
 /* static */
@@ -71,18 +94,28 @@ public:
         : Nan::AsyncWorker(callback), driver(driver), params(params)
     {
         TRACE("ConnectWorker::ConnectWorker");
+	data = manager.getData();
+	COUNT_ADD(data, CONNECT_CNT);
     }
 
     virtual ~ConnectWorker()
     {
         TRACE("ConnectWorker::~ConnectWorker");
+	COUNT_SUB(data, CONNECT_CNT);
     }
 
     virtual void Execute()
     {
         TRACE("ConnectWorker::Execute");
         try {
-            connection = driver->doConnect(params);
+          COUNT_ADD(data, CONNECT_DO);
+          COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          connection = driver->doConnect(params);
+	  COUNT_SUB(data, CONNECT_DO);
+	  COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
+
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             SetErrorMessage(e.what());
@@ -100,8 +133,15 @@ public:
             object
         };
         callback->Call(2, argv, async_resource);
+	COUNT_SUB(data, CONNECT_QUE);
+	COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
     }
+
+    NuoJsData* data;
+
 protected:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     Driver* driver;
     Params params;
     NuoDB::Connection* connection;
@@ -144,10 +184,44 @@ NAN_METHOD(Driver::connect)
         return;
     }
 
-    ConnectWorker* worker = new ConnectWorker(
-        callback, Nan::ObjectWrap::Unwrap<Driver>(info.This()), params);
+    ConnectWorker* worker = new ConnectWorker( callback, Nan::ObjectWrap::Unwrap<Driver>(info.This()), params);
     worker->SaveToPersistent("nuodb:Driver", info.This());
     Nan::AsyncQueueWorker(worker);
+    COUNT_ADD(worker->data, CONNECT_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
+}
+
+
+// Function to create a JSON-like V8 object
+NAN_METHOD(Driver::GetAsyncJSON) {
+  try {
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
+    NuoJsData* data = manager.getData();
+
+    v8::Local<v8::Object> resultObj = Nan::New<v8::Object>();
+    Nan::Set(resultObj, Nan::New("timestamp").ToLocalChecked(), Nan::New(format_time_point(chrono::system_clock::now())).ToLocalChecked()); 
+    v8::Local<v8::Array> jsonArray = Nan::New<v8::Array>(data->count.load(std::memory_order_relaxed)-1);
+
+        // Create the named array of objects
+        for (unsigned long i = 1; i < data->count.load(std::memory_order_relaxed); ++i) {
+            v8::Local<v8::Object> item = Nan::New<v8::Object>();
+            Nan::Set(item, Nan::New("name").ToLocalChecked(), Nan::New<v8::String>(NuoJsDataNamesStrings.at(i)).ToLocalChecked());
+            Nan::Set(item, Nan::New("current").ToLocalChecked(), Nan::New<v8::Number>(data->names[i].current.load(std::memory_order_relaxed)));
+            Nan::Set(item, Nan::New("high").ToLocalChecked(), Nan::New<v8::Number>(data->names[i].high.load(std::memory_order_relaxed)));
+            Nan::Set(item, Nan::New("hightime").ToLocalChecked(), Nan::New<v8::String>(format_time_point(data->names[i].hightime.load(std::memory_order_relaxed))).ToLocalChecked());
+            Nan::Set(item, Nan::New("total").ToLocalChecked(), Nan::New<v8::Number>(data->names[i].total.load(std::memory_order_relaxed)));
+            Nan::Set(jsonArray, i-1, item);
+        }
+
+        // Set the array as a property of the main object
+        Nan::Set(resultObj, Nan::New("counters").ToLocalChecked(), jsonArray);
+
+    // Return the constructed object to JavaScript
+    info.GetReturnValue().Set(resultObj);
+  } catch (std::exception &e) {
+    throw e;
+  }
 }
 
 struct NuoPropertiesDeleter
@@ -176,4 +250,5 @@ NuoDB::Connection* Driver::doConnect(Params& params)
         throw std::runtime_error(e.getText());
     }
 }
+
 }

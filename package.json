@@ -1,9 +1,9 @@
 {
-  "name": "nuodb",
+  "name": "node-nuodb",
   "author": "Dassault Systèmes SE",
   "description": "The official NuoDB database driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "BSD-3-Clause",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "main": "index.js",
   "keywords": [
     "nuodb",
@@ -43,7 +43,7 @@
     "should": "^13.2.3"
   },
   "scripts": {
-    "build": "node-gyp rebuild",
+    "build": "node-gyp rebuild --release",
     "mocha-list": "mocha",
     "lint": "eslint index.js lib/*.js test/*.js",
     "this-test": "node-gyp rebuild -d && npm run lint && mocha --timeout 10000 --reporter spec --bail --check-leaks ",

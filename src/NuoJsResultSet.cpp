@@ -10,6 +10,9 @@
 #include "NuoJsNan.h"
 #include "NuoJsNanDate.h"
 #include "NuoDB.h"
+#include <iostream>
+
+#include "NuoJsData.h"
 
 namespace NuoJs
 {
@@ -82,11 +85,14 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("ResultSetCloseWorker::ResultSetCloseWorker");
+	data = manager.getData();
+	COUNT_ADD(data, RESULTSETCLOSE_CNT);
     }
 
     virtual ~ResultSetCloseWorker()
     {
         TRACE("ResultSetCloseWorker::~ResultSetCloseWorker");
+	COUNT_SUB(data, RESULTSETCLOSE_CNT);
     }
 
     /**
@@ -98,7 +104,14 @@ public:
     {
         TRACE("ResultSetCloseWorker::Execute");
         try {
-            self->doClose();
+	  COUNT_ADD(data, RESULTSETCLOSE_DO);
+	  COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          self->doClose();
+	  COUNT_SUB(data, RESULTSETCLOSE_DO);
+	  COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
+
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseResultSet, e.what());
             SetErrorMessage(message.c_str());
@@ -117,9 +130,15 @@ public:
             Nan::Null()
         };
         callback->Call(1, argv, async_resource);
+	COUNT_SUB(data, RESULTSETCLOSE_QUE);
+	COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
     }
 
+    NuoJsData* data;
+
 private:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     ResultSet* self;
 };
 
@@ -140,16 +159,19 @@ NAN_METHOD(ResultSet::close)
     ResultSetCloseWorker* worker = new ResultSetCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
+    COUNT_ADD(worker->data, RESULTSETCLOSE_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
 }
 
 void ResultSet::doClose()
 {
     TRACE("ResultSet::doClose");
-    if (result) {
+    if (result != nullptr) {
         result->close();
         result = nullptr;
     }
-    if (statement) {
+    if (statement != nullptr) {
         statement->close();
         statement = nullptr;
     }
@@ -162,11 +184,15 @@ public:
         : Nan::AsyncWorker(callback), self(self), count(count)
     {
         TRACE("GetRowsWorker::GetRowsWorker");
+        data = manager.getData();
+        COUNT_ADD(data, GETROWS_CNT);
     }
 
     virtual ~GetRowsWorker()
     {
         TRACE("GetRowsWorker::~GetRowsWorker");
+        COUNT_SUB(data, GETROWS_CNT);
+
     }
 
     /**
@@ -178,7 +204,13 @@ public:
     {
         TRACE("GetRowsWorker::Execute");
         try {
-            self->doGetRows(count);
+          COUNT_ADD(data, GETROWS_DO);
+          COUNT_ADD(data, DO);
+	  WAIT_REFRESH(data);
+          self->doGetRows(count);
+          COUNT_SUB(data, GETROWS_DO);
+          COUNT_SUB(data, DO);
+	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errGetRows, e.what());
             SetErrorMessage(message.c_str());
@@ -199,9 +231,16 @@ public:
             rows
         };
         callback->Call(2, argv, async_resource);
+        COUNT_SUB(data, GETROWS_QUE);
+        COUNT_SUB(data, QUE);
+	WAIT_REFRESH(data);
+
     }
 
+    NuoJsData* data;
+
 private:
+    NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
     ResultSet* self;
     size_t count;
 };
@@ -244,6 +283,9 @@ NAN_METHOD(ResultSet::getRows)
     GetRowsWorker* worker = new GetRowsWorker(callback, self, rowsToRead);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
+    COUNT_ADD(worker->data, GETROWS_QUE);
+    COUNT_ADD(worker->data, QUE);
+    WAIT_REFRESH(worker->data);
 }
 
 static Local<Function> dateConstructor = Local<Function>::Cast(
@@ -336,19 +378,15 @@ Local<Value> ResultSet::getRowsAsJsValue()
             for (size_t colIdx = 0; colIdx < sqlRow.size(); colIdx++) {
                 SqlValue sqlValue = sqlRow[colIdx];
                 Local<Value> jsKey = Nan::New<String>(sqlValue.getName()).ToLocalChecked();
-                TRACE("Object << sqlToEsValue");
                 Local<Value> jsValue = sqlToEsValue(sqlValue);
                 jsObject->Set(ctx, jsKey, jsValue).Check();
-                TRACE("Object >> sqlToEsValue");
             }
             array->Set(ctx, rowIdx, jsObject).Check();
         } else {
             Local<Array> jsArray = Nan::New<Array>();
             for (size_t colIdx = 0; colIdx < sqlRow.size(); colIdx++) {
                 SqlValue sqlValue = sqlRow[colIdx];
-                TRACE("Array << sqlToEsValue");
                 Local<Value> jsValue = sqlToEsValue(sqlValue);
-                TRACE("Array >> sqlToEsValue");
                 jsArray->Set(ctx, colIdx, jsValue).Check();
             }
             array->Set(ctx, rowIdx, jsArray).Check();
@@ -389,7 +427,6 @@ void ResultSet::doGetRows(size_t count)
     NuoDB::ResultSetMetaData* metaData = result->getMetaData();
     auto columns = metaData->getColumnCount();
     while ((fetchAll || count > 0) && result->next()) {
-        TRACE("HANDLE ROW...");
         std::vector<SqlValue> row;
         for (auto index = 0; index < columns; index++) {
             auto column = index + 1;

@@ -12,7 +12,8 @@
       "src/NuoJsParams.cpp",
       "src/NuoJsResultSet.cpp",
       "src/NuoJsTypes.cpp",
-      "src/NuoJsValue.cpp"
+      "src/NuoJsValue.cpp",
+      "src/NuoJsData.cpp"
     ]
   },
   "targets": [
@@ -58,7 +59,8 @@
         "-lpthread",
         "-Wl,-rpath,<(nuodb_client_package)/lib64",
         "-L<(nuodb_client_package)/lib64",
-        "-lNuoRemote"
+        "-lNuoRemote",
+        "-lrt"
       ]
     }
   ]

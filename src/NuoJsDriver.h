@@ -24,6 +24,7 @@ public:
 private:
 
     static NAN_METHOD(connect);
+    static NAN_METHOD(GetAsyncJSON);
     friend class ConnectWorker;
     NuoDB::Connection* doConnect(Params& params);
 
