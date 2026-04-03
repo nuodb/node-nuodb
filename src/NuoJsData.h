@@ -136,6 +136,7 @@ struct NuoJsDataCounter {
 // space to allow the array addressing to operate off the address of the 
 // the last array data member.
 struct NuoJsData {
+    std::atomic<pid_t> pid;
     std::atomic<unsigned int> namelen;
     std::atomic<unsigned long> count;
     NuoJsDataCounter names[1];

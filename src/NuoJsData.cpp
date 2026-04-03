@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cstdlib> // Required for getenv
 
 std::ostream& operator<<(std::ostream& os, NuoJsDataNames name) {
@@ -93,20 +94,24 @@ void NuoJsDataManager::initialize(bool create) {
       // Map shared memory
       dataPtr = static_cast<NuoJsData*>(mmap(NULL, mapSize, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0));
       if (dataPtr == MAP_FAILED) throw std::runtime_error("mmap failed");
-        dataPtr->count.store(namesCount, std::memory_order_relaxed); 
-	// In the future, maybe zero-ing the size of an entire names array slot, instead of each data member of the slot 
-        for (size_t i = 0; i < dataPtr->count.load(std::memory_order_relaxed); ++i) {
+      pid_t pid = getpid();
+      if (dataPtr->pid.load(std::memory_order_relaxed) == pid) throw std::runtime_error("Possible Unprotected Shared Memory Create");
+      memset((void*)dataPtr, 0, shm_size);
+      dataPtr->pid.store(pid, std::memory_order_relaxed); 
+      dataPtr->count.store(namesCount, std::memory_order_relaxed); 
+      // In the future, maybe zero-ing the size of an entire names array slot, instead of each data member of the slot 
+      for (size_t i = 0; i < dataPtr->count.load(std::memory_order_relaxed); ++i) {
           dataPtr->names[i].current.store(0, std::memory_order_relaxed); // Initialize all to 0
           dataPtr->names[i].high.store(0, std::memory_order_relaxed); // Initialize all to 0
 	  dataPtr->names[i].hightime.store(std::chrono::system_clock::now(), std::memory_order_relaxed);
           dataPtr->names[i].total.store(0, std::memory_order_relaxed); // Initialize all to 0
-        }
-	dataPtr->namelen.store(0, std::memory_order_relaxed);
-	for (std::size_t i = 1; i <= NuoJsDataNamesStrings.size()-2; ++i) {
+      }
+      dataPtr->namelen.store(0, std::memory_order_relaxed);
+      for (std::size_t i = 1; i <= NuoJsDataNamesStrings.size()-2; ++i) {
 	  if (NuoJsDataNamesStrings[i].length() > dataPtr->namelen.load(std::memory_order_relaxed)) {
 	    dataPtr->namelen.store(NuoJsDataNamesStrings[i].length(), std::memory_order_relaxed);
 	  }
-        }
+      }
   } else {
     // Open existing shared memory object
     shm_fd = shm_open(NuoJsDataManager::get_shm_name(), O_RDWR, 0666);
