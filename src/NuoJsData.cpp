@@ -8,10 +8,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
-<<<<<<< HEAD
 #include <cstring>
-=======
->>>>>>> origin/master
 #include <cstdlib> // Required for getenv
 
 std::ostream& operator<<(std::ostream& os, NuoJsDataNames name) {
