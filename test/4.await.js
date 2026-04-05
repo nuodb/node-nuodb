@@ -44,6 +44,7 @@ describe('4. testing await', () => {
         var results = await connection.execute('SELECT 1 AS VALUE FROM DUAL');
         var rows = await results.getRows();
         console.log(rows);
+        await results.close();
       } catch (e) {
         await connection.rollback();
         throw e;

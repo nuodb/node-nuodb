@@ -17,6 +17,9 @@
 #include <sys/mman.h> // POSIX shared memory
 #include <fcntl.h>    // For O_CREAT, O_RDWR
 #include <unistd.h>   // For ftruncate, close, unlink
+#include <functional>
+#include <stdexcept>
+
 
 // The NUOJS_DATA_NAMES_LIST macro defines all the counters maintained for each supporting
 // C++ routines that support a Node.js javascript API for database interaction.
@@ -143,6 +146,45 @@ struct NuoJsData {
     // Do not add any data members after the names array
 };
 
+// RAII class to ensure cleanup
+// This class is important and used to create a counter subtract function
+// An instance of this class is instantiated on the stack any place we have to 
+// decrement a counter.  The point of the class is to make the counter is decremented
+// no matter how the surrounding function is exited, including a thrown exception.
+class Finally {
+public:
+    explicit Finally(std::function<void()> cleanup) : cleanupFunc(cleanup) {}
+
+    // Destructor runs automatically on scope exit
+    ~Finally() {
+        if (cleanupFunc) {
+            cleanupFunc();
+        }
+    }
+
+    // Prevent copying to avoid double execution
+    Finally(const Finally&) = delete;
+    Finally& operator=(const Finally&) = delete;
+
+private:
+    std::function<void()> cleanupFunc;
+};
+
+// Macro to increment a count and refresh the totals
+#define ADD_COUNT(name,type,d) \
+	COUNT_ADD(d, name); \
+        COUNT_ADD(d, type); \
+        WAIT_REFRESH(d);
+
+// Macro to create RAII instance for substraction it will executed
+// as part of the RAII destructor and refesh totals
+#define SUBTRACT_COUNT(name,type,d) \
+        Finally guard([&]() { \
+          COUNT_SUB(d, name); \
+          COUNT_SUB(d, type); \
+          WAIT_REFRESH(d); \
+        });
+
 // A single static instance of NuoJsDataManager is used to hold all Async usage information
 // and there will be only one instance allocation of this per process.
 // All code that needs to reference this instance should do it with a C++ reference.
@@ -180,5 +222,30 @@ private:
     bool isInitialized;
     int shm_fd;
 };
+
+//#include <functional>
+//#include <iostream>
+
+//template <typename F>
+//class ScopeGuard {
+//public:
+//    explicit ScopeGuard(F f) : func(std::move(f)) {}
+    
+    // Call the function in the destructor
+//    ~ScopeGuard() { 
+//        try {
+//            func(); 
+//        } catch (...) {
+            // Destructors should never let exceptions escape
+//        }
+//    }
+
+    // Disable copying
+//    ScopeGuard(const ScopeGuard&) = delete;
+//    ScopeGuard& operator=(const ScopeGuard&) = delete;
+
+//private:
+//    F func;
+//};
 
 #endif

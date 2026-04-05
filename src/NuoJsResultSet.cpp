@@ -14,8 +14,11 @@
 
 #include "NuoJsData.h"
 
+
+
 namespace NuoJs
 {
+
 Nan::Persistent<Function> ResultSet::constructor;
 
 ResultSet::ResultSet()
@@ -104,17 +107,15 @@ public:
     {
         TRACE("ResultSetCloseWorker::Execute");
         try {
-	  COUNT_ADD(data, RESULTSETCLOSE_DO);
-	  COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+	  ADD_COUNT(RESULTSETCLOSE_DO, DO, data)
+	  SUBTRACT_COUNT(RESULTSETCLOSE_DO, DO, data)
           self->doClose();
-	  COUNT_SUB(data, RESULTSETCLOSE_DO);
-	  COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
-
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseResultSet, e.what());
             SetErrorMessage(message.c_str());
+	    COUNT_SUB(data, RESULTSETCLOSE_QUE);
+            COUNT_SUB(data, QUE);
+            WAIT_REFRESH(data);
         }
     }
 
@@ -129,10 +130,8 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
+	SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
-	COUNT_SUB(data, RESULTSETCLOSE_QUE);
-	COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
     }
 
     NuoJsData* data;
@@ -159,9 +158,7 @@ NAN_METHOD(ResultSet::close)
     ResultSetCloseWorker* worker = new ResultSetCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, RESULTSETCLOSE_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(RESULTSETCLOSE_QUE, QUE, worker->data)
 }
 
 void ResultSet::doClose()
@@ -204,16 +201,16 @@ public:
     {
         TRACE("GetRowsWorker::Execute");
         try {
-          COUNT_ADD(data, GETROWS_DO);
-          COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+	  ADD_COUNT(GETROWS_DO, DO, data)
+	  SUBTRACT_COUNT(GETROWS_DO, DO, data)
           self->doGetRows(count);
-          COUNT_SUB(data, GETROWS_DO);
-          COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errGetRows, e.what());
             SetErrorMessage(message.c_str());
+	    COUNT_SUB(data, GETROWS_QUE);
+            COUNT_SUB(data, QUE);
+            WAIT_REFRESH(data);
+
         }
     }
 
@@ -230,10 +227,8 @@ public:
             Nan::Null(),
             rows
         };
+	SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
-        COUNT_SUB(data, GETROWS_QUE);
-        COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
 
     }
 
@@ -283,9 +278,7 @@ NAN_METHOD(ResultSet::getRows)
     GetRowsWorker* worker = new GetRowsWorker(callback, self, rowsToRead);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, GETROWS_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(GETROWS_QUE, QUE, worker->data)
 }
 
 static Local<Function> dateConstructor = Local<Function>::Cast(

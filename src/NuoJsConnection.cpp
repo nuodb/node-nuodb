@@ -221,17 +221,15 @@ class ConnectionCloseWorker : public Nan::AsyncWorker
      {
         TRACE("ConnectionCloseWorker::Execute");
         try {
-	  COUNT_ADD(data, CONNECTIONCLOSE_DO);
-	  COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+	  ADD_COUNT(CONNECTIONCLOSE_DO, DO, data)
+	  SUBTRACT_COUNT(CONNECTIONCLOSE_DO, DO, data)
           self->doClose();
-	  COUNT_SUB(data, CONNECTIONCLOSE_DO);
-	  COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
-
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             SetErrorMessage(message.c_str());
+	    COUNT_SUB(data, CONNECTIONCLOSE_QUE);
+            COUNT_SUB(data, QUE);
+            WAIT_REFRESH(data);
         }
      }
 
@@ -242,10 +240,8 @@ class ConnectionCloseWorker : public Nan::AsyncWorker
         Local<Value> argv[] = {
             Nan::Null()
         };
+	SUBTRACT_COUNT(CONNECTIONCLOSE_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
-	COUNT_SUB(data, CONNECTIONCLOSE_QUE);
-	COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
     }
 
     NuoJsData* data;
@@ -272,9 +268,7 @@ NAN_METHOD(Connection::close)
     ConnectionCloseWorker* worker = new ConnectionCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, CONNECTIONCLOSE_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(CONNECTIONCLOSE_QUE, QUE, worker->data)
 }
 
 void Connection::doClose()
@@ -315,15 +309,15 @@ public:
     {
         TRACE("CommitWorker::Execute");
         try {
-          COUNT_ADD(data, COMMIT_DO);
-          COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+	  ADD_COUNT(COMMIT_DO, DO, data)
+	  SUBTRACT_COUNT(COMMIT_DO, DO, data)
           self->doCommit();
-          COUNT_SUB(data, COMMIT_DO);
-          COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
+	    COUNT_SUB(data, COMMIT_QUE);
+            COUNT_SUB(data, QUE);
+            WAIT_REFRESH(data);
+
         }
     }
 
@@ -334,10 +328,9 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
+	SUBTRACT_COUNT(COMMIT_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
-        COUNT_SUB(data, COMMIT_QUE);
-        COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
+
     }
 
     NuoJsData* data;
@@ -364,9 +357,7 @@ NAN_METHOD(Connection::commit)
     CommitWorker* worker = new CommitWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, COMMIT_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(COMMIT_QUE, QUE, worker->data)
 }
 
 void Connection::doCommit()
@@ -406,16 +397,15 @@ public:
     {
         TRACE("RollbackWorker::Execute");
         try {
-	  COUNT_ADD(data, ROLLBACK_DO);
-	  COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+	  ADD_COUNT(ROLLBACK_DO, DO, data)
+	  SUBTRACT_COUNT(ROLLBACK_DO, DO, data)
           self->doRollback();
-	  COUNT_SUB(data, ROLLBACK_DO);
-	  COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
-
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
+	    COUNT_SUB(data, ROLLBACK_QUE);
+            COUNT_SUB(data, QUE);
+            WAIT_REFRESH(data);
+
         }
     }
 
@@ -426,11 +416,8 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
+	SUBTRACT_COUNT(ROLLBACK_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
-        COUNT_SUB(data, ROLLBACK_QUE);
-        COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
-
     }
 
     NuoJsData* data;
@@ -457,9 +444,7 @@ NAN_METHOD(Connection::rollback)
     RollbackWorker* worker = new RollbackWorker(callback, self);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, ROLLBACK_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(ROLLBACK_QUE, QUE, worker->data)
 
 }
 
@@ -503,19 +488,17 @@ class ExecuteWorker : public Nan::AsyncWorker
         TRACE("ExecuteWorker::~Execute");
         if (error) {
             SetErrorMessage(error);
+	    SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
             return;
         }
         try {
-          COUNT_ADD(data, EXECUTE_DO);
-          COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+	  ADD_COUNT(EXECUTE_DO, DO, data)
+	  SUBTRACT_COUNT(EXECUTE_DO, DO, data)
           hasResults = self->doExecute(statement,this->_sql);
-          COUNT_SUB(data, EXECUTE_DO);
-          COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-        }
+	    SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
+	}
     }
 
     virtual void HandleOKCallback()
@@ -532,10 +515,8 @@ class ExecuteWorker : public Nan::AsyncWorker
             Nan::Null(),
             results
         };
+	SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
-        COUNT_SUB(data, EXECUTE_QUE);
-        COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
     }
 
     NuoJsData* data;
@@ -624,9 +605,7 @@ NAN_METHOD(Connection::execute)
     ExecuteWorker* worker = new ExecuteWorker(callback, self, statement, options, error, sql);
     worker->SaveToPersistent("nuodb:Connection", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, EXECUTE_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(EXECUTE_QUE, QUE, worker->data)
 }
 
 NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Array> binds)
@@ -738,6 +717,7 @@ void Connection::markForFailure(NuoDB::SQLException& e) {
 bool Connection::doExecute(NuoDB::PreparedStatement* statement, std::string sql)
 {
     if (!isConnected()) {
+	std::cout << "doExecute !isConnected" << std::endl;
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }

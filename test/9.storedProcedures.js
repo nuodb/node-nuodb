@@ -64,6 +64,7 @@ describe('9. testing stored procedures', () => {
 
     const rows = await results.getRows();
     (rows.length).should.be.eql(1);
+    await results.close();
   });
 
   it('9.2 can run a stored procedure', async () => {
@@ -73,6 +74,7 @@ describe('9. testing stored procedures', () => {
 
     const rows = await results.getRows();
     (rows.length).should.be.eql(1);
+    await results.close();
   });
 
   it('9.3 can drop a stored procedure', async () => {
@@ -82,6 +84,7 @@ describe('9. testing stored procedures', () => {
 
     const rows = await results.getRows();
     (rows.length).should.be.eql(0);
+    await results.close();
   });
 
 });

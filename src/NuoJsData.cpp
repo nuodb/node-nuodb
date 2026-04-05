@@ -59,6 +59,11 @@ const char* NuoJsDataManager::get_shm_name() {
         // Append the value to the existing string
 	    NuoJsDataManager::shm_name += ":"; // Add a separator if needed
 	    NuoJsDataManager::shm_name += env_var_value;
+    } else {
+	    char hostname[256];
+	    if (gethostname(hostname, sizeof(hostname)) != 0) std::runtime_error("gethostname failed");
+	    NuoJsDataManager::shm_name += ":"; // Add a separator if needed
+	    NuoJsDataManager::shm_name += hostname;
     }
   }
   return NuoJsDataManager::shm_name.c_str();

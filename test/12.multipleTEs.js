@@ -5,7 +5,9 @@
 
 'use strict';
 
-var { Driver } = require('..');
+var {
+  Driver
+} = require('..');
 
 var should = require('should');
 var async = require('async');
@@ -13,7 +15,13 @@ const nconf = require('nconf');
 const args = require('yargs').argv;
 
 // Setup order for test parameters and default configuration file
-nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+nconf.argv({
+  parseValues: true
+}).env({
+  parseValues: true
+}).file({
+  file: args.config || 'test/config.json'
+});
 
 var DBConnect = nconf.get('DBConnect');
 
@@ -49,6 +57,7 @@ describe('12. Test Connection to multiple TEs', () => {
       results.should.be.ok();
       nodes = await results.getRows();
       (nodes.length).should.be.aboveOrEqual(2, errTextSystemNotSetup);
+      await results.close();
     } catch (e) {
       err = e
     }
@@ -66,7 +75,7 @@ describe('12. Test Connection to multiple TEs', () => {
     const connections = [];
 
     // open up a bunch of connections, and figure ot what node is being connected to
-    for(let i = 0; i < numConnectionsToTest; i++){
+    for (let i = 0; i < numConnectionsToTest; i++) {
       const nodeConnection = await driver.connect(DBConnect);
       const results = await nodeConnection.execute(getNodeIdQuery);
       const rows = await results.getRows();
@@ -77,7 +86,9 @@ describe('12. Test Connection to multiple TEs', () => {
       connections.push(nodeConnection);
     }
     // close out those connections
-    await async.series(connections.map((c) => async () => {await c.close()}));
+    await async.series(connections.map((c) => async () => {
+      await c.close()
+    }));
     const numTENodes = nodes.filter(filterTEOnly).length;
 
     // we should have at least one connection to each TE
@@ -99,9 +110,11 @@ describe('12. Test Connection to multiple TEs', () => {
           // connect to each unique TE directly
           let err = null;
           try {
-            const nodeConfig = {... DBConnect
-              , database: `test@${n.ADDRESS}:${n.PORT}`
-              , direct: "true"};
+            const nodeConfig = {
+              ...DBConnect,
+              database: `test@${n.ADDRESS}:${n.PORT}`,
+              direct: "true"
+            };
             const nodeConnection = await driver.connect(nodeConfig);
             nodeConnection.should.be.ok();
             const results = await nodeConnection.execute(getNodeIdQuery);
@@ -111,6 +124,7 @@ describe('12. Test Connection to multiple TEs', () => {
             (rows.length).should.be.eql(1);
             (rows[0]["[GETNODEID]"]).should.be.eql(n.ID);
 
+            await results.close();
             await nodeConnection.close();
           } catch (e) {
             console.log(e);
@@ -126,12 +140,14 @@ describe('12. Test Connection to multiple TEs', () => {
       nodes
         .filter(filterTEOnly)
         .map((n) => async () => {
-          for(let i = 0; i < testRepeat; i++){
+          for (let i = 0; i < testRepeat; i++) {
             // connect to each unique TE directly
             let err = null;
             try {
-              const nodeConfig = {... DBConnect
-                , LBQuery: `round_robin(node_id(${n.ID}))`};
+              const nodeConfig = {
+                ...DBConnect,
+                LBQuery: `round_robin(node_id(${n.ID}))`
+              };
               const nodeConnection = await driver.connect(nodeConfig);
               nodeConnection.should.be.ok();
               const results = await nodeConnection.execute(getNodeIdQuery);
@@ -141,6 +157,7 @@ describe('12. Test Connection to multiple TEs', () => {
               (rows.length).should.be.eql(1);
               (rows[0]["[GETNODEID]"]).should.be.eql(n.ID);
 
+              await results.close();
               await nodeConnection.close();
             } catch (e) {
               console.log(e);
