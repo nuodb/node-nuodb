@@ -70,28 +70,34 @@
 // Macro to increment the amount of active calls to an API
 // It will also update the total property of the Counter, indicating how many times an API was used
 #define COUNT_ADD(arr, index) \
+    if (NuoJsDataManager::asyncCounters) { \
     (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current++; \
     (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].total++; \
     if ((arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed) > (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].high.load(std::memory_order_relaxed)) { \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].high.store((arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed)); \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].hightime.store(std::chrono::system_clock::now(), std::memory_order_relaxed); \
-    } 
+    } \
+    }
 //    std::cout <<  #index << " " << (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed) << std::endl;
 
 // Macro to decrement a counter for an API when it finishes a call execution
 #define COUNT_SUB(arr, index) \
+    if (NuoJsDataManager::asyncCounters) { \
     (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current--; \
+    }
 //    std::cout <<  #index << " " << (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed) << std::endl;
 
 // Macro used to update WAIT, which indicates how many API calls are waiting for an Asynchronous Thread to process
 // The Macro will also set the highwater mark for the counter and the time the setting is made
 #define WAIT_REFRESH(arr) \
+   if (NuoJsDataManager::asyncCounters) { \
    if ((arr)->names[static_cast<unsigned int>(NuoJsDataNames::QUE)].current.load(std::memory_order_relaxed) >= (arr)->names[static_cast<unsigned int>(NuoJsDataNames::DO)].current.load(std::memory_order_relaxed)) {\
      (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.store(((arr)->names[static_cast<unsigned int>(NuoJsDataNames::QUE)].current.load(std::memory_order_relaxed) - (arr)->names[static_cast<unsigned int>(NuoJsDataNames::DO)].current.load(std::memory_order_relaxed)), std::memory_order_relaxed); \
    } \
    if ((arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.load(std::memory_order_relaxed) > (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].high.load(std::memory_order_relaxed)) { \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].high.store((arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.load(std::memory_order_relaxed)); \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].hightime.store(std::chrono::system_clock::now(), std::memory_order_relaxed); \
+   } \
    }
 //   std::cout << "WAIT" << " " << (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.load(std::memory_order_relaxed) << std::endl;
 
@@ -207,6 +213,7 @@ private:
 // uniqueness and repeatability of a named shared memory segement may change in a future release
 class NuoJsDataManager {
 public:
+    static bool asyncCounters;
     static NuoJsDataManager& getInstance(bool create);
     static NuoJsDataManager instance;    // this is the singular process instance
     NuoJsData* getData() const;

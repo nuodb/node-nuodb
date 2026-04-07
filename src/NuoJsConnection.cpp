@@ -664,7 +664,7 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
                 }
                 case NuoDB::NUOSQL_DATE: {
 		    int bufsize = 80;
-                    char buffer[80];
+                    char buffer[bufsize];
 		    // Initializing buffer to string termination so there is
 		    // no possible unterminated string placed in the buffer.
 		    memset(buffer,'\0',bufsize);

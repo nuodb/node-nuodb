@@ -113,9 +113,7 @@ public:
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseResultSet, e.what());
             SetErrorMessage(message.c_str());
-	    COUNT_SUB(data, RESULTSETCLOSE_QUE);
-            COUNT_SUB(data, QUE);
-            WAIT_REFRESH(data);
+	    SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
         }
     }
 
@@ -138,7 +136,7 @@ public:
 
 private:
     NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
-    ResultSet* self;
+    ResultSet* self = nullptr;
 };
 
 /* static */
@@ -165,12 +163,17 @@ void ResultSet::doClose()
 {
     TRACE("ResultSet::doClose");
     if (result != nullptr) {
-        result->close();
-        result = nullptr;
-    }
-    if (statement != nullptr) {
-        statement->close();
-        statement = nullptr;
+        if (this->hasBeenClosed) {
+		std::cout << "Detected Double Close" << std::endl;
+	} else {
+          result->close();
+	  this->hasBeenClosed = true;
+          result = nullptr;
+          if (statement != nullptr) {
+            statement->close();
+            statement = nullptr;
+          }
+        }
     }
 }
 
@@ -207,10 +210,7 @@ public:
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errGetRows, e.what());
             SetErrorMessage(message.c_str());
-	    COUNT_SUB(data, GETROWS_QUE);
-            COUNT_SUB(data, QUE);
-            WAIT_REFRESH(data);
-
+	    SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
         }
     }
 
@@ -409,6 +409,8 @@ void ResultSet::doGetRows(size_t count)
 
     if (!isResultOpen()) {
         result = statement->getResultSet();
+    } else {
+        std::cout << "isResultOpen" << std::endl;
     }
 
     if(result == nullptr){
