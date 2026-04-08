@@ -92,6 +92,7 @@ describe('2. testing connections', function() {
           should.not.exist(err);
           connection.execute('SELECT * FROM SYSTEM.CONNECTIONS', function(err, results) {
             should.exist(err);
+            results?.close();
             should.not.exist(results);
             should.strictEqual(JSON.parse(err.message).Context, "connection closed");
             done();

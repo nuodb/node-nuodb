@@ -94,6 +94,7 @@ describe('13. Test Result Set', () => {
       // try to get one more row than exists to test edge case
       const nullRow = await results.getRows(1);
       (nullRow.length).should.be.eql(0);
+      await results.close();
     } catch (e) {
       err = e;
     }
@@ -108,6 +109,7 @@ describe('13. Test Result Set', () => {
       const rows = await results.getRows();
       const columns = Object.keys(rows[0]);
       (columns.length).should.be.eql(4);
+      await results.close();
     } catch (e) {
       err = e;
     }
@@ -124,6 +126,7 @@ describe('13. Test Result Set', () => {
       (columns.length).should.be.eql(4);
       columns.should.containEql('AID');
       columns.should.containEql('BID');
+      await results.close();
     } catch (e) {
       err = e;
     }
@@ -144,6 +147,7 @@ describe('13. Test Result Set', () => {
       results = await connection.execute(selectFromJoinableTables('a','b'));
       // match resultset.js definition
       (results.getRowsStyle).should.be.eql('BLOCKING');
+      await results.close();
 
     } catch (e) {
       err = e;

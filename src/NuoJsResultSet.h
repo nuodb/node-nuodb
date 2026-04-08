@@ -41,14 +41,16 @@ private:
     // Internal method to convert row buffers to a Napi::Array.
     Local<Value> getRowsAsJsValue();
 
-    class NuoDB::Statement* statement;
+    class NuoDB::Statement* statement = nullptr;
     bool isStatementOpen() const;
 
-    class NuoDB::ResultSet* result;
+    class NuoDB::ResultSet* result = nullptr;
     bool isResultOpen() const;
 
     Options options;
     std::deque<std::vector<SqlValue> > rows;
+
+    bool hasBeenClosed = false;
 };
 } // namespace NuoJs
 

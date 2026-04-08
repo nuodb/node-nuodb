@@ -285,6 +285,7 @@ const promiseWhile = async (id, condition, action) => {
 }
 
 const runCS = async (pool, query, elapsedTimes) => {
+//  console.log('Inside runCS');
   var results;
   var conn;
   try {
@@ -295,12 +296,14 @@ const runCS = async (pool, query, elapsedTimes) => {
     rows?.should.be.ok();
     elapsedTimes.push(Date.now() - start);
   } catch (e) {
+    console.log('Got Error');
     console.error(e);
     should.not.exist(e);
   } finally {
     await results?.close();
     await pool.releaseConnection(conn);
   }
+//  console.log('Exit runCS');
 
 }
 
@@ -362,7 +365,6 @@ describe('15. Test Performance Under Load', async () => {
     } catch (e) {
       should.not.exist(e);
     }
-
   });
 
   after('drop temp tables, init pool', async () => {

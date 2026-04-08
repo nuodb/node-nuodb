@@ -14,8 +14,11 @@
 
 #include "NuoJsData.h"
 
+
+
 namespace NuoJs
 {
+
 Nan::Persistent<Function> ResultSet::constructor;
 
 ResultSet::ResultSet()
@@ -85,14 +88,14 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("ResultSetCloseWorker::ResultSetCloseWorker");
-	data = manager.getData();
-	COUNT_ADD(data, RESULTSETCLOSE_CNT);
+        data = manager.getData();
+        COUNT_ADD(data, RESULTSETCLOSE_CNT);
     }
 
     virtual ~ResultSetCloseWorker()
     {
         TRACE("ResultSetCloseWorker::~ResultSetCloseWorker");
-	COUNT_SUB(data, RESULTSETCLOSE_CNT);
+        COUNT_SUB(data, RESULTSETCLOSE_CNT);
     }
 
     /**
@@ -104,17 +107,13 @@ public:
     {
         TRACE("ResultSetCloseWorker::Execute");
         try {
-	  COUNT_ADD(data, RESULTSETCLOSE_DO);
-	  COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+          ADD_COUNT(RESULTSETCLOSE_DO, DO, data)
+          SUBTRACT_COUNT(RESULTSETCLOSE_DO, DO, data)
           self->doClose();
-	  COUNT_SUB(data, RESULTSETCLOSE_DO);
-	  COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
-
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseResultSet, e.what());
             SetErrorMessage(message.c_str());
+            SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
         }
     }
 
@@ -129,17 +128,15 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
+        SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
-	COUNT_SUB(data, RESULTSETCLOSE_QUE);
-	COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
     }
 
     NuoJsData* data;
 
 private:
     NuoJsDataManager& manager = NuoJsDataManager::getInstance(false);
-    ResultSet* self;
+    ResultSet* self = nullptr;
 };
 
 /* static */
@@ -159,21 +156,24 @@ NAN_METHOD(ResultSet::close)
     ResultSetCloseWorker* worker = new ResultSetCloseWorker(callback, self);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, RESULTSETCLOSE_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(RESULTSETCLOSE_QUE, QUE, worker->data)
 }
 
 void ResultSet::doClose()
 {
     TRACE("ResultSet::doClose");
     if (result != nullptr) {
-        result->close();
-        result = nullptr;
-    }
-    if (statement != nullptr) {
-        statement->close();
-        statement = nullptr;
+        if (this->hasBeenClosed) {
+          throw std::runtime_error("Detected Double Close");
+        } else {
+          result->close();
+          this->hasBeenClosed = true;
+          result = nullptr;
+          if (statement != nullptr) {
+            statement->close();
+            statement = nullptr;
+          }
+        }
     }
 }
 
@@ -204,16 +204,13 @@ public:
     {
         TRACE("GetRowsWorker::Execute");
         try {
-          COUNT_ADD(data, GETROWS_DO);
-          COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+          ADD_COUNT(GETROWS_DO, DO, data)
+          SUBTRACT_COUNT(GETROWS_DO, DO, data)
           self->doGetRows(count);
-          COUNT_SUB(data, GETROWS_DO);
-          COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errGetRows, e.what());
             SetErrorMessage(message.c_str());
+            SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
         }
     }
 
@@ -230,10 +227,8 @@ public:
             Nan::Null(),
             rows
         };
+        SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
-        COUNT_SUB(data, GETROWS_QUE);
-        COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
 
     }
 
@@ -283,9 +278,7 @@ NAN_METHOD(ResultSet::getRows)
     GetRowsWorker* worker = new GetRowsWorker(callback, self, rowsToRead);
     worker->SaveToPersistent("nuodb:ResultSet", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, GETROWS_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(GETROWS_QUE, QUE, worker->data)
 }
 
 static Local<Function> dateConstructor = Local<Function>::Cast(
@@ -416,6 +409,8 @@ void ResultSet::doGetRows(size_t count)
 
     if (!isResultOpen()) {
         result = statement->getResultSet();
+    } else {
+        std::cout << "isResultOpen" << std::endl;
     }
 
     if(result == nullptr){

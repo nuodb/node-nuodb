@@ -5,7 +5,9 @@
 
 'use strict';
 
-var { Driver } = require('..');
+var {
+  Driver
+} = require('..');
 
 var should = require('should');
 var helper = require('./typeHelper');
@@ -14,7 +16,13 @@ const nconf = require('nconf');
 const args = require('yargs').argv;
 
 // Setup order for test parameters and default configuration file
-nconf.argv({parseValues:true}).env({parseValues:true}).file({ file: args.config||'test/config.json' });
+nconf.argv({
+  parseValues: true
+}).env({
+  parseValues: true
+}).file({
+  file: args.config || 'test/config.json'
+});
 
 var DBConnect = nconf.get('DBConnect');
 
@@ -45,10 +53,9 @@ describe('10. pattern matching clauses', () => {
     connection.should.be.ok();
 
     await connection.execute(helper.sqlDropTable(tableName));
-    await connection.execute(helper.sqlCreateTable(tableName,'STRING'));
-    await async.series(data.map( d =>
-      async () => await connection.execute(helper.sqlInsert(tableName),[d]))
-    );
+    await connection.execute(helper.sqlCreateTable(tableName, 'STRING'));
+    await async.series(data.map(d =>
+      async () => await connection.execute(helper.sqlInsert(tableName), [d])));
   });
 
   after('close connection', async () => {
@@ -64,6 +71,7 @@ describe('10. pattern matching clauses', () => {
       results.should.be.ok();
       const rows = await results.getRows();
       (rows.length).should.be.eql(2);
+      await results.close();
     } catch (e) {
       err = e
     }
@@ -79,6 +87,7 @@ describe('10. pattern matching clauses', () => {
       results.should.be.ok();
       const rows = await results.getRows();
       (rows.length).should.be.eql(2);
+      await results.close();
     } catch (e) {
       err = e
     }
@@ -94,6 +103,7 @@ describe('10. pattern matching clauses', () => {
       results.should.be.ok();
       const rows = await results.getRows();
       (rows.length).should.be.eql(2);
+      await results.close();
     } catch (e) {
       err = e
     }
@@ -109,6 +119,7 @@ describe('10. pattern matching clauses', () => {
       results.should.be.ok();
       const rows = await results.getRows();
       (rows.length).should.be.eql(2);
+      await results.close();
     } catch (e) {
       err = e
     }

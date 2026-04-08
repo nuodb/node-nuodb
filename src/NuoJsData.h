@@ -17,6 +17,9 @@
 #include <sys/mman.h> // POSIX shared memory
 #include <fcntl.h>    // For O_CREAT, O_RDWR
 #include <unistd.h>   // For ftruncate, close, unlink
+#include <functional>
+#include <stdexcept>
+
 
 // The NUOJS_DATA_NAMES_LIST macro defines all the counters maintained for each supporting
 // C++ routines that support a Node.js javascript API for database interaction.
@@ -67,28 +70,34 @@
 // Macro to increment the amount of active calls to an API
 // It will also update the total property of the Counter, indicating how many times an API was used
 #define COUNT_ADD(arr, index) \
+    if (NuoJsDataManager::asyncCounters) { \
     (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current++; \
     (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].total++; \
     if ((arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed) > (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].high.load(std::memory_order_relaxed)) { \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].high.store((arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed)); \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].hightime.store(std::chrono::system_clock::now(), std::memory_order_relaxed); \
-    } 
+    } \
+    }
 //    std::cout <<  #index << " " << (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed) << std::endl;
 
 // Macro to decrement a counter for an API when it finishes a call execution
 #define COUNT_SUB(arr, index) \
+    if (NuoJsDataManager::asyncCounters) { \
     (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current--; \
+    }
 //    std::cout <<  #index << " " << (arr)->names[static_cast<unsigned int>(NuoJsDataNames::index)].current.load(std::memory_order_relaxed) << std::endl;
 
 // Macro used to update WAIT, which indicates how many API calls are waiting for an Asynchronous Thread to process
 // The Macro will also set the highwater mark for the counter and the time the setting is made
 #define WAIT_REFRESH(arr) \
+   if (NuoJsDataManager::asyncCounters) { \
    if ((arr)->names[static_cast<unsigned int>(NuoJsDataNames::QUE)].current.load(std::memory_order_relaxed) >= (arr)->names[static_cast<unsigned int>(NuoJsDataNames::DO)].current.load(std::memory_order_relaxed)) {\
      (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.store(((arr)->names[static_cast<unsigned int>(NuoJsDataNames::QUE)].current.load(std::memory_order_relaxed) - (arr)->names[static_cast<unsigned int>(NuoJsDataNames::DO)].current.load(std::memory_order_relaxed)), std::memory_order_relaxed); \
    } \
    if ((arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.load(std::memory_order_relaxed) > (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].high.load(std::memory_order_relaxed)) { \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].high.store((arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.load(std::memory_order_relaxed)); \
       (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].hightime.store(std::chrono::system_clock::now(), std::memory_order_relaxed); \
+   } \
    }
 //   std::cout << "WAIT" << " " << (arr)->names[static_cast<unsigned int>(NuoJsDataNames::WAIT)].current.load(std::memory_order_relaxed) << std::endl;
 
@@ -136,11 +145,51 @@ struct NuoJsDataCounter {
 // space to allow the array addressing to operate off the address of the 
 // the last array data member.
 struct NuoJsData {
+    std::atomic<pid_t> pid;
     std::atomic<unsigned int> namelen;
     std::atomic<unsigned long> count;
     NuoJsDataCounter names[1];
     // Do not add any data members after the names array
 };
+
+// RAII class to ensure cleanup
+// This class is important and used to create a counter subtract function
+// An instance of this class is instantiated on the stack any place we have to 
+// decrement a counter.  The point of the class is to make the counter is decremented
+// no matter how the surrounding function is exited, including a thrown exception.
+class Finally {
+public:
+    explicit Finally(std::function<void()> cleanup) : cleanupFunc(cleanup) {}
+
+    // Destructor runs automatically on scope exit
+    ~Finally() {
+        if (cleanupFunc) {
+            cleanupFunc();
+        }
+    }
+
+    // Prevent copying to avoid double execution
+    Finally(const Finally&) = delete;
+    Finally& operator=(const Finally&) = delete;
+
+private:
+    std::function<void()> cleanupFunc;
+};
+
+// Macro to increment a count and refresh the totals
+#define ADD_COUNT(name,type,d) \
+	COUNT_ADD(d, name); \
+        COUNT_ADD(d, type); \
+        WAIT_REFRESH(d);
+
+// Macro to create RAII instance for substraction it will executed
+// as part of the RAII destructor and refesh totals
+#define SUBTRACT_COUNT(name,type,d) \
+        Finally guard([&]() { \
+          COUNT_SUB(d, name); \
+          COUNT_SUB(d, type); \
+          WAIT_REFRESH(d); \
+        });
 
 // A single static instance of NuoJsDataManager is used to hold all Async usage information
 // and there will be only one instance allocation of this per process.
@@ -164,6 +213,7 @@ struct NuoJsData {
 // uniqueness and repeatability of a named shared memory segement may change in a future release
 class NuoJsDataManager {
 public:
+    static bool asyncCounters;
     static NuoJsDataManager& getInstance(bool create);
     static NuoJsDataManager instance;    // this is the singular process instance
     NuoJsData* getData() const;

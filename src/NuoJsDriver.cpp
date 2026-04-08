@@ -94,31 +94,29 @@ public:
         : Nan::AsyncWorker(callback), driver(driver), params(params)
     {
         TRACE("ConnectWorker::ConnectWorker");
-	data = manager.getData();
-	COUNT_ADD(data, CONNECT_CNT);
+        data = manager.getData();
+        COUNT_ADD(data, CONNECT_CNT);
     }
 
     virtual ~ConnectWorker()
     {
         TRACE("ConnectWorker::~ConnectWorker");
-	COUNT_SUB(data, CONNECT_CNT);
+        COUNT_SUB(data, CONNECT_CNT);
     }
 
     virtual void Execute()
     {
         TRACE("ConnectWorker::Execute");
         try {
-          COUNT_ADD(data, CONNECT_DO);
-          COUNT_ADD(data, DO);
-	  WAIT_REFRESH(data);
+          ADD_COUNT(CONNECT_DO, DO, data)
+          SUBTRACT_COUNT(CONNECT_DO, DO, data)
           connection = driver->doConnect(params);
-	  COUNT_SUB(data, CONNECT_DO);
-	  COUNT_SUB(data, DO);
-	  WAIT_REFRESH(data);
-
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             SetErrorMessage(e.what());
+            COUNT_SUB(data, CONNECT_QUE);
+            COUNT_SUB(data, QUE);
+            WAIT_REFRESH(data);
         }
     }
 
@@ -132,10 +130,8 @@ public:
             Nan::Null(),
             object
         };
+        SUBTRACT_COUNT(CONNECT_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
-	COUNT_SUB(data, CONNECT_QUE);
-	COUNT_SUB(data, QUE);
-	WAIT_REFRESH(data);
     }
 
     NuoJsData* data;
@@ -187,9 +183,7 @@ NAN_METHOD(Driver::connect)
     ConnectWorker* worker = new ConnectWorker( callback, Nan::ObjectWrap::Unwrap<Driver>(info.This()), params);
     worker->SaveToPersistent("nuodb:Driver", info.This());
     Nan::AsyncQueueWorker(worker);
-    COUNT_ADD(worker->data, CONNECT_QUE);
-    COUNT_ADD(worker->data, QUE);
-    WAIT_REFRESH(worker->data);
+    ADD_COUNT(CONNECT_QUE,QUE,worker->data);
 }
 
 

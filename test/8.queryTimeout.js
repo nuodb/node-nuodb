@@ -44,6 +44,7 @@ describe('8. testing query timeout', () => {
       // ensure that we are actually waiting for the results
       const row = await result.getRows();
       row.should.be.ok();
+      await result.close();
     } catch (err) {
       e = err
     }
@@ -58,6 +59,7 @@ describe('8. testing query timeout', () => {
       // ensure that we are actually waiting for the results
       const row = await result.getRows();
       row.should.be.ok();
+      await result.close();
     } catch (err) {
       e = err
     }
@@ -75,6 +77,7 @@ describe('8. testing query timeout', () => {
       // ensure that we are actually waiting for the results
       const row = await result.getRows();
       row.should.be.ok();
+      await result.close();
     } catch (err) {
       e = err
     }
