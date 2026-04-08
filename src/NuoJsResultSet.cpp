@@ -88,14 +88,14 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("ResultSetCloseWorker::ResultSetCloseWorker");
-	data = manager.getData();
-	COUNT_ADD(data, RESULTSETCLOSE_CNT);
+        data = manager.getData();
+        COUNT_ADD(data, RESULTSETCLOSE_CNT);
     }
 
     virtual ~ResultSetCloseWorker()
     {
         TRACE("ResultSetCloseWorker::~ResultSetCloseWorker");
-	COUNT_SUB(data, RESULTSETCLOSE_CNT);
+        COUNT_SUB(data, RESULTSETCLOSE_CNT);
     }
 
     /**
@@ -107,13 +107,13 @@ public:
     {
         TRACE("ResultSetCloseWorker::Execute");
         try {
-	  ADD_COUNT(RESULTSETCLOSE_DO, DO, data)
-	  SUBTRACT_COUNT(RESULTSETCLOSE_DO, DO, data)
+          ADD_COUNT(RESULTSETCLOSE_DO, DO, data)
+          SUBTRACT_COUNT(RESULTSETCLOSE_DO, DO, data)
           self->doClose();
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseResultSet, e.what());
             SetErrorMessage(message.c_str());
-	    SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
+            SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
         }
     }
 
@@ -128,7 +128,7 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
-	SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
+        SUBTRACT_COUNT(RESULTSETCLOSE_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
     }
 
@@ -164,10 +164,10 @@ void ResultSet::doClose()
     TRACE("ResultSet::doClose");
     if (result != nullptr) {
         if (this->hasBeenClosed) {
-		std::cout << "Detected Double Close" << std::endl;
-	} else {
+          throw std::runtime_error("Detected Double Close");
+        } else {
           result->close();
-	  this->hasBeenClosed = true;
+          this->hasBeenClosed = true;
           result = nullptr;
           if (statement != nullptr) {
             statement->close();
@@ -204,13 +204,13 @@ public:
     {
         TRACE("GetRowsWorker::Execute");
         try {
-	  ADD_COUNT(GETROWS_DO, DO, data)
-	  SUBTRACT_COUNT(GETROWS_DO, DO, data)
+          ADD_COUNT(GETROWS_DO, DO, data)
+          SUBTRACT_COUNT(GETROWS_DO, DO, data)
           self->doGetRows(count);
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errGetRows, e.what());
             SetErrorMessage(message.c_str());
-	    SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
+            SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
         }
     }
 
@@ -227,7 +227,7 @@ public:
             Nan::Null(),
             rows
         };
-	SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
+        SUBTRACT_COUNT(GETROWS_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
 
     }

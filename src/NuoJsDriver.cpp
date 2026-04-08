@@ -94,30 +94,29 @@ public:
         : Nan::AsyncWorker(callback), driver(driver), params(params)
     {
         TRACE("ConnectWorker::ConnectWorker");
-	data = manager.getData();
-	COUNT_ADD(data, CONNECT_CNT);
+        data = manager.getData();
+        COUNT_ADD(data, CONNECT_CNT);
     }
 
     virtual ~ConnectWorker()
     {
         TRACE("ConnectWorker::~ConnectWorker");
-	COUNT_SUB(data, CONNECT_CNT);
+        COUNT_SUB(data, CONNECT_CNT);
     }
 
     virtual void Execute()
     {
         TRACE("ConnectWorker::Execute");
         try {
-	  ADD_COUNT(CONNECT_DO, DO, data)
-	  SUBTRACT_COUNT(CONNECT_DO, DO, data)
+          ADD_COUNT(CONNECT_DO, DO, data)
+          SUBTRACT_COUNT(CONNECT_DO, DO, data)
           connection = driver->doConnect(params);
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             SetErrorMessage(e.what());
-	    COUNT_SUB(data, CONNECT_QUE);
+            COUNT_SUB(data, CONNECT_QUE);
             COUNT_SUB(data, QUE);
             WAIT_REFRESH(data);
-
         }
     }
 
@@ -131,13 +130,7 @@ public:
             Nan::Null(),
             object
         };
-	SUBTRACT_COUNT(CONNECT_QUE, QUE, data)
-        //Finally guard([&]() { 
-        //  std::cout << "In Guard:" << "QUE" << std::endl;
-        //  COUNT_SUB(data, CONNECT_QUE); 
-        //  COUNT_SUB(data, QUE);
-        //  WAIT_REFRESH(data);
-        //});
+        SUBTRACT_COUNT(CONNECT_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
     }
 

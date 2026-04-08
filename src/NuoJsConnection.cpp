@@ -159,16 +159,16 @@ NAN_MODULE_INIT(Connection::init)
     char* restrictedAPISetting;
     restrictedAPISetting = getenv("NUODB_NODE_CONNECTION_API_ONLY");
     if (restrictedAPISetting != NULL) {
-	    setRestrictedAPI(Restricted_API(std::string(restrictedAPISetting)));
+      setRestrictedAPI(Restricted_API(std::string(restrictedAPISetting)));
     }
 }
 
 unsigned int Connection::getRestrictedAPI() {
-	return Connection::restrictedAPI;
+  return Connection::restrictedAPI;
 };
 
 void Connection::setRestrictedAPI(unsigned int v) {
-	Connection::restrictedAPI = v;
+  Connection::restrictedAPI = v;
 };
 
 unsigned int Connection::restrictedAPI = 0;
@@ -206,28 +206,27 @@ class ConnectionCloseWorker : public Nan::AsyncWorker
         : Nan::AsyncWorker(callback), self(self)
      {
         TRACE("ConnectionCloseWorker::ConnectionCloseWorker");
-	data = manager.getData();
-	COUNT_ADD(data, CONNECTIONCLOSE_CNT);
+        data = manager.getData();
+        COUNT_ADD(data, CONNECTIONCLOSE_CNT);
      }
 
      virtual ~ConnectionCloseWorker()
      {
         TRACE("ConnectionCloseWorker::~ConnectionCloseWorker");
-	COUNT_SUB(data, CONNECTIONCLOSE_CNT);
-
+        COUNT_SUB(data, CONNECTIONCLOSE_CNT);
      }
 
      virtual void Execute()
      {
         TRACE("ConnectionCloseWorker::Execute");
         try {
-	  ADD_COUNT(CONNECTIONCLOSE_DO, DO, data)
-	  SUBTRACT_COUNT(CONNECTIONCLOSE_DO, DO, data)
+          ADD_COUNT(CONNECTIONCLOSE_DO, DO, data)
+          SUBTRACT_COUNT(CONNECTIONCLOSE_DO, DO, data)
           self->doClose();
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             SetErrorMessage(message.c_str());
-	    COUNT_SUB(data, CONNECTIONCLOSE_QUE);
+            COUNT_SUB(data, CONNECTIONCLOSE_QUE);
             COUNT_SUB(data, QUE);
             WAIT_REFRESH(data);
         }
@@ -240,7 +239,7 @@ class ConnectionCloseWorker : public Nan::AsyncWorker
         Local<Value> argv[] = {
             Nan::Null()
         };
-	SUBTRACT_COUNT(CONNECTIONCLOSE_QUE, QUE, data)
+        SUBTRACT_COUNT(CONNECTIONCLOSE_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
     }
 
@@ -295,7 +294,7 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("CommitWorker::CommitWorker");
-	data = manager.getData();
+        data = manager.getData();
         COUNT_ADD(data, COMMIT_CNT);
     }
 
@@ -309,15 +308,14 @@ public:
     {
         TRACE("CommitWorker::Execute");
         try {
-	  ADD_COUNT(COMMIT_DO, DO, data)
-	  SUBTRACT_COUNT(COMMIT_DO, DO, data)
+          ADD_COUNT(COMMIT_DO, DO, data)
+          SUBTRACT_COUNT(COMMIT_DO, DO, data)
           self->doCommit();
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-	    COUNT_SUB(data, COMMIT_QUE);
+            COUNT_SUB(data, COMMIT_QUE);
             COUNT_SUB(data, QUE);
             WAIT_REFRESH(data);
-
         }
     }
 
@@ -328,7 +326,7 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
-	SUBTRACT_COUNT(COMMIT_QUE, QUE, data)
+        SUBTRACT_COUNT(COMMIT_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
 
     }
@@ -383,8 +381,8 @@ public:
         : Nan::AsyncWorker(callback), self(self)
     {
         TRACE("RollbackWorker::RollbackWorker");
-	data = manager.getData();
-	COUNT_ADD(data, ROLLBACK_CNT);
+        data = manager.getData();
+        COUNT_ADD(data, ROLLBACK_CNT);
     }
 
     virtual ~RollbackWorker()
@@ -397,12 +395,12 @@ public:
     {
         TRACE("RollbackWorker::Execute");
         try {
-	  ADD_COUNT(ROLLBACK_DO, DO, data)
-	  SUBTRACT_COUNT(ROLLBACK_DO, DO, data)
+          ADD_COUNT(ROLLBACK_DO, DO, data)
+          SUBTRACT_COUNT(ROLLBACK_DO, DO, data)
           self->doRollback();
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-	    COUNT_SUB(data, ROLLBACK_QUE);
+            COUNT_SUB(data, ROLLBACK_QUE);
             COUNT_SUB(data, QUE);
             WAIT_REFRESH(data);
 
@@ -416,7 +414,7 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
-	SUBTRACT_COUNT(ROLLBACK_QUE, QUE, data)
+        SUBTRACT_COUNT(ROLLBACK_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
     }
 
@@ -488,17 +486,17 @@ class ExecuteWorker : public Nan::AsyncWorker
         TRACE("ExecuteWorker::~Execute");
         if (error) {
             SetErrorMessage(error);
-	    SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
+            SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
             return;
         }
         try {
-	  ADD_COUNT(EXECUTE_DO, DO, data)
-	  SUBTRACT_COUNT(EXECUTE_DO, DO, data)
+          ADD_COUNT(EXECUTE_DO, DO, data)
+          SUBTRACT_COUNT(EXECUTE_DO, DO, data)
           hasResults = self->doExecute(statement,this->_sql);
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-	    SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
-	}
+            SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
+        }
     }
 
     virtual void HandleOKCallback()
@@ -515,7 +513,7 @@ class ExecuteWorker : public Nan::AsyncWorker
             Nan::Null(),
             results
         };
-	SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
+        SUBTRACT_COUNT(EXECUTE_QUE, QUE, data)
         callback->Call(2, argv, async_resource);
     }
 
@@ -593,9 +591,9 @@ NAN_METHOD(Connection::execute)
     NuoDB::PreparedStatement* statement = nullptr;
     try {
         statement = self->createStatement(sql, binds);
-	if (options.getQueryTimeout() != 0) {
-        statement->setQueryTimeout(options.getQueryTimeout());
-	}
+        if (options.getQueryTimeout() != 0) {
+          statement->setQueryTimeout(options.getQueryTimeout());
+        }
     } catch (std::exception& e) {
         error = e.what();
     }
@@ -663,16 +661,16 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
                     break;
                 }
                 case NuoDB::NUOSQL_DATE: {
-		    int bufsize = 80;
+                    int bufsize = 80;
                     char buffer[bufsize];
-		    // Initializing buffer to string termination so there is
-		    // no possible unterminated string placed in the buffer.
-		    memset(buffer,'\0',bufsize);
+                    // Initializing buffer to string termination so there is
+                    // no possible unterminated string placed in the buffer.
+                    memset(buffer,'\0',bufsize);
                     time_t seconds = (time_t)(toInt64(value) / 1000);
                     struct tm* timeinfo;
                     timeinfo = localtime(&seconds);
                     strftime(buffer, bufsize, "%F %T", timeinfo);
-		    int strsize = strlen(buffer);
+                    int strsize = strlen(buffer);
                     // buffer = "YYYY-MM-DD HH:MM:SS" -- 19 characters long
                     int ms = toInt64(value) % 1000;
                     buffer[strsize] = '.';
@@ -681,8 +679,7 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
                     buffer[++strsize] = '0' + ms / 10;
                     ms %= 10;
                     buffer[++strsize] = '0' + ms;
-		    
-		    assert (strsize < bufsize);
+                    assert (strsize < bufsize);
 
                     statement->setString(sqlIdx, buffer);
                     break;
@@ -704,33 +701,30 @@ NuoDB::PreparedStatement* Connection::createStatement(std::string sql, Local<Arr
 // Look for any error message that should indicate the connection is no longer useable
 // If we find a problem, then save the error message so the Connection is not reused
 void Connection::markForFailure(NuoDB::SQLException& e) {
-	const int code = e.getSqlcode();
-	//const char *ptr1 = strstr(errorText,"Connection reset by peer");
-	//const char *ptr2 = strstr(errorText,"connection closed");
-	if ((code == -7) || 
-	    (code == -10) ||
-            (code == -50)) {
-		failureText = ErrMsg::get(e);
-	}
+  const int code = e.getSqlcode();
+  //const char *ptr1 = strstr(errorText,"Connection reset by peer");
+  //const char *ptr2 = strstr(errorText,"connection closed");
+  if ((code == -7) || (code == -10) || (code == -50)) {
+    failureText = ErrMsg::get(e);
+  }
 }
 
 bool Connection::doExecute(NuoDB::PreparedStatement* statement, std::string sql)
 {
     if (!isConnected()) {
-	std::cout << "doExecute !isConnected" << std::endl;
         std::string message = ErrMsg::get(ErrMsgType::errConnectionClosed);
         throw std::runtime_error(message);
     }
 
     try {
-	std::ostringstream oss;
-	oss << std::this_thread::get_id();
-	std::string sid = oss.str();
-        return statement->execute();
+      std::ostringstream oss;
+      oss << std::this_thread::get_id();
+      std::string sid = oss.str();
+      return statement->execute();
     } catch (NuoDB::SQLException& e) {
-	// Execution has failed, see if the failure should consider the connection dead
-	markForFailure(e);
-        throw std::runtime_error(ErrMsg::get(e));
+      // Execution has failed, see if the failure should consider the connection dead
+      markForFailure(e);
+      throw std::runtime_error(ErrMsg::get(e));
     }
 }
 
@@ -860,10 +854,10 @@ void Connection::setReadOnly(bool mode)
 {
     // guard!
     if (isConnected()) {
-	if (((Connection::getRestrictedAPI()&API_ID::READONLY) == 0) || (mode != _ReadOnly)) {
+      if (((Connection::getRestrictedAPI()&API_ID::READONLY) == 0) || (mode != _ReadOnly)) {
           connection->setReadOnly(mode);
-	  _ReadOnly = mode;
-	}
+        _ReadOnly = mode;
+      }
     }
 }
 
@@ -877,12 +871,10 @@ void Connection::setAutoCommit(bool mode)
 {
     // guard!
     if (isConnected()) {
-	if (((Connection::getRestrictedAPI()&API_ID::AUTOCOMMIT) == 0) || (mode != _AutoCommit)) {
+      if (((Connection::getRestrictedAPI()&API_ID::AUTOCOMMIT) == 0) || (mode != _AutoCommit)) {
           connection->setAutoCommit(mode);
-	  _AutoCommit = mode;
-	} else {
-	}
-
+        _AutoCommit = mode;
+      } 
     }
 }
 
@@ -890,10 +882,10 @@ void Connection::setIsolationLevel(uint32_t isolation)
 {
     // guard!
     if (isConnected()) {
-	if (((Connection::getRestrictedAPI()&API_ID::ISOLATIONLEVEL) == 0) || (isolation != _IsolationLevel)) {
+      if (((Connection::getRestrictedAPI()&API_ID::ISOLATIONLEVEL) == 0) || (isolation != _IsolationLevel)) {
           connection->setTransactionIsolation((int)isolation);
-	  _IsolationLevel = isolation;
-	}
+        _IsolationLevel = isolation;
+      }
     }
 }
 }
