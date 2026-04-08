@@ -230,29 +230,4 @@ private:
     int shm_fd;
 };
 
-//#include <functional>
-//#include <iostream>
-
-//template <typename F>
-//class ScopeGuard {
-//public:
-//    explicit ScopeGuard(F f) : func(std::move(f)) {}
-    
-    // Call the function in the destructor
-//    ~ScopeGuard() { 
-//        try {
-//            func(); 
-//        } catch (...) {
-            // Destructors should never let exceptions escape
-//        }
-//    }
-
-    // Disable copying
-//    ScopeGuard(const ScopeGuard&) = delete;
-//    ScopeGuard& operator=(const ScopeGuard&) = delete;
-
-//private:
-//    F func;
-//};
-
 #endif
