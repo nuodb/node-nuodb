@@ -409,8 +409,6 @@ void ResultSet::doGetRows(size_t count)
 
     if (!isResultOpen()) {
         result = statement->getResultSet();
-    } else {
-        std::cout << "isResultOpen" << std::endl;
     }
 
     if(result == nullptr){

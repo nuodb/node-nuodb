@@ -114,9 +114,7 @@ public:
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errOpen, e.what());
             SetErrorMessage(e.what());
-            COUNT_SUB(data, CONNECT_QUE);
-            COUNT_SUB(data, QUE);
-            WAIT_REFRESH(data);
+	    SUBTRACT_COUNT(CONNECT_QUE, QUE, data);
         }
     }
 
