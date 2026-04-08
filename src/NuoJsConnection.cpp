@@ -226,9 +226,7 @@ class ConnectionCloseWorker : public Nan::AsyncWorker
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             SetErrorMessage(message.c_str());
-            COUNT_SUB(data, CONNECTIONCLOSE_QUE);
-            COUNT_SUB(data, QUE);
-            WAIT_REFRESH(data);
+	    SUBTRACT_COUNT(CONNECTIONCLOSE_QUE, QUE, data);
         }
      }
 
@@ -313,9 +311,7 @@ public:
           self->doCommit();
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-            COUNT_SUB(data, COMMIT_QUE);
-            COUNT_SUB(data, QUE);
-            WAIT_REFRESH(data);
+	    SUBTRACT_COUNT(COMMIT_QUE, QUE, data);
         }
     }
 
@@ -328,7 +324,6 @@ public:
         };
         SUBTRACT_COUNT(COMMIT_QUE, QUE, data)
         callback->Call(1, argv, async_resource);
-
     }
 
     NuoJsData* data;
@@ -400,10 +395,7 @@ public:
           self->doRollback();
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-            COUNT_SUB(data, ROLLBACK_QUE);
-            COUNT_SUB(data, QUE);
-            WAIT_REFRESH(data);
-
+	    SUBTRACT_COUNT(ROLLBACK_QUE, QUE, data);
         }
     }
 
