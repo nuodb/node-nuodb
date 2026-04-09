@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <limits.h>
 #include <cstdlib> // Required for getenv
 
 bool NuoJsDataManager::asyncCounters = true;
@@ -62,10 +63,11 @@ const char* NuoJsDataManager::get_shm_name() {
 	    NuoJsDataManager::shm_name += ":"; // Add a separator if needed
 	    NuoJsDataManager::shm_name += env_var_value;
     } else {
-	    char hostname[256];
-	    if (gethostname(hostname, sizeof(hostname)) != 0) std::runtime_error("gethostname failed");
-	    NuoJsDataManager::shm_name += ":"; // Add a separator if needed
-	    NuoJsDataManager::shm_name += hostname;
+      char hostname[HOST_NAME_MAX + 1];
+      if (gethostname(hostname, sizeof(hostname)) != 0) std::runtime_error("gethostname failed");
+      hostname[sizeof(hostname) - 1] = '\0';
+      NuoJsDataManager::shm_name += ":"; // Add a separator if needed
+      NuoJsDataManager::shm_name += hostname;
     }
   }
   return NuoJsDataManager::shm_name.c_str();
