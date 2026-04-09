@@ -226,7 +226,7 @@ class ConnectionCloseWorker : public Nan::AsyncWorker
         } catch (std::exception& e) {
             std::string message = ErrMsg::get(ErrMsgType::errFailedCloseConnection, e.what());
             SetErrorMessage(message.c_str());
-	    SUBTRACT_COUNT(CONNECTIONCLOSE_QUE, QUE, data);
+            SUBTRACT_COUNT(CONNECTIONCLOSE_QUE, QUE, data);
         }
      }
 
@@ -311,7 +311,7 @@ public:
           self->doCommit();
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-	    SUBTRACT_COUNT(COMMIT_QUE, QUE, data);
+            SUBTRACT_COUNT(COMMIT_QUE, QUE, data);
         }
     }
 
@@ -395,7 +395,7 @@ public:
           self->doRollback();
         } catch (std::exception& e) {
             SetErrorMessage(e.what());
-	    SUBTRACT_COUNT(ROLLBACK_QUE, QUE, data);
+            SUBTRACT_COUNT(ROLLBACK_QUE, QUE, data);
         }
     }
 
