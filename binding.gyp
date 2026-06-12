@@ -46,7 +46,7 @@
         "-std=c++17"
       ],
       "variables": {
-        "nuodb_client_package": "<!(echo ${NUODB_CLIENT_PACKAGE:-${NUODB_HOME:-\"/opt/nuodb\"}})"
+        "nuodb_client_package": "<!(node -p \"process.cwd() + '/.nuodb_client_tmp'\")"
       },
       "include_dirs": [
         "src",

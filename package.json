@@ -43,6 +43,7 @@
     "should": "^13.2.3"
   },
   "scripts": {
+    "prepare": "bash scripts/fetch-client-from-docker.sh && npm run build",
     "build": "node-gyp rebuild --release",
     "mocha-list": "mocha",
     "lint": "eslint index.js lib/*.js test/*.js",

@@ -14,17 +14,8 @@ jobs:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Download and extract NuoDB Client Package
-        run: |
-            mkdir /tmp/nuodb-client-package
-            export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*nuodb-client-2.*lin-x64.tar.gz" \
-            | cut -d : -f 2,3 \
-            | tr -d " " | tr -d \")"
-            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
-            cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
-            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
-            echo "NUODB_CLIENT_PACKAGE=/tmp/nuodb-client-package/nuodb-client.lin-x64" >> $GITHUB_ENV
+      - name: Extract NuoDB client from Docker image
+        run: bash scripts/fetch-client-from-docker.sh
       - run: npm ci
       - run: npm publish
         env:

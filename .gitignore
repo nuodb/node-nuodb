@@ -11,3 +11,4 @@ build/
 crash.log
 lib/nuodb_nodejs.log
 node_modules/
+.nuodb_client_tmp/

@@ -22,13 +22,12 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-COPY --from=nuodb /opt/nuodb/include /opt/nuodb/include
-COPY --from=nuodb /opt/nuodb/lib64 /opt/nuodb/lib64
-
 WORKDIR /src
 
+COPY --from=nuodb /opt/nuodb /src/.nuodb_client_tmp
+
 COPY package.json /src
-RUN npm install
+RUN npm install --ignore-scripts
 RUN node --version
 
 COPY . /src
@@ -39,5 +38,5 @@ RUN npm run build
 
 FROM node:22-slim AS release
 
-COPY --from=build /opt/nuodb/lib64 /opt/nuodb/lib64
+COPY --from=build /src/.nuodb_client_tmp/lib64 /opt/nuodb/lib64
 COPY --from=build /src /src

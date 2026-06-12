@@ -6,22 +6,13 @@ jobs:
       - image: cimg/node:22.15
     resource_class: 'medium+'
     environment:
-      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
       DOCKER_BUILDKIT: 'false'
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Get latest NuoDB Client package
-          command: |
-            mkdir /tmp/nuodb-client-package
-            export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*nuodb-client-2.*lin-x64.tar.gz" \
-            | cut -d : -f 2,3 \
-            | tr -d " " | tr -d \")"
-            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
-            cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
-            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
+          name: Extract NuoDB client from Docker image
+          command: bash scripts/fetch-client-from-docker.sh
       - run:
           name: Start NuoDB test database and run tests
           command: make up && make smoke-tests
@@ -34,22 +25,13 @@ jobs:
       - image: cimg/node:22.15
     resource_class: 'medium+'
     environment:
-      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
       DOCKER_BUILDKIT: 'false'
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Get latest NuoDB Client package
-          command: |
-            mkdir /tmp/nuodb-client-package
-            export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*nuodb-client-2.*lin-x64.tar.gz" \
-            | cut -d : -f 2,3 \
-            | tr -d " " | tr -d \")"
-            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
-            cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
-            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
+          name: Extract NuoDB client from Docker image
+          command: bash scripts/fetch-client-from-docker.sh
       - run:
           name: Start NuoDB test database and run tests
           command: make up && make nightly-tests
@@ -61,22 +43,13 @@ jobs:
       - image: cimg/node:22.15
     resource_class: 'medium'
     environment:
-      NUODB_CLIENT_PACKAGE: '/tmp/nuodb-client-package/nuodb-client.lin-x64'
       DOCKER_BUILDKIT: 'false'
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Get latest NuoDB Client package
-          command: |
-            mkdir /tmp/nuodb-client-package
-            export NUODB_CLIENT_PACKAGE_URL="$(curl -s https://api.github.com/repos/nuodb/nuodb-client/releases/latest \
-            | grep "browser_download_url.*nuodb-client-2.*lin-x64.tar.gz" \
-            | cut -d : -f 2,3 \
-            | tr -d " " | tr -d \")"
-            wget -O /tmp/nuodb-client-package/nuodb-client-package.tar.gz -q "$NUODB_CLIENT_PACKAGE_URL"
-            cd /tmp/nuodb-client-package && tar xf nuodb-client-package.tar.gz
-            mv "/tmp/nuodb-client-package/$(basename "$NUODB_CLIENT_PACKAGE_URL" | sed 's/\.tar\.gz//g')" /tmp/nuodb-client-package/nuodb-client.lin-x64
+          name: Extract NuoDB client from Docker image
+          command: bash scripts/fetch-client-from-docker.sh
       - run:
           name: Start NuoDB test database and run tests
           command: |
@@ -112,4 +85,3 @@ workflows:
       - nightly_tests:
           context:
             - common-config
-
