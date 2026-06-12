@@ -1,5 +1,5 @@
 {
-  "name": "node-nuodb",
+  "name": "nuodb",
   "author": "Dassault Systèmes SE",
   "description": "The official NuoDB database driver for Node.js. Provides a high-level SQL API on top of the NuoDB Node.js Addon.",
   "license": "BSD-3-Clause",
