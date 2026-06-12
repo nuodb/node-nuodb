@@ -27,7 +27,7 @@ WORKDIR /src
 COPY --from=nuodb /opt/nuodb /src/.nuodb_client_tmp
 
 COPY package.json /src
-RUN npm install --ignore-scripts
+RUN npm install --ignore-scripts && npm rebuild segfault-handler
 RUN node --version
 
 COPY . /src
