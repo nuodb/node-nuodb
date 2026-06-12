@@ -119,7 +119,7 @@ void NuoJsDataManager::initialize(bool create) {
     shm_fd = shm_open(NuoJsDataManager::get_shm_name(), O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) throw std::runtime_error("shm_open failed");
       // Resize the shared memory object
-      ftruncate(shm_fd, shm_size);
+      if (ftruncate(shm_fd, shm_size) == -1) throw std::runtime_error("ftruncate failed");
 
       // Map shared memory
       dataPtr = static_cast<NuoJsData*>(mmap(NULL, mapSize, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0));
